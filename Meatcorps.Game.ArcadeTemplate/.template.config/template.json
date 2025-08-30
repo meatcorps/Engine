@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Meatcorps",
+  "classifications": ["Arcade", "Raylib", "GameTemplate"],
+  "name": "Arcade 2 player template",
+  "identity": "Meatcorps.Engine.TwoPlayers",
+  "shortName": "myproj",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Meatcorps.Game.ArcadeTemplate",
+  "preferNameDirectory": true
+}

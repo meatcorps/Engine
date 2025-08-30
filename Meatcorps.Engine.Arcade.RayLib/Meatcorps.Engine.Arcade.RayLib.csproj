@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Meatcorps.Engine.Arcade.RayLib</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Meatcorps.Engine.Arcade\Meatcorps.Engine.Arcade.csproj" />
+      <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
+      <ProjectReference Include="..\Meatcorps.Engine.Session\Meatcorps.Engine.Session.csproj" />
+    </ItemGroup>
+
+</Project>

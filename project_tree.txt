@@ -1,0 +1,286 @@
+.
+├── Meatcorps.Engine.AsciiScript
+│   ├── Commands
+│   │   ├── BlockGridCommand.cs
+│   │   ├── DelayCommand.cs
+│   │   ├── ExternalIntVariableCondition.cs
+│   │   ├── IntVariableCommand.cs
+│   │   ├── SimpleCommand.cs
+│   │   └── StringVariableCommand.cs
+│   ├── Data
+│   │   └── AsciiScriptItem.cs
+│   ├── Enums
+│   │   ├── AsciiScriptItemType.cs
+│   │   └── ScriptParserState.cs
+│   ├── Interfaces
+│   │   └── IAsciiScriptCommand.cs
+│   └── Services
+│       ├── AsciiScriptParser.cs
+│       └── AsciiScriptReader.cs
+├── Meatcorps.Engine.Boids
+│   ├── Data
+│   │   └── BoidConfig.cs
+│   ├── Enums
+│   │   └── BoidBoundsPolicy.cs
+│   ├── Interfaces
+│   │   ├── IBoidAgent.cs
+│   │   └── ITargetSelector.cs
+│   ├── Services
+│   │   └── FlockController.cs
+│   └── Utilities
+│       └── BoidBehaviors.cs
+├── Meatcorps.Engine.Core
+│   ├── Data
+│   │   ├── LineF.cs
+│   │   ├── PointInt.cs
+│   │   ├── Rect.cs
+│   │   ├── RectF.cs
+│   │   └── SizeF.cs
+│   ├── Enums
+│   │   └── EaseType.cs
+│   ├── Extensions
+│   │   ├── FloatExtensions.cs
+│   │   ├── Matrix3x2Extensions.cs
+│   │   ├── RectangleFExtensions.cs
+│   │   └── Vector2Extensions.cs
+│   ├── GridSystem
+│   │   ├── BasicGridItem.cs
+│   │   ├── GridAnalyzerYX.cs
+│   │   ├── SingleEntityGrid.cs
+│   │   └── SpatialEntityGrid.cs
+│   ├── Input
+│   │   └── InputRouter.cs
+│   ├── Interfaces
+│   │   ├── Grid
+│   │   ├── Hardware
+│   │   ├── Input
+│   │   ├── Services
+│   │   └── Storage
+│   ├── Modules
+│   │   └── CoreModule.cs
+│   ├── ObjectManager
+│   │   ├── GlobalObjectManager.cs
+│   │   ├── LoggingService.cs
+│   │   └── ObjectManager.cs
+│   ├── Storage
+│   │   ├── Enum
+│   │   ├── Module
+│   │   └── Services
+│   ├── Tween
+│   │   ├── ArcMoveToTarget.cs
+│   │   ├── MoveToTarget.cs
+│   │   ├── PathMover.cs
+│   │   ├── Tween.cs
+│   │   ├── TweenStack.cs
+│   │   ├── TweenStackPolar.cs
+│   │   ├── TweenStackVector2.cs
+│   │   └── TweenState.cs
+│   └── Utilities
+│       ├── EdgeDetector.cs
+│       ├── FixedTimer.cs
+│       ├── MathHelper.cs
+│       ├── PrimativesHelper.cs
+│       ├── ResetValue.cs
+│       ├── SmoothValue.cs
+│       ├── ThreadSafeList.cs
+│       ├── TimerOff.cs
+│       ├── TimerOn.cs
+│       └── TimerPulse.cs
+├── Meatcorps.Engine.Hardware.ArduinoController
+│   ├── ArduinoController
+│   │   ├── AnimationChain.cs
+│   │   ├── ArduinoControllerCommunication.cs
+│   │   ├── ArduinoControllerManager.cs
+│   │   ├── ArduinoInput.cs
+│   │   ├── ArduinoInputMapper.cs
+│   │   ├── BlinkAnimation.cs
+│   │   ├── ButtonLightsEnum.cs
+│   │   ├── ControllerInputEnum.cs
+│   │   ├── DotNetSerialPort.cs
+│   │   ├── FlashAnimation.cs
+│   │   └── RJCPSerialPort.cs
+│   ├── Interfaces
+│   ├── Modules
+│   │   └── ArduinoControllerModule.cs
+│   └── Services
+│       └── ArduinoControllerService.cs
+├── Meatcorps.Engine.InputTest
+│   └── Program.cs
+├── Meatcorps.Engine.Logging
+│   └── Module
+│       └── ConsoleLoggingModule.cs
+├── Meatcorps.Engine.RayLib
+│   ├── Abstractions
+│   │   ├── BaseGameObject.cs
+│   │   └── BaseScene.cs
+│   ├── Audio
+│   │   ├── AudioType.cs
+│   │   ├── MusicManager.cs
+│   │   ├── OneSoundManager.cs
+│   │   ├── SoundFxManager.cs
+│   │   └── VolumeManager.cs
+│   ├── Camera
+│   │   ├── CameraControllerGameObject.cs
+│   │   ├── FallBackCamera.cs
+│   │   └── FixedSizeCamera.cs
+│   ├── Debug
+│   │   └── VisualDebugger.cs
+│   ├── Enums
+│   │   ├── Anchor.cs
+│   │   ├── CameraLayer.cs
+│   │   ├── DefaultFont.cs
+│   │   ├── HAlign.cs
+│   │   ├── Orientation.cs
+│   │   └── VAlign.cs
+│   ├── Extensions
+│   │   ├── InlineRenderExtensions.cs
+│   │   ├── TextManagerExtensions.cs
+│   │   ├── TextStyleExtensions.cs
+│   │   └── Texture2DExtensions.cs
+│   ├── Game
+│   │   ├── GameHost.cs
+│   │   └── TimeService.cs
+│   ├── GameObjects
+│   │   ├── PersistantCanvas.cs
+│   │   └── UI
+│   ├── Interfaces
+│   │   ├── IAudioInitNeeded.cs
+│   │   ├── ICamera.cs
+│   │   ├── ICameraFixedWidthAndHeight.cs
+│   │   ├── ILoadAfterRayLibInit.cs
+│   │   ├── IMasterVolume.cs
+│   │   ├── INeedsSceneTexture.cs
+│   │   ├── IParticleMutator.cs
+│   │   ├── IPostProcessor.cs
+│   │   ├── IRenderTargetStrategy.cs
+│   │   └── ITimeService.cs
+│   ├── Modules
+│   │   └── RayLibModule.cs
+│   ├── Particles
+│   │   ├── Abstractions
+│   │   ├── Particle.cs
+│   │   ├── ParticleColorLerp.cs
+│   │   ├── ParticleGravity.cs
+│   │   ├── ParticlePositionLerp.cs
+│   │   ├── ParticleRotationLerp.cs
+│   │   ├── ParticleSizeLerp.cs
+│   │   └── ParticleSystemBuilder.cs
+│   ├── PostProcessing
+│   │   ├── Abstractions
+│   │   ├── BloomCompositePostProcessor.cs
+│   │   ├── BloomThresholdPostProcessor.cs
+│   │   ├── ChromaticAberrationPostProcessor.cs
+│   │   ├── ColorGradingPostProcessor.cs
+│   │   ├── CrtNewPixiePostProcessor.cs
+│   │   ├── CrtPostProcessor.cs
+│   │   ├── Extensions
+│   │   ├── FilmGrainPostProcessor.cs
+│   │   ├── FixedPalettePostProcessor8.cs
+│   │   ├── FixedPalettePostProcessorTex.cs
+│   │   ├── GaussianBlurPostProcessor.cs
+│   │   ├── GrayscalePostProcessor.cs
+│   │   ├── HeatwaveBasePostProcessing.cs
+│   │   ├── OnePassBloomPostProcessor.cs
+│   │   ├── PaletteSwapPostProcessor.cs
+│   │   ├── ScanlinesPostProcessor.cs
+│   │   ├── ShockwavePostProcessor.cs
+│   │   └── VignettePostProcessor.cs
+│   ├── Renderer
+│   │   ├── BasicScreenRenderTarget.cs
+│   │   ├── NineSliceRenderer.cs
+│   │   ├── PixelPerfectRenderTarget.cs
+│   │   └── RenderService.cs
+│   ├── Resources
+│   │   ├── MusicResource.cs
+│   │   ├── ShaderManager.cs
+│   │   ├── SoundAutoBinder.cs
+│   │   ├── SoundFxResource.cs
+│   │   ├── TextManager.cs
+│   │   └── Texture2DItem.cs
+│   ├── Text
+│   │   ├── TextKit.cs
+│   │   ├── TextKitStyles.cs
+│   │   └── TextStyle.cs
+│   ├── TweenRayLib
+│   │   └── TweenStackColor.cs
+│   └── UI
+│       ├── Data
+│       ├── Enums
+│       ├── InlineRender.cs
+│       └── UIAnchorHelper.cs
+├── Meatcorps.Engine.Session
+│   ├── Data
+│   │   ├── Session.cs
+│   │   ├── SessionDataBag.cs
+│   │   ├── SessionDataItem.cs
+│   │   └── SessionDataTypeSerializer.cs
+│   ├── Extensions
+│   │   └── SessionDataBagExtensions.cs
+│   ├── Factories
+│   │   └── SessionFactory.cs
+│   ├── Utilities
+│   │   └── SessionUtil.cs
+│   └── ValueTypes
+│       ├── IValueType.cs
+│       ├── PlayerDefaultTypes.cs
+│       ├── PlayerId.cs
+│       ├── PlayerName.cs
+│       ├── SessionDefaultTypes.cs
+│       ├── SessionSeed.cs
+│       ├── SessionStarted.cs
+│       └── ValueType.cs
+├── Meatcorps.Game.Snake
+│   ├── Assets
+│   │   ├── Fonts
+│   │   ├── Level1.txt
+│   │   ├── Level1_Easy.txt
+│   │   ├── Level2_Normal.txt
+│   │   ├── Level3_Hard.txt
+│   │   ├── Music
+│   │   ├── Shaders
+│   │   └── SoundFX
+│   ├── Build
+│   │   └── SoundsWav
+│   ├── Data
+│   │   ├── ConsumableRule.cs
+│   │   ├── IConsumableItem.cs
+│   │   ├── LevelData.cs
+│   │   ├── Player.cs
+│   │   ├── SnakeBody.cs
+│   │   ├── SnakeBodyType.cs
+│   │   ├── SnakeModel.cs
+│   │   ├── SnakeModifiers.cs
+│   │   ├── SnakeMusic.cs
+│   │   ├── SnakePerkManager.cs
+│   │   └── SnakeSounds.cs
+│   ├── GameObjects
+│   │   ├── Abstractions
+│   │   ├── Background.cs
+│   │   ├── Consumable.cs
+│   │   ├── Consumables
+│   │   ├── Flies
+│   │   ├── Snake.cs
+│   │   ├── Test.cs
+│   │   ├── UI
+│   │   └── Wall.cs
+│   ├── Input
+│   │   └── InputMapper.cs
+│   ├── Particles
+│   │   ├── BloodParticle.cs
+│   │   ├── ExplosionParticle.cs
+│   │   ├── MeatRottenParticle.cs
+│   │   ├── ScoreParticle.cs
+│   │   └── SnakeTailSmokeParticle.cs
+│   ├── Program.cs
+│   ├── Resources
+│   │   ├── SnakeAudio.cs
+│   │   ├── SnakeInput.cs
+│   │   ├── SnakeSpriteFactory.cs
+│   │   └── SnakeSprites.cs
+│   └── Scenes
+│       ├── IntroScene.cs
+│       ├── LevelScene.cs
+│       └── TestScene.cs
+└── project_tree.txt
+
+89 directories, 195 files

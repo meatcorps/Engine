@@ -416,3 +416,24 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+rivate licensed assets
+**/Assets/Music/**
+**/Assets/SoundFX/**
+!**/Assets/PlaceHolders/**
+
+# Build outputs
+bin/
+obj/
+build/
+dist/
+
+# IDE/editor cruft
+.vscode/
+.vs/
+.idea/
+*.user
+*.suo
+*.tmp
+*.log
+.DS_Store

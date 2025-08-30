@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="RJCP.SerialPortStream" Version="3.0.3" />
+        <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+    </ItemGroup>
+
+</Project>
