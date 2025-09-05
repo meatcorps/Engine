@@ -33,6 +33,8 @@ public class LevelData
     public SingleEntityGrid<MapItem> Map { get; } = new();
     public List<GhostBehaviour> Ghosts { get; } = new();
     public TargetSeekerGameObject? TargetSeeker { get; set; }
+    
+    public bool DutchMode { get; set; } = false;
 
     public LevelData(int levelWidth = 39, int levelHeight = 19, int gridSize = 16)
     {

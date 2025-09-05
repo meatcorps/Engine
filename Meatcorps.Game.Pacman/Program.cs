@@ -63,9 +63,9 @@ using var _ = RayLibModule.Setup()
     ))
     .SetResource(GameSpriteFactory.Load())
     .SetResource(AudioEnumBinder.BindAllMusic(
-        MusicResource<GameMusic>.Create().SetMasterVolume(1), "Assets/Music/"))
+        MusicResource<GameMusic>.Create().SetMasterVolume(0.7f), "Assets/Music/"))
     .SetResource(AudioEnumBinder.BindAllSounds(
-        SoundFxResource<GameSounds>.Create(6).SetMasterVolume(1), "Assets/SoundFX/"))
+        SoundFxResource<GameSounds>.Create(10).SetMasterVolume(1), "Assets/SoundFX/"))
     .SetResource(TextManager.OnlyOneFont("Assets/Fonts/PressStart2P-Regular.ttf"))
     .Load(new IntroScene())
     .Run();

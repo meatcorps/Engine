@@ -7,6 +7,7 @@ using Meatcorps.Engine.Collision.Providers.Bodies;
 using Meatcorps.Engine.Collision.Utilities;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
+using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Game.Pacman.GameEnums;
 using Meatcorps.Game.Pacman.GameObjects.Abstractions;
@@ -18,7 +19,21 @@ public class PowerPellet: ResourceGameObject, ICollisionEventsFiltered
 {
     private readonly PointInt _position;
     private Body _body;
-    
+
+    private RandomEnum<GameSounds> _randomSound = new RandomEnum<GameSounds>()
+        .Add(GameSounds.Nlhierkomenjij6, 25)
+        .Add(GameSounds.Nlhierkomenjij8, 25)
+        .AddGroup()
+        .Add(GameSounds.Nlsuperpacman1, 25)
+        .Add(GameSounds.Nlsuperrpacman2, 25)
+        .Add(GameSounds.Nlsuperrrrpacman, 25)
+        .AddGroup()
+        .Add(GameSounds.Nlpyscho, 25)
+        .Add(GameSounds.Nlpycho2, 25)
+        .Add(GameSounds.Nlpyscho4, 25);
+
+    private bool _isCollected;
+
     public PowerPellet(PointInt position)
     {
         _position = position;
@@ -59,10 +74,22 @@ public class PowerPellet: ResourceGameObject, ICollisionEventsFiltered
 
     public void OnTrigger(ContactPhase phase, in ContactPair pair)
     {
+        if (_isCollected)
+            return;
+        _isCollected = true;
         LevelData.GhostScared = true;
         LevelData.GhostScaredResetTimer = true;
         CameraManager.Shake(0.6f, 4f);
-        Sounds.Play(GameSounds.Warning);
+        
+        if (!DemoMode)
+            if (LevelData.DutchMode)
+            {
+                var sound = _randomSound.Get();
+                Sounds.Play(sound);
+            }
+            else 
+                Sounds.Play(GameSounds.Warning);
+        
         MessageUI.Show("GET THEM!!! KILL AND ATTACK!");
         Scene.RemoveGameObject(this);
     }

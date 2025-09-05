@@ -82,6 +82,8 @@ public class LevelScene : BaseScene
         _soundFxManager = GlobalObjectManager.ObjectManager.Get<SoundFxManager<GameSounds>>()!;
         _sessionService = GlobalObjectManager.ObjectManager.Get<SessionService<GameSessionData, GamePlayerData>>()!;
         _playerCheckin = GlobalObjectManager.ObjectManager.Get<IPlayerCheckin>()!;
+        
+        _level.DutchMode = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("General", "DutchMode", false);
         if (!DemoMode)
         {
             _musicManager.Play(GameMusic.LevelAmbient);

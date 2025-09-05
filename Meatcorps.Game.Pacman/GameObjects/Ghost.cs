@@ -28,6 +28,11 @@ public class Ghost : ResourceGameObject, ICollisionEvents
     private GhostMovement _ghostMovement;
     private FixedTimer _animationTimer = new(200);
     private FixedTimer _warningTimer = new(200);
+
+    private RandomEnum<GameSounds> _ghostEatenSounds = new RandomEnum<GameSounds>()
+        .Add(GameSounds.Nlpycho2, 25)
+        .Add(GameSounds.Nlpyscho, 25)
+        .Add(GameSounds.Nlpyscho4, 25);
     
     public GhostState State => _ghostState.State;
     
@@ -40,7 +45,7 @@ public class Ghost : ResourceGameObject, ICollisionEvents
 
     protected override void OnInitialize()
     {
-        Layer = 3;
+        Layer = 4;
         Enabled = false;
         base.OnInitialize();
         _ghostState = new GhostStateManager(LevelData, _behaviour, _breadCrumb);
@@ -115,9 +120,24 @@ public class Ghost : ResourceGameObject, ICollisionEvents
             if (LevelData.GhostScared)
             {
                 _ghostState.IsEaten();
-                Sounds.Play(GameSounds.Bang);
+                GhostScared();
                 CameraManager.Shake(1.5f);
             }
+        }
+    }
+
+    private void GhostScared()
+    {
+        if (DemoMode)
+            return;
+        
+        if (LevelData.DutchMode)
+        {
+            Sounds.Play(_ghostEatenSounds.Get());
+        }
+        else
+        {
+            Sounds.Play(GameSounds.Bang);
         }
     }
 

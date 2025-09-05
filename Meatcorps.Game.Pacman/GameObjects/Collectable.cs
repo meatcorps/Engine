@@ -6,6 +6,7 @@ using Meatcorps.Engine.Collision.Providers.Bodies;
 using Meatcorps.Engine.Collision.Utilities;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
+using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Game.Pacman.GameEnums;
 using Meatcorps.Game.Pacman.GameObjects.Abstractions;
@@ -18,6 +19,12 @@ public class Collectable: ResourceGameObject, ICollisionEventsFiltered
     private readonly PointInt _position;
     private Body _body;
     private bool _isCollected;
+    private RandomEnum<GameSounds> _randomSound = new RandomEnum<GameSounds>()
+        .Add(GameSounds.Nlpakem1, 25)
+        .Add(GameSounds.Nlpakem2, 25)
+        .Add(GameSounds.Nlpakem3, 25)
+        .Add(GameSounds.Nlpakem4, 25)
+        .Add(GameSounds.Nlpakem5, 25);
     
     public Collectable(PointInt position)
     {
@@ -50,7 +57,7 @@ public class Collectable: ResourceGameObject, ICollisionEventsFiltered
         //    Sprites.Draw(GameSprites.CollectibleMeat, worldPosition, Raylib.ColorAlpha(Color.Black, 0.5f));
         //else
         if (!_isCollected)
-            Sprites.Draw(GameSprites.CollectibleMeat, worldPosition, Raylib.ColorAlpha(Color.White, 1f));
+            Sprites.Draw(LevelData.DutchMode ? GameSprites.CollectibleCheese : GameSprites.CollectibleMeat, worldPosition, Raylib.ColorAlpha(Color.White, 1f));
     }
 
     protected override void OnDispose()
@@ -72,7 +79,14 @@ public class Collectable: ResourceGameObject, ICollisionEventsFiltered
         LevelData.CollectiblesGone++;
         CameraManager.Shake(0.05f, 10f);
         //Console.WriteLine(LevelData.CollectiblesGone + " / " + LevelData.CollectibleCount + " TODO " + (LevelData.CollectibleCount - LevelData.CollectiblesGone));
-        Sounds.Play(GameSounds.Meatonground);
+        if (!DemoMode)
+            if (LevelData.DutchMode)
+            {
+                var sound = _randomSound.Get();
+                Sounds.Play(sound);
+            }
+            else 
+                Sounds.Play(GameSounds.Meatonground);
         _body.Dispose();
     }
 }

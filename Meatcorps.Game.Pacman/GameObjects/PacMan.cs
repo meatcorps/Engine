@@ -49,7 +49,7 @@ public class PacMan: BasePlayer, ICollisionEventsFiltered
         base.OnInitialize();
         LevelData.Players.Add(Player);
         _GhostScaredEdgeDetector = new EdgeDetector();
-        _bloodParticle = Particles.BloodParticle.GenerateParticleSystem();
+        _bloodParticle = LevelData.DutchMode ? Particles.DutchParticle.GenerateParticleSystem(Sprites) : Particles.BloodParticle.GenerateParticleSystem();
         _smokeParticle = Particles.SmokeParticle.GenerateParticleSystem(Sprites);
         _scoreParticle = Particles.ScoreParticle.GenerateParticleSystem(Color.White, Fonts.GetFont());
         _explosionParticle = Particles.ExplosionParticle.GenerateParticleSystem(Sprites, Sounds);

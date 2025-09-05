@@ -20,7 +20,7 @@ AppDomain.CurrentDomain.ProcessExit += (s, e) =>
     running = false;
 };
 
-var controller = new ArduinoControllerCommunication("/dev/cu.usbserial-31310");
+var controller = new ArduinoControllerCommunication("/dev/cu.usbserial-1130");
 ControllerInputEnum previousState1 = 0;
 ControllerInputEnum previousState2 = 0;
 ButtonLightsEnum lightState1 = 0;

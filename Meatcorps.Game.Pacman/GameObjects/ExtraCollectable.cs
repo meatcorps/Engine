@@ -6,6 +6,7 @@ using Meatcorps.Engine.Collision.Providers.Bodies;
 using Meatcorps.Engine.Collision.Utilities;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
+using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Game.Pacman.GameEnums;
 using Meatcorps.Game.Pacman.GameObjects.Abstractions;
@@ -18,6 +19,13 @@ public class ExtraCollectable: ResourceGameObject, ICollisionEventsFiltered
     private readonly PointInt _position;
     private Body _body;
     private bool _isCollected;
+
+    private RandomEnum<GameSounds> _randomSound = new RandomEnum<GameSounds>()
+        .Add(GameSounds.Nlpakemhoog1, 25)
+        .Add(GameSounds.Nlpakem2hoog, 25)
+        .Add(GameSounds.Nlpakem3hoog, 25)
+        .Add(GameSounds.Nlpakem4hoog, 25)
+        .Add(GameSounds.Nlpakem5hoog, 25);
     
     public ExtraCollectable(PointInt position)
     {
@@ -66,7 +74,13 @@ public class ExtraCollectable: ResourceGameObject, ICollisionEventsFiltered
         _body.IsAwake = false;
         _isCollected = true;
         CameraManager.Shake(0.8f, 4f);
-        Sounds.Play(GameSounds.PowerUpScore);
+        
+        if (!DemoMode)
+            if (LevelData.DutchMode)
+                Sounds.Play(_randomSound.Get());
+            else 
+                Sounds.Play(GameSounds.PowerUpScore);
+        
         _body.Dispose();
     }
 }

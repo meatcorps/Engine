@@ -109,6 +109,8 @@ public static class GameSpriteFactory
             .WithSpriteFromGrid(GameSprites.CollectibleOff, new PointInt(16, 6))
             .WithSpriteFromGrid(GameSprites.CollectibleOn, new PointInt(17, 6))
             .WithSpriteFromGrid(GameSprites.CollectibleMeat, new PointInt(18, 6))
+            .WithSpriteFromGrid(GameSprites.CollectibleCheese, new PointInt(19, 6))
+            .WithSpriteFromGrid(GameSprites.DutchFlag, new PointInt(19, 7))
             .WithSpriteFromGrid(GameSprites.SuperPacmanPowerUp1, new PointInt(16, 7))
             .WithSpriteFromGrid(GameSprites.SuperPacmanPowerUp2, new PointInt(17, 7))
             .WithSpriteFromGrid(GameSprites.GhostCharger, new PointInt(16, 8))

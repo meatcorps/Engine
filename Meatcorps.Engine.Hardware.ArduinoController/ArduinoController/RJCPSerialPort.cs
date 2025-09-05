@@ -10,7 +10,14 @@ public class RjcpSerialPort : ISerialPort
     
     public void Open(string portName)
     {
-        _serialPort = new SerialPortStream(portName, 19200);
+        _serialPort = new SerialPortStream(portName, 19200, 8, Parity.None, StopBits.One)
+        {
+            Handshake = Handshake.None,
+            ReadTimeout = 1000,
+            WriteTimeout = 1000,
+            DtrEnable = true,
+            RtsEnable = true,
+        };
         try
         {
             _serialPort.Open();

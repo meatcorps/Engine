@@ -61,17 +61,17 @@ public class ArduinoControllerCommunication : IDisposable
                 var data = _serialPort.Read();
                 
                 // ReSharper disable once PossibleMultipleEnumeration
-                if (data.Count() != 3) 
+                if (data.Count() < 2) 
                     continue;
                 var counter = 0;
                 // ReSharper disable once PossibleMultipleEnumeration
                 foreach (var item in data)
                 {
                     counter++;
-                    if (counter == 0)
-                        ControllerState1 = ~(ControllerInputEnum)item;
                     if (counter == 1)
                         ControllerState1 = ~(ControllerInputEnum)item;
+                    if (counter == 2)
+                        ControllerState2 = ~(ControllerInputEnum)item;
                 }
             } 
             catch (Exception e)
