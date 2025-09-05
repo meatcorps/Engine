@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MQTTnet" Version="4.3.7.1207" />
+      <PackageReference Include="System.Reactive" Version="6.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj" />
+      <ProjectReference Include="..\Meatcorps.Engine.Signals\Meatcorps.Engine.Signals.csproj" />
+    </ItemGroup>
+
+</Project>
