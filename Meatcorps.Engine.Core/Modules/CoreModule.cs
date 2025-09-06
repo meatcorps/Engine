@@ -12,5 +12,6 @@ public static class CoreModule
         StorageModule.Load(GlobalObjectManager.ObjectManager);
         GlobalObjectManager.ObjectManager.RegisterList<IBackgroundService>();
         GlobalObjectManager.ObjectManager.RegisterList<ISceneSwitchTracker>();
+        GlobalObjectManager.ObjectManager.RegisterList<IDisposable>();
     }
 }

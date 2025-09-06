@@ -15,6 +15,7 @@ public abstract class BaseSignalValueEvent<TGroup>: IBackgroundService, ISignalV
     private readonly CancellationDisposable  _cancellationDisposable = new();
     protected CancellationToken AliveToken => _cancellationDisposable.Token;
     private bool _disposed = false;
+    private readonly object _gate = new();
     
     public void PreUpdate(float deltaTime)
     {
@@ -30,39 +31,48 @@ public abstract class BaseSignalValueEvent<TGroup>: IBackgroundService, ISignalV
 
     public abstract TGroup GetGroup();
 
-    protected Subject<TValueType> GetSubject<TValueType>(string topic)
+    protected ISubject<TValueType> GetSubject<TValueType>(string topic)
     {
-        if (_subjects.ContainsKey(topic))
-            return (Subject<TValueType>)_subjects[topic];
-        
-        var subject = new Subject<TValueType>();
-        
-        subject
-            .DistinctUntilChanged()
-            .Subscribe(x => SetValue(topic, x), AliveToken);
-        
-        _subjects.Add(topic, subject);
-        
-        return subject;
+        lock (_gate)
+        {
+            if (_subjects.ContainsKey(topic))
+                return (Subject<TValueType>)_subjects[topic];
+
+            var subject = new Subject<TValueType>();
+
+            subject
+                .DistinctUntilChanged()
+                .Subscribe(x => SetValue(topic, x), AliveToken);
+
+            _subjects.Add(topic, subject);
+
+            return subject;
+        }
     }
     
     public void Register<TValueType>(SignalValue<TValueType, TGroup> value)
     {
-        IsValueTypeOk(value);
+        lock (_gate)
+        {
+            IsValueTypeOk(value);
 
-        var havingAValue = TryGetValue<TValueType>(value.Topic, out var existingValue);
-        
-        _values[value.Value!.GetType()].Add(value);
-        
-        if (havingAValue)
-            value.UpdateValueFromTracker(existingValue!);
+            var havingAValue = TryGetValue<TValueType>(value.Topic, out var existingValue);
+
+            _values[value.Value!.GetType()].Add(value);
+
+            if (havingAValue)
+                value.UpdateValueFromTracker(existingValue!);
+        }
     }
 
     public void Unregister<TValueType>(SignalValue<TValueType, TGroup> value)
     {
-        IsValueTypeOk(value);
-        
-        _values[value.Value!.GetType()].Remove(value);
+        lock (_gate)
+        {
+            IsValueTypeOk(value);
+
+            _values[value.Value!.GetType()].Remove(value);
+        }
     }
 
     public void OnValueChanged<TValueType>(SignalValue<TValueType, TGroup> value)
@@ -72,42 +82,54 @@ public abstract class BaseSignalValueEvent<TGroup>: IBackgroundService, ISignalV
             if (!subjectType.IsDisposed)
                 subjectType.OnNext(value.Value);
         }
-        
-        foreach (var item in _values[value.Value!.GetType()])
+
+        lock (_gate)
         {
-            if (item is not SignalValue<TValueType, TGroup> other) 
-                continue;
-            
-            if (other.Group.Equals(GetGroup()) && other.Topic.Equals(value.Topic)) 
-                other.UpdateValueFromTracker(value.Value);
+            foreach (var item in _values[value.Value!.GetType()])
+            {
+                if (item is not SignalValue<TValueType, TGroup> other)
+                    continue;
+
+                if (other.Group.Equals(GetGroup()) && other.Topic.Equals(value.Topic))
+                    other.UpdateValueFromTracker(value.Value);
+            }
         }
     }
 
     protected void SetValue<TValueType>(string topic, TValueType value)
     {
-        foreach (var item in _values[value!.GetType()])
+        if (value is null)
+            return;
+        lock (_gate)
         {
-            if (item is not SignalValue<TValueType, TGroup> other) 
-                continue;
-            if (other.Group.Equals(GetGroup()) && other.Topic.Equals(topic)) 
-                other.UpdateValueFromTracker(value);
+            foreach (var item in _values[value!.GetType()])
+            {
+                if (item is not ISignalValueTracker other)
+                    continue;
+                if (other.GroupName.Equals(GetGroup().ToString()) && other.Topic.Equals(topic))
+                    other.UpdateValueFromTracker(value);
+            }
         }
     }
 
     protected bool TryGetValue<TValueType>(string topic, out TValueType? value)
     {
-        foreach (var item in _values[typeof(TValueType)])
+        lock (_gate)
         {
-            if (item is not SignalValue<TValueType, TGroup> other) 
-                continue;
-            if (other.Group.Equals(GetGroup()) && other.Topic.Equals(topic))
+            foreach (var item in _values[typeof(TValueType)])
             {
-                value = other.Value;
-                return true;
-            } 
+                if (item is not SignalValue<TValueType, TGroup> other)
+                    continue;
+                if (other.Group.Equals(GetGroup()) && other.Topic.Equals(topic))
+                {
+                    value = other.Value;
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
         }
-        value = default;
-        return false;
     }
 
     private void IsValueTypeOk<TValueType>(SignalValue<TValueType, TGroup> value)

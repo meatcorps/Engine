@@ -9,25 +9,27 @@ namespace Meatcorps.Engine.MQTT;
 
 public class MQTTClient: IDisposable
 {
-    private readonly string _url;
+    private readonly string _host;
     private readonly IMqttClient _client;
+    private bool _running = true;
     
     private Subject<Tuple<string, string>> _messageReceived = new();
     private Subject<Unit> _connected = new();
     public IObservable<Unit> Connected => _connected.AsObservable();
-
-    public MQTTClient(string url)
+    public bool IsConnected => _client.IsConnected;
+    
+    public MQTTClient(string host)
     {
-        _url = url;
+        _host = host;
         var factory = new MqttFactory();
         _client = factory.CreateMqttClient();
     }
 
-    public async Task Connect()
+    public async Task Connect(string username = "user", string password = "admin", int port = 1883)
     {
         var options = new MqttClientOptionsBuilder()
-            .WithCredentials("user", "admin")
-            .WithTcpServer(_url, 1883) // Replace with your MQTT broker address
+            .WithCredentials(username, password)
+            .WithTcpServer(_host, port) // Replace with your MQTT broker address
             .WithCleanSession()
             .Build();
 
@@ -41,9 +43,34 @@ public class MQTTClient: IDisposable
             return Task.CompletedTask;
         };
 
-        await _client.ConnectAsync(options, CancellationToken.None);
+        _client.ConnectedAsync += e =>
+        {
+            _connected.OnNext(Unit.Default);
+            return Task.CompletedTask;
+        };
         
-        _connected.OnNext(Unit.Default);
+        _client.DisconnectedAsync += e =>
+        {
+            Console.WriteLine("Disconnected!");
+            return Task.CompletedTask;
+        };
+
+        while (_running)
+        {
+            try
+            {
+                if (_client.IsConnected)
+                    await _client.PingAsync(CancellationToken.None);
+                else 
+                    await _client.ConnectAsync(options, CancellationToken.None);
+                
+                await Task.Delay(1000);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
     }
 
     public async Task<IObservable<string>> SubscribeToTopic(string topic)
@@ -69,6 +96,7 @@ public class MQTTClient: IDisposable
 
     public void Dispose()
     {
+        _running = false;
         _client.DisconnectAsync().Wait();
         _messageReceived.Dispose();
         _client.Dispose();
