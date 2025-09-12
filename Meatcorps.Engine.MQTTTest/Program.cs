@@ -12,15 +12,17 @@ CoreModule.Load();
 BasicConfig.Load();
 
 MQTTModule.Load()
-    .RegisterComplexObject<TestObject>("arcade/test", true, new TestObject
+    .RegisterComplexObject<TestObject>("arcade/test", true, false, new TestObject
     {
         test = "Hello world2!",
         value = 100.0f
     })
     .Create();
 
-var obj = new SignalValue<TestObject, MQTTGroup>(MQTTGroup.Exchange, "arcade/test", new TestObject());
-
+var obj = new SignalValue<TestObject, MQTTGroup>(MQTTGroup.Exchange, "arcade/test");
+Console.WriteLine("Start value: " + obj.Value.test);
+obj.ValueChanged += (value) => Console.WriteLine("ValueChanged! " + value.test);
+obj.IncomingValue += (value) => Console.WriteLine("Incoming! " + value.test);
 var running = true;
 
 Console.CancelKeyPress += (sender, eventArgs) =>
@@ -38,6 +40,16 @@ AppDomain.CurrentDomain.ProcessExit += (s, e) =>
     running = false;
 };
 
+Console.WriteLine("Added hallow!");
+obj.Value.List.Add("Hellow!");
+await Task.Delay(2000);
+obj.Value.List.Add("Hellow3!");
+await Task.Delay(2000);
+obj.Value.List.Add("Hellow4!");
+Console.WriteLine("Added!");
+await Task.Delay(2000);
+obj.Push();
+Console.WriteLine("Pushed!");
 while (running)
 {
     if (obj.Value != null)

@@ -71,6 +71,7 @@ public class WaitForPlayersGameObject: BaseGameObject
         _renderTarget = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
         _sessionService = GlobalObjectManager.ObjectManager.Get<ISessionService>()!;
         _playerCheckin = GlobalObjectManager.ObjectManager.Get<IPlayerCheckin>()!;
+        _playerCheckin.SetTotalPlayerSessions(_totalPlayersRequested);
         _arcadePointMutator = GlobalObjectManager.ObjectManager.Get<IArcadePointsMutator>()!;
         _inlineRender.Bounds = new Rect(32, 32, _renderTarget.RenderWidth - 64, _renderTarget.RenderHeight - 64);
         _inlineRender.HAlign = HAlign.Left;
@@ -155,7 +156,7 @@ public class WaitForPlayersGameObject: BaseGameObject
                         continue;
                     }
             
-                    _inlineRender.AddLabel(_font.GetFont(), "PLAY_INFO_" + playerToCheck.Key, "NOT ENOUGH POINTS!\nYOU NEED: " + (_arcadeGame.PricePoints - _arcadePointMutator.GetPoints(playerToCheck.Key)).ToString() + " MORE POINTS!", 10,
+                    _inlineRender.AddLabel(_font.GetFont(), "PLAY_INFO_" + playerToCheck.Key, _playerCheckin.GetPlayerName(playerToCheck.Key) + ": NOT ENOUGH POINTS!\nYOU NEED: " + (_arcadeGame.PricePoints - _arcadePointMutator.GetPoints(playerToCheck.Key)).ToString() + " MORE POINTS!", 10,
                         Color.Yellow);
                 }
 
@@ -181,7 +182,7 @@ public class WaitForPlayersGameObject: BaseGameObject
             _startTimer.Update(true, deltaTime);
             if (_startTimer.Output)
             {
-                _arcadeGame.State = GameState.Playing;
+                _arcadeGame.State = GameState.Active;
                 Scene.GameHost.SwitchScene(_jumpToScene);
             }
         }

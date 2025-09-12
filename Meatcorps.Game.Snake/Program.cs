@@ -5,6 +5,7 @@ using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.Modules;
 using Meatcorps.Engine.Logging.Module;
+using Meatcorps.Engine.MQTT.Modules;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
 using Meatcorps.Engine.RayLib.Resources;
@@ -35,13 +36,16 @@ else
         .SetupRouter(InputMapper.ArduinoInput());
 }
 
-ArcadeEmulatorModule.Load(new ArcadeGame
+var mqtt = MQTTModule.Load();
+ArcadeGameSystemModule.Load(new ArcadeGame
 {
+    MaxPlayers = 2,
     Name = "SNAKE!",
     Code = settings.GetOrDefault("ArcadeGame", "Code", 1234),
     PricePoints = settings.GetOrDefault("ArcadeGame", "PricePoints", 1000),
     Description = "The most gore version of the game snake ever made.",
-}).SetIntroScene<IntroScene>();
+}, mqtt).SetIntroScene<IntroScene>();
+mqtt.Create();
 
 SnakeSession.Load();
 Raylib.SetTraceLogLevel(TraceLogLevel.Warning);

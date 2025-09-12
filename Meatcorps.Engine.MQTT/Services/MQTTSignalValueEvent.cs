@@ -16,6 +16,7 @@ public class MQTTSignalValueEvent: BaseSignalValueEvent<MQTTGroup>
     private CancellationDisposable _connectionAliveToken = new CancellationDisposable();
     private ConcurrentQueue<Action> _publishTasks = new ();
     private Dictionary<string, bool> _onlyRead = new();
+    private Dictionary<string, bool> _onlyWrite = new();
     
     public MQTTSignalValueEvent(MQTTClient client)
     {
@@ -63,6 +64,9 @@ public class MQTTSignalValueEvent: BaseSignalValueEvent<MQTTGroup>
         {
             foreach (var toRegister in _converterActions)
             {
+                if (_onlyWrite.ContainsKey(toRegister.Key) && !_onlyWrite[toRegister.Key])
+                    continue;
+                
                 var receiving = await _client.SubscribeToTopic(toRegister.Key);
                 receiving
                     .Subscribe(x =>
@@ -83,8 +87,11 @@ public class MQTTSignalValueEvent: BaseSignalValueEvent<MQTTGroup>
     }
 
     public MQTTSignalValueEvent Register<TValueType>(string topic, Func<object, string> getConverter,
-        Func<string, object?> setAction, bool onlyRead = false)
+        Func<string, object?> setAction, bool onlyRead = false, bool onlyWrite = false)
     {
+        _onlyRead.Add(topic, onlyRead);
+        _onlyWrite.Add(topic, onlyRead);
+        
         _converterActions.Add(topic, (setAction, getConverter));
 
         if (!onlyRead)
@@ -109,6 +116,8 @@ public class MQTTSignalValueEvent: BaseSignalValueEvent<MQTTGroup>
 
     public MQTTSignalValueEvent ForcePublish<TValueType>(string topic)
     {
+        if (!_onlyRead.ContainsKey(topic) || _onlyRead[topic])
+            return this;
         _publishTasks.Enqueue(() =>
         {
             try
@@ -124,14 +133,13 @@ public class MQTTSignalValueEvent: BaseSignalValueEvent<MQTTGroup>
         return this;
     }
 
-    public MQTTSignalValueEvent RegisterComplexObject<TValueType>(string topic, bool onlyRead)
+    public MQTTSignalValueEvent RegisterComplexObject<TValueType>(string topic, bool onlyRead, bool onlyWrite)
     {
-        _onlyRead.Add(topic, onlyRead);
         Register<TValueType>(topic, x => JsonSerializer.Serialize(x), x =>
         {
             var data = JsonSerializer.Deserialize<TValueType>(x);
             return data;
-        }, onlyRead);
+        }, onlyRead, onlyWrite);
 
         return this;
     }

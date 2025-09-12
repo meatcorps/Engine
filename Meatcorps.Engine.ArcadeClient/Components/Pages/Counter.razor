@@ -1,0 +1,109 @@
+﻿@page "/counter"
+@page "/counter/{id:int}"
+
+@using Meatcorps.Engine.ArcadeClient.Interfaces
+@rendermode InteractiveServer
+@inject TestService TestService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject IUserIdProvider UserIdProvider
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter @_userId</h1>
+
+<p role="status">Current count: @TestService.Count</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+<ul>
+    @foreach (var message in messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    
+    private IDisposable? _navReg;
+    private DotNetObjectReference<Counter>? _self;
+    private IJSObjectReference? _mod, _handle;
+    
+    private List<string> messages = new()
+    {
+        "Hello from Blazor!",
+        "This is like *ngFor",
+        "But in C#"
+    };
+    
+    private readonly CancellationTokenSource _cts = new();
+    private string _userId;
+
+    protected override Task OnInitializedAsync()
+    {
+       
+        return Task.CompletedTask;
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            messages.Add("Args is: " + (Id.HasValue ? Id.Value.ToString() : "Nothing!"));
+            
+            _userId = await UserIdProvider.GetUserIdAsync();
+            
+            _navReg = Nav.RegisterLocationChangingHandler(ctx =>
+            {
+                _cts.Cancel();
+                Console.WriteLine("LocationChanging: {Uri}", ctx.TargetLocation);
+                return ValueTask.CompletedTask;
+            });
+            
+            _self = DotNetObjectReference.Create(this);
+            _mod = await JS.InvokeAsync<IJSObjectReference>("import", "/js/unload.js");
+            _handle = await _mod.InvokeAsync<IJSObjectReference>("register", _self);
+            _ = DoSomeIncrement();
+        }
+    }
+
+    private async Task DoSomeIncrement()
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            TestService.Count++;
+            messages.Add("Hello! " + i);
+            await InvokeAsync(StateHasChanged);
+            
+            if (_cts.Token.IsCancellationRequested)
+                break;
+            try
+            {
+                await Task.Delay(1000, _cts.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Ignore
+            }
+        }
+        Console.WriteLine("It's gone");
+    }
+    
+    private void IncrementCount()
+    {
+        TestService.Count++;
+        Console.WriteLine(TestService);
+    }
+
+    [JSInvokable] public void OnPageUnloading() => _cts.Cancel();
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_handle is not null) await _handle.InvokeVoidAsync("dispose");
+        if (_mod is not null) await _mod.DisposeAsync();
+        _self?.Dispose();
+        _navReg?.Dispose();
+    }
+}

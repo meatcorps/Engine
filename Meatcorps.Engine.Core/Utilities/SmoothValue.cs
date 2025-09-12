@@ -46,6 +46,7 @@ public class SmoothValue
         {
             DisplayValue = RealValue; // snap if close
             _snapToReal = false;
+            _startValue = DisplayValue;
             return;
         }
         
@@ -54,11 +55,7 @@ public class SmoothValue
             _timer.Update(deltaTime);
 
             if (_timer.Output)
-            {
-                DisplayValue = RealValue;
                 _startValue = DisplayValue;
-                _snapToReal = false;
-            }
 
             DisplayValue = Tween.Tween.Lerp(_startValue, RealValue, _timer.NormalizedElapsed);
             return;

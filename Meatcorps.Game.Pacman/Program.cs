@@ -5,6 +5,7 @@ using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.Modules;
 using Meatcorps.Engine.Logging.Module;
+using Meatcorps.Engine.MQTT.Modules;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
@@ -37,13 +38,16 @@ else
         .SetupRouter(InputMapper.ArduinoInput());
 }
 
-ArcadeEmulatorModule.Load(new ArcadeGame
+var mqtt = MQTTModule.Load();
+ArcadeGameSystemModule.Load(new ArcadeGame
 {
+    MaxPlayers = 2,
     Name = "PACMAN!",
     Code = settings.GetOrDefault("ArcadeGame", "Code", 8271),
     PricePoints = settings.GetOrDefault("ArcadeGame", "PricePoints", 1000),
     Description = "The most gore version of the pacman game ever made.",
-}).SetIntroScene<IntroScene>();
+}, mqtt).SetIntroScene<IntroScene>();
+mqtt.Create();
 
 GameSession.Load();
 Raylib.SetTraceLogLevel(TraceLogLevel.Warning);
@@ -63,7 +67,7 @@ using var _ = RayLibModule.Setup()
     ))
     .SetResource(GameSpriteFactory.Load())
     .SetResource(AudioEnumBinder.BindAllMusic(
-        MusicResource<GameMusic>.Create().SetMasterVolume(0.7f), "Assets/Music/"))
+        MusicResource<GameMusic>.Create().SetMasterVolume(0), "Assets/Music/"))
     .SetResource(AudioEnumBinder.BindAllSounds(
         SoundFxResource<GameSounds>.Create(10).SetMasterVolume(1), "Assets/SoundFX/"))
     .SetResource(TextManager.OnlyOneFont("Assets/Fonts/PressStart2P-Regular.ttf"))

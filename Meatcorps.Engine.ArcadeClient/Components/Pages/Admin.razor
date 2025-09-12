@@ -1,0 +1,85 @@
+@page "/admin"
+@using System.Reactive.Disposables
+@using Meatcorps.Engine.Arcade.Data
+@using Meatcorps.Engine.Arcade.Enums
+@using Meatcorps.Engine.Arcade.Services
+@using Meatcorps.Engine.ArcadeClient.Interfaces
+@using Meatcorps.Engine.ArcadeClient.Services
+@inject PlayerService PlayerService
+@inject ArcadeDataService ArcadeDataService
+@inject IUserIdProvider UserIdProvider
+@inject NavigationManager Nav
+@implements IDisposable
+@rendermode InteractiveServer
+
+@if (!_admin)
+{
+    return;
+}
+<h3>I'm the LAW!</h3>
+
+<table>
+@foreach (var player in ArcadeDataService.Players())
+{
+    <tr>
+        <td>
+            @player.Name <small>(@player.Points)</small>&nbsp;
+        </td>
+        <td>
+            <button @onclick="() => PlayerService.MutatePoints(player.Id, 10)">+10</button>
+            <button @onclick="() => PlayerService.MutatePoints(player.Id, 100)">+100</button>
+            <button @onclick="() => PlayerService.MutatePoints(player.Id, 1000)">+1000</button>
+            <button @onclick="() => PlayerService.MutatePoints(player.Id, -10)">-10</button>
+            <button @onclick="() => PlayerService.MutatePoints(player.Id, -100)">-100</button>
+            <button @onclick="() => PlayerService.MutatePoints(player.Id, -1000)">-1000</button>
+        </td>
+    </tr>
+}
+</table>
+
+@foreach (var game in ArcadeDataService.Games())
+{
+    <div class="game-card @game.State">
+        <h2>@game.Name</h2>
+        <span class="tag">@game.State.ToString()</span>
+        @if (game.State == GameState.Active)
+        {
+            <span>Current idiots playing: </span>
+            @foreach (var player in ArcadeDataService.Players().Where(x => x.CurrentGame == game.Code))
+            {
+                <span>@player.Name</span>
+            }
+        }
+    </div>    
+}
+
+@code {
+
+    private bool _admin;
+    private CancellationDisposable _pageAliveCts = new ();
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _admin = await UserIdProvider.IsAdminAsync();
+
+            if (!_admin)
+            {
+                Nav.NavigateTo("/");
+            }
+            
+            ArcadeDataService.DataChanged.Subscribe(async _ =>
+            {
+                await InvokeAsync(StateHasChanged);
+            }, _pageAliveCts.Token);
+            
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    public void Dispose()
+    {
+    }
+
+}

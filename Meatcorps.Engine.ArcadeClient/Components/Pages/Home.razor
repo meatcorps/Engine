@@ -1,0 +1,236 @@
+﻿@page "/"
+@page "/SIGNIN/{id:int}"
+@using System.Reactive.Disposables
+@using Meatcorps.Engine.Arcade.Data
+@using Meatcorps.Engine.Arcade.Enums
+@using Meatcorps.Engine.Arcade.Services
+@using Meatcorps.Engine.ArcadeClient.Interfaces
+@using Meatcorps.Engine.ArcadeClient.Services
+@inject PlayerService PlayerService
+@inject ArcadeDataService ArcadeDataService
+@inject IUserIdProvider UserIdProvider
+@inject NavigationManager Nav
+@implements IDisposable
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+@if (!ArcadeDataService.DataReady)
+{
+    
+    <p class="alert-warning">Waiting for the delivery guy... But it seems that specific idiot cannot find the way...</p>
+    return;
+}
+@if (ProcessingInformation)
+{
+        
+    <h1>Yeah yeah Rome is also not build in one day...</h1>
+    <p>So be **** patience! You can play soon...</p>
+    return;
+}
+@if (!UserKnown)
+{
+    @if (ErrorMessage != "")
+    {
+        <p class="alert-danger">@ErrorMessage</p>
+    }
+    
+    
+    @if (CanTheUserRegister)
+    {
+        <h1>I don't think you are ready for this...</h1>
+        <p>But sure just give your **** name and go with it! Chop Chop!</p>
+        <input type="text" @bind="NewPlayerName" maxlength="16"/>
+        <button @onclick="RegisterPlayer">Save</button>
+    }
+    else
+    {
+        <h1>Really outsider...</h1>
+        <p>You think a random stranger can enter this arcade? To bad! You need the QR code!</p>
+    }
+
+    return;
+}
+<h1><span>Welcome test subject:</span> <small>@CurrentPlayer.Name</small></h1>
+<p class="intro-title">
+    LIFE POINTS: <strong>@CurrentPlayer.Points</strong>
+</p>
+@if (CurrentPlayer.CurrentGame > 0)
+{
+    <p class="intro-title" style="text-align: left; margin-bottom: 0;">You think are can beat this?!</p>
+    @if (ArcadeDataService.TryGetGame(CurrentPlayer.CurrentGame, out var game))
+    {
+        <div class="game-card Waiting">
+            <h2>@game.Name</h2>
+            <span class="tag">@game.State.ToString()</span>
+            <span>Current idiots playing: </span>
+            @foreach (var player in ArcadeDataService.Players().Where(x => x.CurrentGame == game.Code))
+            {
+                <span>@player.Name</span>
+            }
+        </div>
+    }
+}
+else
+{
+    <p class="intro-title" style="text-align: left; margin-bottom: 0;">Wanna play a game?</p>
+    @foreach (var game in ArcadeDataService.Games())
+    {
+        <div class="game-card @game.State">
+            <h2>@game.Name</h2>
+            <span class="tag">@game.State.ToString()</span>
+            <small>@game.Description Max souls: @game.MaxPlayers</small>
+            <span class="tag">
+                @if (game.State == GameState.Waiting && CurrentPlayer.CurrentGame == 0)
+                {
+                    <button class="active" @onclick="() => JoinGame(game)">JOIN (@game.PricePoints)</button>
+                }
+                else
+                {
+                    <button disabled="disabled">JOIN (@game.PricePoints)</button>
+                }
+            </span>
+            @if (game.State == GameState.Active)
+            {
+                <span>Current idiots playing: </span>
+                @foreach (var player in ArcadeDataService.Players().Where(x => x.CurrentGame == game.Code))
+                {
+                    <span>@player.Name</span>
+                }
+            }
+        </div>
+    }
+}
+
+@code
+{
+    [Parameter]
+    public int? Id { get; set; }
+    
+    private string _userId = "";
+    public string ErrorMessage = "";
+    public bool UserKnown;
+    public bool CanTheUserRegister;
+    public bool ProcessingInformation;
+    public string NewPlayerName = "";
+    public ArcadePlayer CurrentPlayer = new ArcadePlayer();
+    private CancellationDisposable _pageAliveCts = new ();
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            foreach (var playerInDb in ArcadeDataService.Players())
+            {
+                Console.WriteLine("PLAYER EXIST: " + playerInDb.Name + $"({playerInDb.Id})");
+            }
+            
+            
+            foreach (var gamesInDb in ArcadeDataService.Games())
+            {
+                Console.WriteLine("GAME EXIST: " + gamesInDb.Name + $"({gamesInDb.Code})");
+            }
+            
+            _userId = await UserIdProvider.GetUserIdAsync();
+            Console.WriteLine(_userId);
+            UpdatePlayerData();
+            UpdateEnterWithGameId();
+            await InvokeAsync(StateHasChanged);
+            
+            ArcadeDataService.DataChanged.Subscribe(async _ =>
+            {
+                UpdatePlayerData();
+                await InvokeAsync(StateHasChanged);
+            }, _pageAliveCts.Token);
+        }
+    }
+
+    private void UpdateEnterWithGameId()
+    {
+        if (Id is null)
+            return;
+        
+        if (!ArcadeDataService.TryGetGame(Id.Value, out ArcadeGame? game))
+            return;
+        
+        Console.WriteLine(DateTime.Now - game!.LastReported);
+        if (game!.State == GameState.Waiting && (DateTime.Now - game!.LastReported) < TimeSpan.FromSeconds(5))
+        {
+            if (UserKnown)
+            {
+                _ = JoinGame(ArcadeDataService.Games().FirstOrDefault(x => x.Code == Id.Value)!);
+                return;
+            }
+            
+            CanTheUserRegister = true;
+            return;
+        }
+
+        if (UserKnown)
+            Nav.NavigateTo("/");
+    }
+
+    public async Task RegisterPlayer()
+    {
+        if (NewPlayerName.Trim().Length < 2)
+        {
+            ErrorMessage = "You think i'm an idiot?! I'm not allowing names with less then 2 characters...";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (ArcadeDataService.Players().Any(x => x.Name.Trim().ToLower() == NewPlayerName.Trim().ToLower()))
+        {
+            ErrorMessage = "Really identity theft?!? Pick another name...";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        ProcessingInformation = true;
+        ErrorMessage = "";
+        await InvokeAsync(StateHasChanged);
+        await PlayerService.RegisterPlayerAsync(_userId, NewPlayerName.Trim());
+        
+        UpdatePlayerData();
+        
+        if (!UserKnown) 
+            ErrorMessage = "Well slap the system manager. Because something technical went wrong. Nah, it just you...";
+        
+        ProcessingInformation = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task JoinGame(ArcadeGame game)
+    {
+        ProcessingInformation = true;
+        ErrorMessage = "";
+        await InvokeAsync(StateHasChanged);
+        if (await PlayerService.JoinGameAsync(game.Code, _userId))
+        {
+            ErrorMessage = "";
+            if (Id is not null)
+                Nav.NavigateTo("/");
+        }
+        else 
+            ErrorMessage = "Awhh are you going to cry now? Because the system didnt like you to join the game...";
+        ProcessingInformation = false;
+        ErrorMessage = "";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdatePlayerData()
+    {
+        if (ArcadeDataService.TryGetPlayer(_userId, out var player))
+        {
+            CurrentPlayer = player!;
+            UserKnown = true;
+            return;
+        }
+        UserKnown = false;
+    }
+    
+    public void Dispose()
+    {
+        if (!_pageAliveCts.IsDisposed)
+            _pageAliveCts.Dispose();
+    }
+}

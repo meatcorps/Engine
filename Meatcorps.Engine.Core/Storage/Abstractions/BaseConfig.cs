@@ -17,6 +17,8 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
     private bool _dirty;
     protected BaseConfig()
     {
+        var fileInfo = new FileInfo("Config.json");
+        Console.WriteLine($"Trying to load: " + fileInfo.FullName);
         if (File.Exists("Config.json"))
             SystemSettings = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(File.ReadAllText("Config.json")) ?? new();
         

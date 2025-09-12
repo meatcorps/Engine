@@ -50,18 +50,28 @@ public abstract class BaseSignalValueEvent<TGroup>: IBackgroundService, ISignalV
         }
     }
     
-    public void Register<TValueType>(SignalValue<TValueType, TGroup> value)
+    public bool Register<TValueType>(SignalValue<TValueType, TGroup> value, in TValueType? initialValue, out TValueType? currentValue)
     {
         lock (_gate)
         {
-            IsValueTypeOk(value);
-
+            if (initialValue is not null)
+                value.UpdateValueFromTracker(initialValue);
+            
             var havingAValue = TryGetValue<TValueType>(value.Topic, out var existingValue);
+            
+            if (havingAValue)
+                value.UpdateValueFromTracker(existingValue);
 
+            IsValueTypeOk(value);
+            
             _values[value.Value!.GetType()].Add(value);
 
             if (havingAValue)
-                value.UpdateValueFromTracker(existingValue!);
+                currentValue = value.Value;
+            else
+                currentValue = default;
+            
+            return havingAValue;
         }
     }
 
@@ -116,6 +126,12 @@ public abstract class BaseSignalValueEvent<TGroup>: IBackgroundService, ISignalV
     {
         lock (_gate)
         {
+            if (!_values.ContainsKey(typeof(TValueType)))
+            {
+                value = default;
+                return false;
+            }
+
             foreach (var item in _values[typeof(TValueType)])
             {
                 if (item is not SignalValue<TValueType, TGroup> other)

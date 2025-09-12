@@ -17,6 +17,11 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
     private List<ArcadePlayer> _players = new();
     private Queue<ArcadePlayer> _playerQueue = new();
     private int _nextPlayer = 1;
+    public void SetTotalPlayerSessions(int total)
+    {
+        //
+    }
+
     public int TotalPlayers => _players.Count;
 
     public bool RemovePlayersAtIdle { get; set; }
@@ -34,7 +39,7 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
         for (var i = 0; i < totalPlayers; i++)
             _players.Add(new ArcadePlayer
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.NewGuid().ToString(),
                 Name = $"Player {_nextPlayer++}",
                 Points = startingPoints
             });

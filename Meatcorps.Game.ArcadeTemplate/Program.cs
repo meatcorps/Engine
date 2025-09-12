@@ -38,6 +38,7 @@ else
 
 ArcadeEmulatorModule.Load(new ArcadeGame
 {
+    MaxPlayers = 1,
     Name = "TEMPLATE!",
     Code = settings.GetOrDefault("ArcadeGame", "Code", 0000),
     PricePoints = settings.GetOrDefault("ArcadeGame", "PricePoints", 1000),

@@ -1,8 +1,11 @@
 namespace Meatcorps.Engine.Arcade.Data;
 
+
+[Serializable]
 public class ArcadePlayer
 {
-    public Guid Id { get; init; }
-    public string Name { get; init; }
+    public string Id { get; init; } = "";
+    public string Name { get; init; } = "";
     public int Points { get; set; }
+    public int CurrentGame { get; set; }
 }

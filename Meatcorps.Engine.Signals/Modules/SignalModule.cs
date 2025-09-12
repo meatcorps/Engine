@@ -12,6 +12,6 @@ public static class SignalModule
         objectManager ??= GlobalObjectManager.ObjectManager;
         var tracker = new InternalSignalValueEvent<SignalDefault>(SignalDefault.Internal);
         objectManager.RegisterSet<ISignalValueEvent<SignalDefault>>();
-        objectManager.Add(tracker);
+        objectManager.Add<ISignalValueEvent<SignalDefault>>(tracker);
     }
 }

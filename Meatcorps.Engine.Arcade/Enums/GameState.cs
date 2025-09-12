@@ -4,5 +4,6 @@ public enum GameState
 {
     Idle,
     Waiting,
-    Playing,
+    Active,
+    Offline
 }

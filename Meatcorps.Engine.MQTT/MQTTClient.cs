@@ -2,6 +2,8 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
+using Meatcorps.Engine.Core.Interfaces.Config;
+using Meatcorps.Engine.Core.ObjectManager;
 using MQTTnet;
 using MQTTnet.Client;
 
@@ -17,12 +19,14 @@ public class MQTTClient: IDisposable
     private Subject<Unit> _connected = new();
     public IObservable<Unit> Connected => _connected.AsObservable();
     public bool IsConnected => _client.IsConnected;
+    private bool _verboseTrafficLogging;
     
     public MQTTClient(string host)
     {
         _host = host;
         var factory = new MqttFactory();
         _client = factory.CreateMqttClient();
+        _verboseTrafficLogging = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("MQTT", "VerboseTrafficLogging", false);
     }
 
     public async Task Connect(string username = "user", string password = "admin", int port = 1883)
@@ -38,6 +42,9 @@ public class MQTTClient: IDisposable
             var topic = e.ApplicationMessage.Topic;
             var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
+            if (_verboseTrafficLogging)
+                Console.WriteLine($"MQTT INCOMING: {topic} > {payload}");
+            
             _messageReceived.OnNext(new Tuple<string, string> (item1: topic, item2: payload));
 
             return Task.CompletedTask;
@@ -45,13 +52,18 @@ public class MQTTClient: IDisposable
 
         _client.ConnectedAsync += e =>
         {
+            if (_verboseTrafficLogging)
+                Console.WriteLine("MQTT CONNECTED!");
+
             _connected.OnNext(Unit.Default);
             return Task.CompletedTask;
         };
         
         _client.DisconnectedAsync += e =>
-        {
-            Console.WriteLine("Disconnected!");
+        { 
+            if (_verboseTrafficLogging)
+                Console.WriteLine($"MQTT DISCONNECTED!");
+
             return Task.CompletedTask;
         };
 
@@ -88,6 +100,9 @@ public class MQTTClient: IDisposable
     
     public async Task Publish(string topic, string payload)
     {
+        if (_verboseTrafficLogging)
+            Console.WriteLine($"MQTT PUSH: {topic} > {payload}");
+
         await _client.PublishAsync(new MqttApplicationMessageBuilder()
             .WithTopic(topic)
             .WithPayload(payload)

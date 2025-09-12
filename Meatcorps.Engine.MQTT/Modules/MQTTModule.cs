@@ -45,12 +45,12 @@ public class MQTTModule
         return this;
     }
 
-    public MQTTModule RegisterComplexObject<TValueType>(string topic, bool onlyRead, TValueType defaultValue = default)
+    public MQTTModule RegisterComplexObject<TValueType>(string topic, bool onlyRead, bool onlyWrite, TValueType defaultValue, bool sendOnRegister = true)
     {
         var valueTracker = new SignalValue<TValueType, MQTTGroup>(MQTTGroup.Exchange, topic, defaultValue, GlobalObjectManager.ObjectManager);
         GlobalObjectManager.ObjectManager.Add<IDisposable>(valueTracker);
-        _tracker.RegisterComplexObject<TValueType>(topic, onlyRead);
-        if (defaultValue is not null)
+        _tracker.RegisterComplexObject<TValueType>(topic, onlyRead, onlyWrite);
+        if (!onlyRead && sendOnRegister)
             _tracker.ForcePublish<TValueType>(topic); 
         return this;
     }

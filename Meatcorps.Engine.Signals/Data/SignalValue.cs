@@ -18,6 +18,7 @@ public  class SignalValue<TValueType, TGroup> : IEqualityComparer<SignalValue<TV
     public string GroupName => Group.ToString();
     public string Topic { get; init; }
     public event ValueChangedEventHandler ValueChanged = _ => { };
+    public event ValueChangedEventHandler IncomingValue = _ => { };
     public delegate void ValueChangedEventHandler(TValueType value);
     
     public TValueType Value
@@ -25,27 +26,38 @@ public  class SignalValue<TValueType, TGroup> : IEqualityComparer<SignalValue<TV
         get => _value;
         set
         {
-            if (!_value?.Equals(value) ?? false)
+            if (_value?.Equals(value) ?? false)
                 return;
             
             _value = value;
-            ValueChanged.Invoke(_value);
-            SentChangeToTrackers();
+            Push();
         }
     }
     
-    public SignalValue(TGroup group, string topic, TValueType initialValue, ObjectManager? manager = null)
+    public SignalValue(TGroup group, string topic, TValueType? initialValue = default, ObjectManager? manager = null)
     {
         Group = group;
         Topic = topic;
-        _value = initialValue;
         _objectManager = manager  ?? GlobalObjectManager.ObjectManager;
+        var valueSet = false;
         
         foreach (var valueEvent in AllValueEventTrackers)
         {
             if (valueEvent.GetGroup().Equals(Group))
-                valueEvent.Register(this);
+            {
+                if (valueEvent.Register(this, initialValue, out var existingValue))
+                    valueSet = true;
+            }
         }
+        
+        if (!valueSet)
+            _value = initialValue ?? throw new NullReferenceException("Initial value cannot be null when the main value is not found by the tracker");
+    }
+
+    public void Push()
+    {
+        ValueChanged.Invoke(_value);
+        SentChangeToTrackers();
     }
 
     public void UpdateValueFromTracker(object value)
@@ -53,7 +65,9 @@ public  class SignalValue<TValueType, TGroup> : IEqualityComparer<SignalValue<TV
         if (value is not TValueType valueType)
             return;
         
-        if (EqualityComparer<TValueType>.Default.Equals(_value, valueType))
+        IncomingValue.Invoke(_value);
+        
+        if (_value?.Equals(value) ?? false)
             return;
             
         _value = valueType;

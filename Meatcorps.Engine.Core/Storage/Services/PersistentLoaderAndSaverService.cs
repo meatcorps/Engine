@@ -22,7 +22,14 @@ public class PersistentLoaderAndSaverService : IKeyValueLoader<string>, IKeyValu
     {
         while (!_cancellationTokenSource.IsCancellationRequested)
         {
-            await Task.Delay(5000, _cancellationTokenSource.Token);
+            try
+            {
+                await Task.Delay(5000, _cancellationTokenSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                //
+            }
 
             if (_target!.Dirty)
             {

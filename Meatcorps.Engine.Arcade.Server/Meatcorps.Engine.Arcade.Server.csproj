@@ -7,4 +7,13 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Meatcorps.Engine.Arcade\Meatcorps.Engine.Arcade.csproj" />
+      <ProjectReference Include="..\Meatcorps.Engine.Logging\Meatcorps.Engine.Logging.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Data\" />
+    </ItemGroup>
+
 </Project>

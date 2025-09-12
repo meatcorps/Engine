@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj" />
+      <ProjectReference Include="..\Meatcorps.Engine.MQTT\Meatcorps.Engine.MQTT.csproj" />
     </ItemGroup>
 
     <ItemGroup>

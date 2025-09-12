@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Meatcorps.Engine.Arcade.Leaderboard</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Meatcorps.Engine.Arcade.RayLib\Meatcorps.Engine.Arcade.RayLib.csproj"/>
+        <ProjectReference Include="..\Meatcorps.Engine.Arcade\Meatcorps.Engine.Arcade.csproj"/>
+        <ProjectReference Include="..\Meatcorps.Engine.AsciiScript\Meatcorps.Engine.AsciiScript.csproj"/>
+        <ProjectReference Include="..\Meatcorps.Engine.Boids\Meatcorps.Engine.Boids.csproj"/>
+        <ProjectReference Include="..\Meatcorps.Engine.Hardware.ArduinoController\Meatcorps.Engine.Hardware.ArduinoController.csproj"/>
+        <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj"/>
+        <ProjectReference Include="..\Meatcorps.Engine.Session\Meatcorps.Engine.Session.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="Assets/**/*"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Assets/**/*.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ClCompile Include="Assets\Shaders\bloom.fx"/>
+        <ClCompile Include="Assets\Shaders\bloom_composite.fx"/>
+        <ClCompile Include="Assets\Shaders\bloom_threshold.fx"/>
+        <ClCompile Include="Assets\Shaders\chromaticaberration.fx"/>
+        <ClCompile Include="Assets\Shaders\colorgrading.fx"/>
+        <ClCompile Include="Assets\Shaders\crt_newpixie.fx"/>
+        <ClCompile Include="Assets\Shaders\fixedpalette_tex.fx"/>
+        <ClCompile Include="Assets\Shaders\fixedpalette8.fx"/>
+        <ClCompile Include="Assets\Shaders\gaussian_blur.fx"/>
+        <ClCompile Include="Assets\Shaders\paletteswap.fx"/>
+        <ClCompile Include="Assets\Shaders\scanlines.fx"/>
+    </ItemGroup>
+
+</Project>
