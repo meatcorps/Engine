@@ -37,16 +37,22 @@ else
         .SetupRouter(InputMapper.ArduinoInput());
 }
 
-var mqttModule = MQTTModule.Load();
-ArcadeEmulatorModule.Load(new ArcadeGame
+var mqtt = MQTTModule.Load();
+var game = new ArcadeGame
 {
     MaxPlayers = 1,
     Name = "TEMPLATE!",
     Code = settings.GetOrDefault("ArcadeGame", "Code", 0000),
     PricePoints = settings.GetOrDefault("ArcadeGame", "PricePoints", 1000),
     Description = "The most gore version of the game ever made.",
-}, mqttModule).SetIntroScene<IntroScene>();
-mqttModule.Create();
+};
+
+if (settings.GetOrDefault("ArcadeGame", "UseEmulator", false))
+    ArcadeEmulatorModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+else
+    ArcadeGameSystemModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+
+mqtt.Create();
 
 GameSession.Load();
 Raylib.SetTraceLogLevel(TraceLogLevel.Warning);

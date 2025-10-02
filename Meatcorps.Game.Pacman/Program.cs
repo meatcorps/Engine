@@ -39,14 +39,21 @@ else
 }
 
 var mqtt = MQTTModule.Load();
-ArcadeEmulatorModule.Load(new ArcadeGame
+
+var game = new ArcadeGame
 {
     MaxPlayers = 2,
     Name = "PACMAN!",
     Code = settings.GetOrDefault("ArcadeGame", "Code", 8271),
     PricePoints = settings.GetOrDefault("ArcadeGame", "PricePoints", 1000),
     Description = "The most gore version of the pacman game ever made.",
-}, mqtt).SetIntroScene<IntroScene>();
+};
+
+if (settings.GetOrDefault("ArcadeGame", "UseEmulator", false))
+    ArcadeEmulatorModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+else
+    ArcadeGameSystemModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+
 mqtt.Create();
 
 GameSession.Load();

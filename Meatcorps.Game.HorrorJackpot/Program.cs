@@ -37,14 +37,20 @@ else
 }
 
 var mqtt = MQTTModule.Load();
-ArcadeEmulatorModule.Load(new ArcadeGame
+var game = new ArcadeGame
 {
     MaxPlayers = 1,
     Name = "HorrorJackpot!",
     Code = settings.GetOrDefault("ArcadeGame", "Code", 4123),
     PricePoints = settings.GetOrDefault("ArcadeGame", "PricePoints", 100),
     Description = "Wheel of horror to throw away your life points!",
-}, mqtt).SetIntroScene<IntroScene>();
+};
+
+if (settings.GetOrDefault("ArcadeGame", "UseEmulator", false))
+    ArcadeEmulatorModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+else
+    ArcadeGameSystemModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+
 mqtt.Create();
 
 GameSession.Load();

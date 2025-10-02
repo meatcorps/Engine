@@ -37,14 +37,21 @@ else
 }
 
 var mqtt = MQTTModule.Load();
-ArcadeEmulatorModule.Load(new ArcadeGame
+
+var game = new ArcadeGame
 {
     MaxPlayers = 2,
     Name = "SNAKE!",
     Code = settings.GetOrDefault("ArcadeGame", "Code", 1234),
     PricePoints = settings.GetOrDefault("ArcadeGame", "PricePoints", 1000),
     Description = "The most gore version of the game snake ever made.",
-}, mqtt).SetIntroScene<IntroScene>();
+};
+
+if (settings.GetOrDefault("ArcadeGame", "UseEmulator", false))
+    ArcadeEmulatorModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+else
+    ArcadeGameSystemModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+
 mqtt.Create();
 
 SnakeSession.Load();
