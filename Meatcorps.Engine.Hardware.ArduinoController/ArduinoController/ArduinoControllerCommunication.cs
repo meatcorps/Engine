@@ -19,9 +19,9 @@ public class ArduinoControllerCommunication : IDisposable
     
     public ArduinoControllerCommunication(string port)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            _serialPort = new RjcpSerialPort();
-        else
+        //if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+       //     _serialPort = new RjcpSerialPort();
+       // else
             _serialPort = new DotNetSerialPort();
         
         _serialPort.Open(port);
@@ -44,6 +44,7 @@ public class ArduinoControllerCommunication : IDisposable
             {
                 if (_buttonLightsQue.TryDequeue(out var buttonLights))
                 {
+                    Console.WriteLine(BitConverter.ToInt16([(byte)buttonLights.Item1, (byte)buttonLights.Item2]));
                     _serialPort.Write([(byte)buttonLights.Item1, (byte)buttonLights.Item2]);
                     await Task.Delay(10);
                 }

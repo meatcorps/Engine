@@ -10,6 +10,7 @@ public enum GameSounds
     Alarm,
     Backgroundplaced,
     Blip,
+    Shortblip,
     Explode1,
     Explode7,
     Meatonground,

@@ -128,6 +128,11 @@ public class LevelScene : BaseScene
                 }))
                 .Register(() => new StringVariableCommand("NEXTLEVEL", level =>
                 {
+                    foreach (var player in _players)
+                    {
+                        if (player.IsDead)
+                            return;
+                    }
                     GameHost.SwitchScene(new LevelScene("Assets/" + level));
                 }))
                 .Register(() => new DelayCommand("DELAYCOUNTDOWN", (on, firstTick) =>
@@ -395,7 +400,6 @@ public class LevelScene : BaseScene
 
     public void EndGame()
     {
-        // Todo: EndGame
         GameHost.SwitchScene(new EndScene());
     }
 

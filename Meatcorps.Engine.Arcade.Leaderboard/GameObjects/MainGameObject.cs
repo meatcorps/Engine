@@ -46,20 +46,27 @@ public class MainGameObject : ResourceGameObject
         
         _subscription = _arcadeDataService.DataChanged.Subscribe(_ =>
         {
-            _players = _arcadeDataService.Players().OrderByDescending(x => x.Points).ToList();
-            var position = 0;
-            foreach (var player in _players)
-            {
-                position++;
-                if (!_scorePositions.ContainsKey(player.Id))
-                    _scorePositions.Add(player.Id, new SmoothValue(10, 6f, false));
-                if (!_scores.ContainsKey(player.Id))
-                    _scores.Add(player.Id, new SmoothValue(0, 2f, true));
-
-                _scorePositions[player.Id].RealValue = position;
-                _scores[player.Id].RealValue = player.Points;
-            }
+            UpdateScorePositions();
         });
+
+        UpdateScorePositions();
+    }
+
+    private void UpdateScorePositions()
+    {
+        _players = _arcadeDataService.Players().OrderByDescending(x => x.Points).ToList();
+        var position = 0;
+        foreach (var player in _players)
+        {
+            position++;
+            if (!_scorePositions.ContainsKey(player.Id))
+                _scorePositions.Add(player.Id, new SmoothValue(10, 6f, false));
+            if (!_scores.ContainsKey(player.Id))
+                _scores.Add(player.Id, new SmoothValue(0, 2f, true));
+
+            _scorePositions[player.Id].RealValue = position;
+            _scores[player.Id].RealValue = player.Points;
+        }
     }
 
     protected override void OnUpdate(float deltaTime)
@@ -88,10 +95,10 @@ public class MainGameObject : ResourceGameObject
                     targetText = "GO!!! BEAT: " + _players[0].Name;
                     break;
                 case 2:
-                    targetText = "BIGGEST LOSER: " + _players[^1].Name + " (" + _players[^1].Points + ")";
+                    targetText = "CHOP CHOP: " + _players[^1].Name + " (" + _players[^1].Points + ")";
                     break;
                 case 3:
-                    targetText = "TOTAL JUNKIES: " + _players.Count;
+                    targetText = "TOTAL SOULS: " + _players.Count;
                     break;
             }
             

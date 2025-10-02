@@ -28,6 +28,7 @@ public class PlayerUI : ResourceGameObject
     private TextStyle _textStyle;
     private IArcadePointsMutator _pointMutator;
     private IPlayerCheckin _playerCheckin;
+    private int _oldScore;
 
     public PlayerUI(Player player)
     {
@@ -71,9 +72,11 @@ public class PlayerUI : ResourceGameObject
             Enabled = false;
         _smoothValue.RealValue = _player.Score;
         _audioValueChangeTimer.Update(deltaTime);
-        if (_audioValueChangeTimer.Output && !_smoothValue.IsAtRealValue)
+        if (_audioValueChangeTimer.Output && (int)_smoothValue.DisplayValue != _oldScore)
+        {
             Sounds.Play(GameSounds.Scorechange, 0.3f);
-
+            _oldScore = (int)_smoothValue.DisplayValue;
+        }
         _smoothValue.Update(deltaTime);
     }
 

@@ -1,5 +1,6 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Enums;
+using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Utilities;
 
 namespace Meatcorps.Engine.Core.Tween;
@@ -208,6 +209,21 @@ public static class Tween
             StepTo(current.Y, target.Y, speed, deltaTime));
     }
     
+    /// <summary>
+    /// Generates a repeating 0→1→0 triangle wave from free-running time.
+    /// That means it goes forward, then back, forever.
+    /// </summary>
+    public static float PingPong(float time, float period = 1f, float phase = 0f)
+    {
+        if (period <= 0f) throw new ArgumentOutOfRangeException(nameof(period));
+    
+        // Map time into [0,2)
+        var p = ((time + phase) / period).Wrap(2f);
+    
+        // Triangle wave: 0..1..0
+        return p <= 1f ? p : 2f - p;
+    }
+    
     public static float FloatBasedOnVelocity(
         float currentPosition, float deltaTime, 
         float period, float currentTime, float centerPosition, 
@@ -225,5 +241,62 @@ public static class Tween
         var correction = (desiredX - currentPosition) / deltaTime;
 
         return vx + correctionGain * correction;
+    }
+    
+    public static float ExpDecay(float value, float dt, float halfLife)
+    {
+        if (halfLife <= 0f) return 0f;
+        return value * MathF.Pow(0.5f, dt / halfLife);
+    }
+
+    public static float DecayToZero(float value, float dt, float halfLife, float min = 1e-3f)
+    {
+        float v = ExpDecay(value, dt, halfLife);
+        return MathF.Abs(v) < min ? 0f : v;
+    }
+    
+    public static float Decelerate(float speed, float decelPerSec, float dt)
+    {
+        if (decelPerSec <= 0f) return speed;
+        float s = MathF.Abs(speed);
+        s = MathF.Max(0f, s - decelPerSec * dt);
+        return speed >= 0f ? s : -s;
+    }
+    
+    public static float AdvanceWrap01(float rotation01, float speedWrapsPerSec, float dt)
+    {
+        return (rotation01 + speedWrapsPerSec * dt).Wrap(1f);
+    }
+
+// Snap normalized rotation to nearest cell center for N cells
+    public static float SnapToCellCenter01(float rotation01, int cellCount)
+    {
+        if (cellCount <= 0) return rotation01.Wrap(1f);
+        float cell = 1f / cellCount;
+        return (cell * MathF.Round(rotation01 / cell)).Wrap(1f);
+    }
+    
+    // Exponential reel with friction
+    public static void ReelUpdateExp(ref float rotation01, ref float speed, float halfLife, float minSpeed, float dt)
+    {
+        rotation01 = AdvanceWrap01(rotation01, speed, dt);
+        speed = DecayToZero(speed, dt, halfLife, minSpeed);
+    }
+
+    // Linear drag version (constant decel), no snapping
+    public static void ReelUpdateLinear(ref float rotation01, ref float speed, float decelPerSec, float dt, float minSpeed = 1e-3f)
+    {
+        rotation01 = AdvanceWrap01(rotation01, speed, dt);
+        speed = Decelerate(speed, decelPerSec, dt);
+        if (MathF.Abs(speed) < minSpeed) speed = 0f;
+    }
+
+    // Exponential reel that snaps to symbol center
+    public static void ReelUpdateExpSnap(ref float rotation01, ref float speed, float halfLife, float minSpeed, float dt, int cellCount)
+    {
+        rotation01 = AdvanceWrap01(rotation01, speed, dt);
+        speed = DecayToZero(speed, dt, halfLife, minSpeed);
+        if (speed == 0f)
+            rotation01 = SnapToCellCenter01(rotation01, cellCount);
     }
 }

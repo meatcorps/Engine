@@ -19,23 +19,31 @@
 <h3>I'm the LAW!</h3>
 
 <table>
-@foreach (var player in ArcadeDataService.Players())
-{
-    <tr>
-        <td>
-            @player.Name <small>(@player.Points)</small>&nbsp;
-        </td>
-        <td>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, 10)">+10</button>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, 100)">+100</button>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, 1000)">+1000</button>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, -10)">-10</button>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, -100)">-100</button>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, -1000)">-1000</button>
-        </td>
-    </tr>
-}
+    @foreach (var player in ArcadeDataService.Players())
+    {
+        <tr>
+            <td>
+                @player.Name <small>(@player.Points)</small>&nbsp;
+            </td>
+            <td>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, 10)">+10</button>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, 100)">+100</button>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, 1000)">+1000</button>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, -10)">-10</button>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, -100)">-100</button>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, -1000)">-1000</button>
+            </td>
+        </tr>
+    }
 </table>
+
+
+    <h3>Register</h3>
+    <input type="text" @bind="NewPlayerName" maxlength="16"/>
+    <button @onclick="RegisterPlayer">Save</button>
+
+
+<h3>Games</h3>
 
 @foreach (var game in ArcadeDataService.Games())
 {
@@ -55,6 +63,8 @@
 
 @code {
 
+    public string NewPlayerName = "";
+    public bool ProcessingInformation;
     private bool _admin;
     private CancellationDisposable _pageAliveCts = new ();
     
@@ -76,6 +86,29 @@
             
             await InvokeAsync(StateHasChanged);
         }
+    }
+    
+    public async Task RegisterPlayer()
+    {
+        if (NewPlayerName.Trim().Length < 2)
+        { 
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (ArcadeDataService.Players().Any(x => x.Name.Trim().ToLower() == NewPlayerName.Trim().ToLower()))
+        {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        ProcessingInformation = true;
+        await InvokeAsync(StateHasChanged);
+        await PlayerService.RegisterPlayerAsync(Guid.NewGuid().ToString(), NewPlayerName.Trim());
+        NewPlayerName = "";
+        
+        ProcessingInformation = false;
+        await InvokeAsync(StateHasChanged);
     }
     
     public void Dispose()

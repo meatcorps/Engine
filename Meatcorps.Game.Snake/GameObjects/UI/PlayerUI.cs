@@ -30,6 +30,7 @@ public class PlayerUI : SnakeGameObject
     private TextStyle _textStyle;
     private IArcadePointsMutator _pointMutator;
     private IPlayerCheckin _playerCheckin;
+    private int _oldScore = 0;
 
     public PlayerUI(Player player)
     {
@@ -70,9 +71,12 @@ public class PlayerUI : SnakeGameObject
     {
         _smoothValue.RealValue = _player.Score;
         _audioValueChangeTimer.Update(deltaTime);
-        if (_audioValueChangeTimer.Output && !_smoothValue.IsAtRealValue)
+        if (_audioValueChangeTimer.Output && (int)_smoothValue.DisplayValue != _oldScore)
+        {
             Sounds.Play(SnakeSounds.Scorechange);
-        
+            _oldScore = (int)_smoothValue.DisplayValue;
+        }
+
         _smoothValue.Update(deltaTime);
     }
 

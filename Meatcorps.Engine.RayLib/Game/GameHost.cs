@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.Numerics;
+using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.Interfaces.Trackers;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Interfaces;
@@ -83,6 +85,13 @@ public sealed class GameHost : IDisposable
             _gameHasAudio = true;
         }
 
+        var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new BasicConfig();
+
+        if (config.GetOrDefault("Graphics", "FullScreen", false))
+        {
+            ToggleFullscreen();
+        }
+        
         foreach (var instance in GlobalObjectManager.ObjectManager.GetList<ILoadAfterRayLibInit>()!)
             instance.Load();
         

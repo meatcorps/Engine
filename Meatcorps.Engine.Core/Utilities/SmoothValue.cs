@@ -18,7 +18,7 @@ public class SmoothValue
     /// </summary>
     public float RealValue { get; set; }
 
-    private readonly float _speed;
+    private float _speed;
     private readonly bool _fixedTime;
     private float _startValue;
     private bool _snapToReal;
@@ -66,6 +66,12 @@ public class SmoothValue
             DisplayValue = Math.Min(DisplayValue + delta, RealValue);
         else
             DisplayValue = Math.Max(DisplayValue - delta, RealValue);
+    }
+
+    public void SetSpeed(float speed)
+    {
+        _speed = speed;
+        _timer.ChangeSpeed(speed * 1000);
     }
 
     public void SnapToReal()

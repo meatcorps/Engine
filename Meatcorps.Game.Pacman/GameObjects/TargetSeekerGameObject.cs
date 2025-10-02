@@ -84,8 +84,8 @@ public class TargetSeekerGameObject: ResourceGameObject
             _previousPosition = currentPacmanPosition;
         }
 
-        if (_animationTimer.Output && _animationBlinkTimer.Output)
-            Sounds.Play(GameSounds.ShortWarning);
+        if (_animationTimer.Output && _animationBlinkTimer.Output && !DemoMode)
+            Sounds.Play(GameSounds.Shortblip, 1, 0.25f + _showTargetTimer.NormalizedElapsed * 0.25f);
     }
 
     protected override void OnDraw()

@@ -1,5 +1,7 @@
+using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.RayLib.Audio;
 using Meatcorps.Engine.RayLib.Interfaces;
 
@@ -10,9 +12,10 @@ public class MusicResource<T>: ILoadAfterRayLibInit, IAudioInitNeeded where T : 
     private float _masterVolume;
     private readonly Dictionary<T, (string path, float volume)> _music = new();
 
-    public MusicResource(float masterVolume = 1f)
+    public MusicResource()
     {
-        _masterVolume = masterVolume;
+        var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new BasicConfig();
+        _masterVolume = config.GetOrDefault("Audio", "MusicVolume", 1f);
     }
     
     public MusicResource<T> AddMusic(T k, string path, float volume = 1f)
@@ -65,6 +68,7 @@ public class MusicResource<T>: ILoadAfterRayLibInit, IAudioInitNeeded where T : 
         GlobalObjectManager.ObjectManager.Add<IBackgroundService>(manager);
         GlobalObjectManager.ObjectManager.Add<IMasterVolume>(manager);
         manager.SetMasterVolume(_masterVolume);
+
         GlobalObjectManager.ObjectManager.Register(new VolumeManager());
     }
     

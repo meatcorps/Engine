@@ -84,6 +84,20 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
         return this;
     }
 
+    public bool IsPlaying(TSfx key)
+    {
+        if (!_soundPools.TryGetValue(key, out var pool))
+            return false;
+
+        foreach (var sound in pool)
+        {
+            if (Raylib.IsSoundPlaying(sound))
+                return true;
+        }
+
+        return false;
+    }
+
     public OneSoundManager GetOneSoundManager(TSfx key, float volume = 1, bool fromSoundPool = true)
     {
         Sound sound;

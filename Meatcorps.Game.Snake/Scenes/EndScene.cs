@@ -15,7 +15,7 @@ namespace Meatcorps.Game.Snake.Scenes;
 
 public class EndScene : BaseScene
 {
-    private TimerOn _timer = new(30000);
+    private TimerOn _timer = new(16000);
 
     public int TimeLeft => (int)(_timer.TimeRemaining / 1000);
     

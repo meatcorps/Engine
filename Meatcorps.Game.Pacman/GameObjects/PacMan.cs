@@ -38,6 +38,7 @@ public class PacMan: BasePlayer, ICollisionEventsFiltered
     private bool _died;
     private bool _renderPacman;
     private EdgeDetector _GhostScaredEdgeDetector;
+    private Vector2 _previousRaw;
     
     public PacMan(Player _player) : base(_player)
     {
@@ -130,8 +131,11 @@ public class PacMan: BasePlayer, ICollisionEventsFiltered
         {
             raw = Player.Body.Velocity.IsEqualsSafe(Vector2.Zero) ? new Vector2(Raylib.GetRandomValue(-1, 1), Raylib.GetRandomValue(-1, 1)) : _bufferedDirection.Direction;
         }
+        
+        if (!raw.IsEqualsSafe(Vector2.Zero))
+            _previousRaw = raw;
 
-        _bufferedDirection.Update(raw, deltaTime);
+        _bufferedDirection.Update(_previousRaw, deltaTime);
         
         if (_bufferedDirection.IsDirectionChangedAndIsNotZero(Player.Body.Velocity, speed, out var direction))
             GridMovement.TryMove(Player.Body, direction, ref _lastVelocity, deltaTime, LayerBits.MaskOf(CollisionLayer.Wall), GetRoundingRatio(speed));
@@ -178,31 +182,31 @@ public class PacMan: BasePlayer, ICollisionEventsFiltered
             {
                 if (facing == new PointInt(0, 1) || facing == new PointInt(0, 0))
                     Sprites.DrawAnimationWithNormal(GameSprites.PacmanDownAnimation, _animationTimer.NormalizedElapsed,
-                        position);
+                        position, Player.Color);
                 if (facing == new PointInt(0, -1))
                     Sprites.DrawAnimationWithNormal(GameSprites.PacmanUpAnimation, _animationTimer.NormalizedElapsed,
-                        position);
+                        position, Player.Color);
                 if (facing == new PointInt(1, 0))
                     Sprites.DrawAnimationWithNormal(GameSprites.PacmanRightAnimation, _animationTimer.NormalizedElapsed,
-                        position);
+                        position, Player.Color);
                 if (facing == new PointInt(-1, 0))
                     Sprites.DrawAnimationWithNormal(GameSprites.PacmanLeftAnimation, _animationTimer.NormalizedElapsed,
-                        position);
+                        position, Player.Color);
             }
             else
             {
                 if (facing == new PointInt(0, 1) || facing == new PointInt(0, 0))
                     Sprites.DrawAnimationWithNormal(GameSprites.SuperPacmanDownAnimation,
-                        _animationTimer.NormalizedElapsed, position);
+                        _animationTimer.NormalizedElapsed, position, Player.Color);
                 if (facing == new PointInt(0, -1))
                     Sprites.DrawAnimationWithNormal(GameSprites.SuperPacmanUpAnimation,
-                        _animationTimer.NormalizedElapsed, position);
+                        _animationTimer.NormalizedElapsed, position, Player.Color);
                 if (facing == new PointInt(1, 0))
                     Sprites.DrawAnimationWithNormal(GameSprites.SuperPacmanRightAnimation,
-                        _animationTimer.NormalizedElapsed, position);
+                        _animationTimer.NormalizedElapsed, position, Player.Color);
                 if (facing == new PointInt(-1, 0))
                     Sprites.DrawAnimationWithNormal(GameSprites.SuperPacmanLeftAnimation,
-                        _animationTimer.NormalizedElapsed, position);
+                        _animationTimer.NormalizedElapsed, position, Player.Color);
 
                 Sprites.DrawAnimationWithNormal(GameSprites.SuperPacmanEffectAnimation,
                     _animationTimer.NormalizedElapsed, position, Raylib.ColorAlpha(Color.White, 0.5f));
@@ -317,7 +321,8 @@ public class PacMan: BasePlayer, ICollisionEventsFiltered
                 {
                     if (player.PlayerId != Player.PlayerId)
                     {
-                        Scene.AddGameObject(new Drone(player.Body.Position, GameSprites.PacmanDown1, () => Enabled = false, 1500, true, EndGame));
+                        Scene.AddGameObject(new Drone(player.Body.Position, GameSprites.PacmanDown1, () => player.PacMan.Enabled = false, 1500, true,
+                            () => { }));
                     }
                 }
 
