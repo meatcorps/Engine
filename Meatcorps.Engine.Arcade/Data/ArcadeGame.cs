@@ -1,9 +1,10 @@
 using Meatcorps.Engine.Arcade.Enums;
+using Meatcorps.Engine.MQTT.Interfaces;
 
 namespace Meatcorps.Engine.Arcade.Data;
 
 [Serializable]
-public class ArcadeGame
+public class ArcadeGame: MessageIdentifierBase
 {
     public required int Code { get; init; }
     public required string Name { get; init; }

@@ -1,7 +1,9 @@
 using Meatcorps.Engine.Arcade.Interfaces;
 using Meatcorps.Engine.Core.Data;
+using Meatcorps.Engine.Core.Input;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
+using Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Audio;
 using Meatcorps.Engine.RayLib.Interfaces;
@@ -16,6 +18,7 @@ namespace Meatcorps.Game.Snake.Scenes;
 public class EndScene : BaseScene
 {
     private TimerOn _timer = new(16000);
+    private PlayerInputRouter<SnakeInput> _controller;
 
     public int TimeLeft => (int)(_timer.TimeRemaining / 1000);
     
@@ -31,12 +34,15 @@ public class EndScene : BaseScene
             var bounds = new Rect(i * width, 16, width, renderer.RenderHeight - 32);
             AddGameObject(new FinalScoreCalculator(bounds, i + 1));
         }
+        _controller = GlobalObjectManager.ObjectManager.Get<PlayerInputRouter<SnakeInput>>()!;
+        _controller.GetState(1, SnakeInput.Action).Animation = new BlinkAnimation(250);
+        _controller.GetState(2, SnakeInput.Action).Animation = new BlinkAnimation(250);
     }
 
     protected override void OnUpdate(float deltaTime)
     {
         _timer.Update(true, deltaTime);
-        if (_timer.Output)
+        if (_timer.Output || (TimeLeft < 12 && (_controller.GetState(1, SnakeInput.Action).IsPressed || _controller.GetState(2, SnakeInput.Action).IsPressed)))
             GameHost.SwitchScene(new IntroScene());
     }
 

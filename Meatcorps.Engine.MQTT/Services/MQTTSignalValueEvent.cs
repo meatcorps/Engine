@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meatcorps.Engine.MQTT.Enums;
+using Meatcorps.Engine.MQTT.Interfaces;
 using Meatcorps.Engine.Signals.Abstractions;
 
 namespace Meatcorps.Engine.MQTT.Services;
@@ -17,6 +18,7 @@ public class MQTTSignalValueEvent: BaseSignalValueEvent<MQTTGroup>
     private ConcurrentQueue<Action> _publishTasks = new ();
     private Dictionary<string, bool> _onlyRead = new();
     private Dictionary<string, bool> _onlyWrite = new();
+    private List<string> _handledMessages = new();
     
     public MQTTSignalValueEvent(MQTTClient client)
     {
@@ -74,6 +76,16 @@ public class MQTTSignalValueEvent: BaseSignalValueEvent<MQTTGroup>
                             try
                             {
                                 var data = toRegister.Value.Item1(x);
+
+                                if (data is MessageIdentifierBase)
+                                {
+                                    if (_handledMessages.Contains(x))
+                                        return;
+                                    _handledMessages.Add(x);
+                                    if (_handledMessages.Count > 50)
+                                        _handledMessages.RemoveAt(0);
+                                }
+                                
                                 SetValue(toRegister.Key, data);
                             } catch (Exception e)
                             {

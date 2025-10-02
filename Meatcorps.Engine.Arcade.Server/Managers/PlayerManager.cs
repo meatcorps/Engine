@@ -12,8 +12,9 @@ public class PlayerManager: BaseManager
     private readonly SignalValue<ArcadePlayer, MQTTGroup> _playerSignalOut;
     private readonly SignalValue<ArcadePlayer, MQTTGroup> _playerJoin;
     private readonly SignalValue<ArcadePlayer, MQTTGroup> _playerRegister;
+    private readonly SignalValue<ArcadeAdminActions, MQTTGroup> _adminActions;
     private object _playerUpdateLock = new();
-    
+
     public PlayerManager()
     {
         // Out Signals
@@ -24,11 +25,61 @@ public class PlayerManager: BaseManager
         _playerSignalOut = new SignalValue<ArcadePlayer, MQTTGroup>(MQTTGroup.Exchange, ArcadeEndpointTopics.GAMESESSION_SIGNOUT);
         _playerJoin = new SignalValue<ArcadePlayer, MQTTGroup>(MQTTGroup.Exchange, ArcadeEndpointTopics.JOIN_GAME);
         _playerRegister = new SignalValue<ArcadePlayer, MQTTGroup>(MQTTGroup.Exchange, ArcadeEndpointTopics.REGISTER_PLAYER);
+        _adminActions = new SignalValue<ArcadeAdminActions, MQTTGroup>(MQTTGroup.Exchange, ArcadeEndpointTopics.ADMIN_ACTIONS);
 
         _pointChangeSignal.ValueChanged += PointChangeSignalOnValueChanged;
         _playerSignalOut.ValueChanged += PlayerSignalOutOnValueChanged;
         _playerJoin.ValueChanged += PlayerJoinOnValueChanged;
         _playerRegister.ValueChanged += PlayerRegisterOnValueChanged;
+        _adminActions.ValueChanged += AdminActionsOnValueChanged;
+    }
+
+    private void AdminActionsOnValueChanged(ArcadeAdminActions value)
+    {
+        switch (value.Action)
+        {
+            case "EXACTPOINTS":
+                lock (_playerUpdateLock)
+                {
+                    var target1 = Data.Players.FirstOrDefault(x => x.Id == value.Param1);
+                    if (target1 is null)
+                        return;
+                    target1.Points = int.Parse(value.Param2);
+                }
+                break;
+            case "REMOVE":
+                lock (_playerUpdateLock)
+                {
+                    var target = Data.Players.FirstOrDefault(x => x.Id == value.Param1);
+                    if (target is null)
+                        return;
+                    Data.Players.Remove(target);
+                }
+                Push();
+
+                break;
+            case "RENAME":
+                lock (_playerUpdateLock)
+                {
+                    if (Data.Players.All(x => x.Name == value.Param1))
+                        return;
+
+                    var targetR = Data.Players.FirstOrDefault(x => x.Id == value.Param1);
+                    if (targetR is null)
+                        return;
+                    Data.Players.Remove(targetR);
+                    Data.Players.Add(new ArcadePlayer
+                    {
+                        Id = targetR.Id,
+                        Name = value.Param2,
+                        Points = targetR.Points,
+                        CurrentGame = targetR.CurrentGame,
+                    });
+                }
+                Push();
+
+                break;
+        }
     }
 
     private void PlayerRegisterOnValueChanged(ArcadePlayer value)
@@ -106,5 +157,6 @@ public class PlayerManager: BaseManager
         _playerSignalOut.Dispose();
         _playerJoin.Dispose();
         _playerRegister.Dispose();
+        _adminActions.Dispose();
     }
 }

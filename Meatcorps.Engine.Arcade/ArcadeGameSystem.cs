@@ -85,7 +85,7 @@ public sealed class ArcadeGameSystem: IPlayerCheckin, IArcadePointsMutator, IBac
         if (TryGetPlayer(player, out var current))
             return current!.Name;
         
-        throw new InvalidOperationException($"Player {player} has no name");
+        return "SIGNED OUT!";
     }
 
     public void SignPlayerOut(int player)
@@ -173,7 +173,7 @@ public sealed class ArcadeGameSystem: IPlayerCheckin, IArcadePointsMutator, IBac
     public void SubmitPoints(int player, int points)
     {
         if (!TryGetPlayer(player, out var current))
-            throw new InvalidOperationException($"Player {player} has no points");
+            return;
         
         current!.Points += points;
         _pointChangeSignal.Value = new ArcadePointChange

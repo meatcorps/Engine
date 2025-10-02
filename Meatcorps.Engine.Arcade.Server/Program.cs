@@ -24,10 +24,10 @@ mqttModule.RegisterComplexObject(ArcadeEndpointTopics.CHANGE_POINTS, true, false
 mqttModule.RegisterComplexObject(ArcadeEndpointTopics.REGISTER_GAME, true, false, new ArcadeGame
 {
     MaxPlayers = 1,
-    Name = "TEMPLATE!",
+    Name = "SERVER!",
     Code = 0,
-    PricePoints = 1000,
-    Description = "The most gore version of the game ever made.",
+    PricePoints = 9000,
+    Description = "The most gore version of the server ever made!",
 });
 mqttModule.RegisterComplexObject(ArcadeEndpointTopics.GAMESESSION_SIGNIN_AND_UPDATE, false, true, new ArcadePlayer(), false);
 mqttModule.RegisterComplexObject(ArcadeEndpointTopics.GAMESESSION_SIGNOUT, true, false, new ArcadePlayer());
@@ -35,6 +35,7 @@ mqttModule.RegisterComplexObject(ArcadeEndpointTopics.REGISTER_PLAYER, true, fal
 mqttModule.RegisterComplexObject(ArcadeEndpointTopics.JOIN_GAME, true, false, new ArcadePlayer());
 mqttModule.RegisterComplexObject(ArcadeEndpointTopics.WEB_ALLDATA, false, true, new ArcadeCentralData(),false);
 mqttModule.RegisterComplexObject(ArcadeEndpointTopics.SYSTEM_MESSAGE, true, false, new ArcadeSystemMessage(), false);
+mqttModule.RegisterComplexObject(ArcadeEndpointTopics.ADMIN_ACTIONS, true, false, new ArcadeAdminActions(), false);
 
 mqttModule.Create();
 

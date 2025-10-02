@@ -200,6 +200,8 @@ public class MainGameObject: ResourceGameObject
         _blinkTimer.Update(deltaTime);
         
         _jackpotSmoothValue.SetSpeed(Math.Max(1, Math.Abs(_jackpotSmoothValue.DisplayValue - _jackpotSmoothValue.RealValue)));
+        
+        
         switch (_internalState)
         {
             case GameInternalState.WaitingForPlayers:
@@ -250,6 +252,8 @@ public class MainGameObject: ResourceGameObject
                     Sounds.Play(_buttonRandom.Get());
                     _buttonWaitingTimer.Reset();
                 }
+                if (!_playerCheckin.IsPlayerCheckedIn(1, out var _))
+                    _internalState = GameInternalState.WaitingForPlayers;
 
                 _gameInfo.State = GameState.Active;
                 if (buttonPressed && _ignoreInputTimer.Output)
@@ -275,6 +279,8 @@ public class MainGameObject: ResourceGameObject
                     _drumRenderer.BlinkSpeed = 0;
                     _drumRenderer.Glow = 0.25f;
                 }
+                if (!_playerCheckin.IsPlayerCheckedIn(1, out var _))
+                    _internalState = GameInternalState.WaitingForPlayers;
                 
                 _drumRenderer.GlowColor = GetColor(_currentDrumType);
                 
@@ -282,6 +288,8 @@ public class MainGameObject: ResourceGameObject
                     _internalState = GameInternalState.ApplyScore;
                 break;
             case GameInternalState.ApplyScore:
+                if (!_playerCheckin.IsPlayerCheckedIn(1, out var _))
+                    _internalState = GameInternalState.WaitingForPlayers;
                 switch (_currentDrumType)
                 {
                     case DrumTypes.Score10:
@@ -322,8 +330,9 @@ public class MainGameObject: ResourceGameObject
                 _drumRenderer.BlinkSpeed = 0.25f;
                 _drumRenderer.GlowColor = GetColor(_currentDrumType);
 
-                if (_showScoreTimer.Output)
+                if (_showScoreTimer.Output || buttonPressed)
                 {
+                    HideOverlay();
                     _internalState = _currentDrumType == DrumTypes.Reroll
                         ? GameInternalState.PlayerIsApplyingForce
                         : GameInternalState.WaitingForPlayers;
@@ -339,7 +348,7 @@ public class MainGameObject: ResourceGameObject
 
         if (_previousInternalState != _internalState)
         {
-            if (_internalState == GameInternalState.WaitingForPlayers)
+            if (_internalState is GameInternalState.WaitingForPlayers or GameInternalState.ShowingScore)
                 _controller.GetState(1, GameInput.Action).Animation = new BlinkAnimation(1000);
             else if (_internalState == GameInternalState.PlayerIsApplyingForce)
             {

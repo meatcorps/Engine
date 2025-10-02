@@ -43,6 +43,7 @@ public static class GameSpriteFactory
             .WithSpriteFromGrid(GameSprites.ArcadeStickArrowDownLeft, new Rect(20, 10, 2, 2))
             .WithSpriteFromGrid(GameSprites.ArcadeStickArrowDownRight, new Rect(22, 10, 2, 2))
             .WithSpriteFromGrid(GameSprites.ArcadeStickArrowUpRight, new Rect(24, 10, 2, 2))
+            .WithSprite(GameSprites.Background, new Rectangle(0, 192, 640, 360))
 
             // Animations
             .WithSpriteAnimation(GameSprites.ExplosionAnimation, new[]

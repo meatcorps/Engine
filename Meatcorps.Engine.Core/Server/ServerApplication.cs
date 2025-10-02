@@ -13,6 +13,7 @@ public class ServerApplication
     
     public ServerApplication()
     {
+        Running = true;
         GlobalObjectManager.ObjectManager.Register(this);
         
         Console.CancelKeyPress += (sender, eventArgs) =>
@@ -33,7 +34,6 @@ public class ServerApplication
 
     public async Task Run()
     {
-        Running = true;
         await _tcs.Task;
         Running = false;
         GlobalObjectManager.ObjectManager.Dispose();

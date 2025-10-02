@@ -1,5 +1,6 @@
 using System.Numerics;
 using Meatcorps.Engine.Arcade.Data;
+using Meatcorps.Engine.Arcade.Leaderboard.GameEnums;
 using Meatcorps.Engine.RayLib.GameObjects;
 using Meatcorps.Engine.Arcade.Leaderboard.GameObjects.Abstractions;
 using Meatcorps.Engine.Arcade.Services;
@@ -8,6 +9,7 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Enums;
+using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Text;
@@ -123,8 +125,8 @@ public class MainGameObject : ResourceGameObject
 
     protected override void OnDraw()
     {
-        Raylib.DrawRectangleGradientH(0, 0, _renderer.RenderWidth, _renderer.RenderHeight, Raylib.ColorFromHSV(_backgroundTimer.NormalizedElapsed * 360, 0.2f, 0.2f), Raylib.ColorFromHSV(_backgroundTimer.NormalizedElapsed * 360, 0.1f, 0.1f));
-
+        //Raylib.DrawRectangleGradientH(0, 0, _renderer.RenderWidth, _renderer.RenderHeight, Raylib.ColorFromHSV(_backgroundTimer.NormalizedElapsed * 360, 0.2f, 0.2f), Raylib.ColorFromHSV(_backgroundTimer.NormalizedElapsed * 360, 0.1f, 0.1f));
+        Sprites.Draw(GameSprites.Background, Vector2.Zero);
         Raylib.DrawTextEx(Fonts.GetFont(), "LEADERBOARD", new Vector2(16, 16), 24f, 1, _titleColor);
         
         var rank = 0;
@@ -151,9 +153,9 @@ public class MainGameObject : ResourceGameObject
             var points = (int)_scores[player.Id].DisplayValue;
             var stringLength = (points == 0 ? 1 : (int)Math.Floor(Math.Log10(Math.Abs(points))) + 1) * 17;
             var startPos = new Vector2(16, 48 + 22 * _scorePositions[player.Id].DisplayValue);
-            var endPos = new Vector2(_renderer.RenderWidth - 16 - stringLength, startPos.Y);
+            var endPos = new Vector2(_renderer.RenderWidth - 128 - stringLength, startPos.Y);
             if (counter > 1)
-                Raylib.DrawRectangle(0, 44 + counter * 22, _renderer.RenderWidth, 2, new Color(0,0,0,0.2f));
+                Raylib.DrawRectangle(0, 44 + counter * 22, _renderer.RenderWidth - 128, 2, new Color(0,0,0,0.2f));
             
             Raylib.DrawTextEx(Fonts.GetFont(), rank.ToString() + "#", startPos, 12f, 1, counter == 1 ? color : Color.Blue);
             Raylib.DrawTextEx(Fonts.GetFont(), player.Name, startPos + new Vector2(48, 0), 16f, 1, color);

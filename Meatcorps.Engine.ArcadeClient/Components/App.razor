@@ -18,6 +18,25 @@
 <Routes />
 
 <script src="_framework/blazor.web.js"></script>
+<script>
+    (function () {
+        // Poll the reconnect modal state and keep trying forever.
+        const MODAL_ID = 'components-reconnect-modal';
+        const RETRY_MS = 3000;      // interval between retries
+
+        function tryReconnectForever() {
+            const modal = document.getElementById(MODAL_ID);
+            if (!modal) { setTimeout(tryReconnectForever, RETRY_MS); return; }
+
+            location.reload();
+
+            setTimeout(tryReconnectForever, RETRY_MS);
+        }
+
+        // Start loop after Blazor boot
+        setTimeout(() => tryReconnectForever(), RETRY_MS);
+    })();
+</script>
 </body>
 
 </html>

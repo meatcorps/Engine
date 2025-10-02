@@ -1,6 +1,7 @@
 ﻿@page "/"
 @page "/SIGNIN/{id:int}"
 @using System.Reactive.Disposables
+@using System.Reactive.Linq
 @using Meatcorps.Engine.Arcade.Data
 @using Meatcorps.Engine.Arcade.Enums
 @using Meatcorps.Engine.Arcade.Services
@@ -10,6 +11,7 @@
 @inject ArcadeDataService ArcadeDataService
 @inject IUserIdProvider UserIdProvider
 @inject NavigationManager Nav
+@inject ArcadeResponseService ArcadeResponseService
 @implements IDisposable
 @rendermode InteractiveServer
 
@@ -54,6 +56,22 @@
 <p class="intro-title">
     LIFE POINTS: <strong>@CurrentPlayer.Points</strong>
 </p>
+
+@if (Question is not null)
+{
+    <div class="game-card Vote">
+        <h2>@Question.Question</h2>
+        <small>Times ticking @((QuestionTimeLeft / 1000).ToString("F1"))s!</small>
+        
+        <span class="tag">
+            @foreach (var response in Question.Answers)
+            {
+                <button class="active" @onclick="() => SendAnswer(response)">@(response)</button>
+            }
+        </span>
+    </div>
+}
+
 @if (CurrentPlayer.CurrentGame > 0)
 {
     <p class="intro-title" style="text-align: left; margin-bottom: 0;">You think are can beat this?!</p>
@@ -72,7 +90,9 @@
 }
 else
 {
+    
     <p class="intro-title" style="text-align: left; margin-bottom: 0;">Wanna play a game?</p>
+    
     @foreach (var game in ArcadeDataService.Games())
     {
         <div class="game-card @game.State">
@@ -112,6 +132,8 @@ else
     public bool CanTheUserRegister;
     public bool ProcessingInformation;
     public string NewPlayerName = "";
+    public ArcadeQuestion? Question;
+    public float QuestionTimeLeft;
     public ArcadePlayer CurrentPlayer = new ArcadePlayer();
     private CancellationDisposable _pageAliveCts = new ();
     
@@ -119,6 +141,20 @@ else
     {
         if (firstRender)
         {
+            ArcadeResponseService.TimeoutTicking.Where(_ => UserKnown).Subscribe(time =>
+            {
+                Question = ArcadeResponseService.GetQuestion(CurrentPlayer.Name);
+                Console.WriteLine(Question is null);
+                QuestionTimeLeft = time;
+                InvokeAsync(StateHasChanged);
+            }, _pageAliveCts.Token);
+            
+            ArcadeResponseService.QuestionChange.Where(_ => UserKnown).Subscribe(_ =>
+            {
+                Question = ArcadeResponseService.GetQuestion(CurrentPlayer.Name);
+                InvokeAsync(StateHasChanged);
+            }, _pageAliveCts.Token);
+            
             foreach (var playerInDb in ArcadeDataService.Players())
             {
                 Console.WriteLine("PLAYER EXIST: " + playerInDb.Name + $"({playerInDb.Id})");
@@ -153,11 +189,15 @@ else
             return;
         
         Console.WriteLine(DateTime.Now - game!.LastReported);
-        if (game!.State == GameState.Waiting && (DateTime.Now - game!.LastReported) < TimeSpan.FromSeconds(5))
+        if (game!.State is GameState.Waiting or GameState.Active && (DateTime.Now - game!.LastReported) < TimeSpan.FromSeconds(5))
         {
             if (UserKnown)
             {
-                _ = JoinGame(ArcadeDataService.Games().FirstOrDefault(x => x.Code == Id.Value)!);
+                if (game.State == GameState.Waiting)
+                    _ = JoinGame(ArcadeDataService.Games().FirstOrDefault(x => x.Code == Id.Value)!);
+                else
+                    
+                    Nav.NavigateTo("/");
                 return;
             }
             
@@ -194,9 +234,12 @@ else
         
         if (!UserKnown) 
             ErrorMessage = "Well slap the system manager. Because something technical went wrong. Nah, it just you...";
-        
+            
         ProcessingInformation = false;
         await InvokeAsync(StateHasChanged);
+        
+        if (UserKnown)
+            UpdateEnterWithGameId();
     }
 
     public async Task JoinGame(ArcadeGame game)
@@ -207,13 +250,21 @@ else
         if (await PlayerService.JoinGameAsync(game.Code, _userId))
         {
             ErrorMessage = "";
-            if (Id is not null)
-                Nav.NavigateTo("/");
         }
         else 
             ErrorMessage = "Awhh are you going to cry now? Because the system didnt like you to join the game...";
         ProcessingInformation = false;
         ErrorMessage = "";
+        await InvokeAsync(StateHasChanged);
+
+        await Task.Delay(3000);
+        Nav.NavigateTo("/");
+    }
+
+    public async Task SendAnswer(string answer)
+    {
+        ArcadeResponseService.SubmitResponse(CurrentPlayer.Name, answer);
+        Question = null;
         await InvokeAsync(StateHasChanged);
     }
 

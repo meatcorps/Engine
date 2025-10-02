@@ -1,0 +1,552 @@
+﻿@page "/"
+@using System.Reactive.Disposables
+@using System.Reactive.Linq
+@using Meatcorps.Engine.Arcade.Data
+@using Meatcorps.Engine.Arcade.Interfaces
+@using Meatcorps.Engine.Arcade.Services
+@using Meatcorps.Engine.Core.ObjectManager
+@using Meatcorps.Engine.Core.Utilities
+@using Meatcorps.Engine.Session
+@using Meatcorps.Game.Pacman.GameEnums
+@using Meatcorps.Game.Web.TruthOrDare.Data
+@using Meatcorps.Game.Web.TruthOrDare.Services
+@using Meatcorps.Game.Web.TruthOrDare.Utilities
+@inject TruthOrDareService TruthOrDareService
+@inject ObjectManager ObjectManager
+@inject ArcadeQuestionService ArcadeQuestionService
+@inject SfxService SfxService
+@implements IDisposable
+@rendermode InteractiveServer
+<PageTitle>Home</PageTitle>
+
+<div class="main center @GameState.ToString().ToLower()">
+    @switch (GameState)
+    {
+        case InternalGameState.Idle:
+            <div class="page-enter"> 
+                <h1 id="slogan">TRUTH / DARE<br/><small>JUST *** PLAY ALREADY!</small></h1>
+                <div class="content">
+                    <p>OEHHH Look at this button:<br/>LIFEPOINTS to play: 100</p>
+                    <button @onpointerdown="() => StartGame()" disabled="@InputLocked">I have a dead wish!</button><br><br><br>
+                    <small class="footer">I have a dare! CLICK ON THAT *** button!</small>
+                </div>
+            </div>
+            break;
+        case InternalGameState.WaitingForPlayer:
+            <div class="page-enter"> 
+                <h1>SCAN THE QR WITH YOUR PHONE! NOW!<br><br></h1>
+                @((MarkupString)LinkToAppQr)<br><br><br><br>
+                @if (Error.Length > 0)
+                {
+                    <h3 class="error">@(Error)</h3>
+                }
+            </div>
+            break;
+        case InternalGameState.ChooseTruthDare:
+            <div class="page-enter"> 
+                <h1><br/><br/><br/>VOTING TIME! WHICH GAME?</h1>
+                @if (TruthVote > 0 || DareVote > 0)
+                {
+                    @if (TruthOrDare == TruthDareType.Truth)
+                    {
+                        <p>Current <span class="highlight">TRUTH</span>! You will be humiliated, with a question!</p>
+                    }
+                    else
+                    {
+                        <p>Current <span class="highlight">DARE</span>! You will ask yourself WHY this game after this task!</p>
+                    }
+                }
+                else
+                {
+                    <p>AHHH common! <span class="highlight">VOTE</span> or <span class="highlight">CHOOSE!</span><br/>I want to see you suffer! With no action maby someone else?</p>
+                }
+                <button @onpointerdown="() => ChooseTruthDare(TruthDareType.Truth)" disabled="@(PlayerVoted || InputLocked)">Truth (@TruthVote)</button>
+            
+                <button @onpointerdown="() => ChooseTruthDare(TruthDareType.Dare)" disabled="@(PlayerVoted || InputLocked)">Dare (@DareVote)</button>
+            </div>
+            break;
+        case InternalGameState.ChooseCategory:
+            
+            <div class="page-enter"> 
+                <h1><br/><br/><br/>@(TruthOrDare.ToString().ToUpper()): CHOOSE CATEGORY!</h1>
+            
+                @foreach (var type in TruthOrDareService.GetAllCategories(TruthOrDare))
+                {
+                    <button @onpointerdown="() => ChooseCategory(type)" disabled="@InputLocked">@(type)</button>
+                }
+            </div>
+            break;
+        case InternalGameState.ConfirmTask:
+            <div class="page-enter"> 
+                <h2><br/><br/><br/><br/><br/>@(TruthOrDare.ToString().ToUpper()) > @(TruthDare.Category):<br/></h2>
+                <h1>YOU WILL LOSE POINTS IF NOBODY VOTE!<br/>YELL TO EVERYONE TO BE READY!<br/>YOU HAVE 2 MINUTES!</h1>
+                <button @onpointerdown="() => ConfirmTask()"disabled="@InputLocked">YEAH YEAH JUST START!</button>
+            </div>
+            break;
+        case InternalGameState.DoTask:
+            <div class="page-enter"> 
+                <h2><br/><br/><br/><br/><br/>@(TruthOrDare.ToString().ToUpper()) > @(TruthDare.Category):</h2>
+                <h1 style="padding-top: 1rem;">@(TruthDare.Description)</h1>
+                <button @onpointerdown="() => IAmDone()" disabled="@InputLocked">I AM DONE WITH THIS!</button>
+            </div>
+            break;
+        case InternalGameState.ShowResult:
+            <div class="page-enter"> 
+                <h1>Are you now proud?<br>Just go away and get a drink...</h1>
+                <table>
+                    @if (!firstVote)
+                    {
+                        <tr class="heart">
+                            <td class="description">Got Votes BONUS</td>
+                            <td class="total">1x</td>
+                            <td class="score">@_gameInfo.PricePoints</td>
+                        </tr>
+                    }
+                    <tr class="heart">
+                        <td class="description">Total ❤️</td>
+                        <td class="total">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalHearts))x <span>+100</span></td>
+                        <td class="score">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalHearts) * 100)</td>
+                    </tr>
+                    <tr class="thumbup">
+                        <td class="description">Total 👍</td>
+                        <td class="total">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalThumbUp))x <span>+10</span></td>
+                        <td class="score">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalThumbUp) * 10)</td>
+                    </tr>
+                    <tr class="thumbdown">
+                        <td>Total 👎</td>
+                        <td class="total">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalThumbDown))x <span>-10</span></td>
+                        <td class="score">@(-(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalThumbDown) * 10))</td>
+                    </tr>
+                    <tr class="skull">
+                        <td class="description">Total 💀</td>
+                        <td class="total">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalSkulls))x <span>-100</span></td>
+                        <td class="score">@(-(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalSkulls) * 100))</td>
+                    </tr>
+                
+                    @if (_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.Score) < _gameInfo.PricePoints)
+                    {
+                        <tr>
+                            <td colspan="2" class="description">Total LIFE POINTS LOST:</td>
+                            <td class="final-score blink">-@(_gameInfo.PricePoints - _sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.Score))</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="2" class="description">Total LIFE POINTS ADDED:</td>
+                            <td class="final-score blink">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.Score))</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+            break;
+        default:
+            <p>Huh?</p>
+            break;
+    }
+
+    @if (GameState != InternalGameState.Idle)
+    {
+        @if (GameState != InternalGameState.WaitingForPlayer)
+        {
+            <div class="right-panel">
+                <div class="inner">
+                    <div class="account">
+                        Person with a dead wish:<br/>
+                        <h2 class="highlight">@(PlayerName)</h2><br>
+                        <small>(Total points: <span class="highlight">@_pointMutator.GetPoints(1)</span>)</small>
+                    </div>
+                    @if (GameState != InternalGameState.ShowResult)
+                    {
+                        <div class="qr">
+                            <br><br>
+                            <h3 style="color: magenta;">SCAN TO VOTE:</h3>
+                            @((MarkupString)LinkToAppWithOutSignInQr)
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="footer">
+            @if (GameState == InternalGameState.DoTask)
+            {
+                <div class="score">
+                    <span class="scoreItem">
+                        ❤️
+                        <span class="score">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalHearts))x</span><small>+100p</small>
+                    </span>
+                    <span class="scoreItem">
+                        👍
+                        <span class="score">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalThumbUp))x</span><small>+10p</small>
+                    </span>
+                    <span class="scoreItem">
+                        👎
+                        <span class="score">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalThumbDown))x</span><small>-10p</small>
+                    </span>
+                    <span class="scoreItem">
+                        💀
+                        <span class="score">@(_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalSkulls))x</span><small>-100p</small>
+                    </span>
+                </div>
+                <div class="timer">Times ticking!! <span class="highlight2 blink">@((_timeoutTimer.TimeRemaining / 1000).ToString("F1"))s</span></div>
+            }
+            else
+            {
+                <div class="Timeout">Timeout: @((_timeoutTimer.TimeRemaining / 1000).ToString("F1"))s</div>
+            }
+        </div>
+    }
+</div>
+@foreach (var item in ReceiveItems)
+{
+    <div class="float-up-once receive-item @(item.Type)" style="left: @(item.LeftPosition.ToString())px"><span class="icon">@item.Icon</span><br/><span class="who">@item.Text</span></div>
+}
+
+@code
+{
+    public List<ReceiveItem> ReceiveItems = new List<ReceiveItem>();
+    public InternalGameState GameState = InternalGameState.Idle;
+    public TruthDareType TruthOrDare = TruthDareType.Truth;
+    public TruthDareItem? TruthDare = null;
+    public string LinkToAppQr = "";
+    public string LinkToAppWithOutSignInQr = "";
+    public string Error = string.Empty;
+    public string PlayerName = string.Empty;
+    private IPlayerCheckin _playerCheckin = null!;
+    private IArcadePointsMutator _pointMutator = null!;
+    private ArcadeGame _gameInfo = null!;
+    private ArcadeServer _arcadeServer = null!;
+    private CancellationDisposable _aliveToken = new ();
+    private CancellationDisposable _stateToken = new();
+    private InternalGameState _previousGameState;
+    private TimerOn _timeoutTimer = new TimerOn(1000);
+    private TimerOn _releaseLockTimer = new TimerOn(1000);
+    private FixedTimer _updateTimer = new FixedTimer(100);
+    private SessionService<GameSessionData, GamePlayerData> _sessionService = null!;
+    private bool firstVote;
+    public int TruthVote = 0;
+    public int DareVote = 0;
+    public bool PlayerVoted;
+    public bool InputLocked;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        if (firstRender)
+        {
+            await SfxService.PreloadAsync("alarm.wav", "Bang.wav", "PowerUpScore.wav", "powerupcollect.wav", "angrymob.wav", "dingg.wav", "hahgay.wav", "wow.wav", "timervote.wav");
+            _arcadeServer = GlobalObjectManager.ObjectManager.Get<ArcadeServer>()!;
+            _playerCheckin = ObjectManager.Get<IPlayerCheckin>()!;
+            _pointMutator = ObjectManager.Get<IArcadePointsMutator>()!;
+            _gameInfo = ObjectManager.Get<ArcadeGame>()!;
+            _sessionService = ObjectManager.Get<SessionService<GameSessionData, GamePlayerData>>()!;
+            LinkToAppQr = QrCodeHelper.SvgQrCode(_arcadeServer.AutoSignIn(_gameInfo));
+            LinkToAppWithOutSignInQr = QrCodeHelper.SvgQrCode(_arcadeServer.AutoSignIn(_gameInfo), 8);
+            Observable.Interval(TimeSpan.FromMilliseconds(1000f / 60f)).Subscribe(_ => Update(1 / 60f), _aliveToken.Token);
+            ArcadeQuestionService.Responses.Where(_ => GameState == InternalGameState.DoTask).Subscribe(IncomingVote, _aliveToken.Token);
+            ArcadeQuestionService.Responses.Where(_ => GameState == InternalGameState.ChooseTruthDare).Subscribe(IncomingTruthDare, _aliveToken.Token);
+        }
+    }
+
+    private void IncomingTruthDare(ArcadeResponse type)
+    {
+        Console.WriteLine("INCOMING TRUTH OR DARE '" + type.Message + "'");
+        
+        _ = SfxService.PlayAsync("powerupcollect.wav");
+        ReceiveItems.Add(new ReceiveItem
+        {
+            Type = "truthdare",
+            Icon = type.Message,
+            Text = type.From
+        });
+        
+        if (type.Message == "TRUTH")
+            TruthVote++;
+        else
+            DareVote++;
+    }
+
+    private void IncomingVote(ArcadeResponse vote)
+    {
+        var currentScore = 0;
+        
+        ReceiveItems.Add(new ReceiveItem
+        {
+            Type = "vote",
+            Icon = vote.Message,
+            Text = vote.From
+        });
+        switch (vote.Message)
+        {
+            case "❤️":
+                _ = SfxService.PlayAsync("wow.wav");
+                _sessionService.CurrentSession.PlayerData[0].Set(
+                    GamePlayerData.TotalHearts, 
+                    _sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalHearts) + 1);
+                firstVote = false;
+                break;
+            case "👍":
+                _ = SfxService.PlayAsync("dingg.wav");
+                _sessionService.CurrentSession.PlayerData[0].Set(
+                    GamePlayerData.TotalThumbUp, 
+                    _sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalThumbUp) + 1);
+                firstVote = false;
+                break;
+            case "👎":
+                _ = SfxService.PlayAsync("angrymob.wav");
+                _sessionService.CurrentSession.PlayerData[0].Set(
+                    GamePlayerData.TotalThumbDown, 
+                    _sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalThumbDown) + 1);
+                firstVote = false;
+                break;
+            case "💀":
+                _ = SfxService.PlayAsync("hahgay.wav");
+                _sessionService.CurrentSession.PlayerData[0].Set(
+                    GamePlayerData.TotalSkulls, 
+                    _sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalSkulls) + 1);
+                firstVote = false;
+                break;
+        }
+
+        if (!firstVote)
+            currentScore += _gameInfo.PricePoints;
+
+        currentScore -= _sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalSkulls) * 100;
+        currentScore -= _sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalThumbDown) * 10;
+        currentScore += _sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalHearts) * 100;
+        currentScore += _sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.TotalThumbUp) * 10;
+
+        currentScore = Math.Max(0, currentScore);
+        _sessionService.CurrentSession.PlayerData[0].Set(
+            GamePlayerData.Score, currentScore);
+        
+        Console.WriteLine("Current score " + currentScore);
+    }
+
+    private void Update(float deltaTime)
+    {
+        var stateChanged = false;
+        _updateTimer.Update(deltaTime);
+        if (_previousGameState != GameState)
+        {
+            InputLocked = true;
+            stateChanged = true;
+            if (!_stateToken.IsDisposed)
+                _stateToken.Dispose();
+            _stateToken = new CancellationDisposable();
+            if (GameState == InternalGameState.DoTask)
+            {
+                _ = SfxService.PlayAsync("alarm.wav");
+            } else if (GameState == InternalGameState.ChooseTruthDare)
+            {
+                
+                _ = SfxService.PlayAsync("Bang.wav");
+                _ = SfxService.PlayAsync("timervote.wav");
+            } else 
+                _ = SfxService.PlayAsync(GameState == InternalGameState.ShowResult ? "PowerUpScore.wav" : "Bang.wav");
+        }
+        
+        _releaseLockTimer.Update(!stateChanged, deltaTime);
+
+        if (_releaseLockTimer.Output)
+            InputLocked = false;
+        
+        _timeoutTimer.Update(!stateChanged, deltaTime);
+        
+        _previousGameState = GameState;
+        switch (GameState)
+        {
+            case InternalGameState.Idle:
+
+                if (stateChanged)
+                {
+                    _sessionService.ClearPlayers();
+                    _sessionService.StopSession();
+                }
+
+                _gameInfo.State = Engine.Arcade.Enums.GameState.Idle;
+                break;
+            case InternalGameState.WaitingForPlayer:
+                _gameInfo.State = Engine.Arcade.Enums.GameState.Waiting;
+
+                if (stateChanged)
+                    _timeoutTimer = new TimerOn(30000);
+                
+                if (_playerCheckin.IsPlayerCheckedIn(1, out var name))
+                {
+                    PlayerName = name;
+                    if (_pointMutator.GetPoints(1) >= _gameInfo.PricePoints)
+                    {
+                        GameState = InternalGameState.ChooseTruthDare;
+                        _sessionService.StartSession();
+                        _sessionService.TryPlayerJoin(PlayerName);
+                        ArcadeQuestionService.AskQuestion("FOR " + _playerCheckin.GetPlayerName(1) + ", WHICH TRUTH OR DARE? CHOOSE NOW! " + _playerCheckin.GetPlayerName(1), 1, 28000, "TRUTH", "DARE");
+                        return;
+                    }
+                    else
+                    {
+                        Error = "Lucky you! No dead wish! Not enough points! Current life points: " + _pointMutator.GetPoints(1);
+                        PlayerName = "";
+                        _playerCheckin.SignPlayerOut(1);
+                        _sessionService.ClearPlayers();
+                    }
+                }
+
+                if (_timeoutTimer.Output)
+                    GameState = InternalGameState.Idle;
+                
+                break;
+            case InternalGameState.ChooseTruthDare:
+                _gameInfo.State = Engine.Arcade.Enums.GameState.Active;
+                
+                if (stateChanged)
+                    _timeoutTimer = new TimerOn(30000);
+
+                if (_timeoutTimer.Output)
+                    GameState = TruthVote == 0 && DareVote == 0 ? InternalGameState.Idle : InternalGameState.ChooseCategory;
+
+                if (TruthVote > DareVote)
+                    TruthOrDare = TruthDareType.Truth;
+                else 
+                    TruthOrDare = TruthDareType.Dare;
+                break;
+            case InternalGameState.ChooseCategory:
+                if (stateChanged)
+                {
+                    ArcadeQuestionService.AskQuestion("REMOVE", 1, 1000);
+                    _timeoutTimer = new TimerOn(30000);
+                }
+
+                if (_timeoutTimer.Output)
+                    GameState = InternalGameState.Idle;
+                break;
+            case InternalGameState.ConfirmTask:
+                if (stateChanged)
+                    _timeoutTimer = new TimerOn(30000);
+                
+                if (_timeoutTimer.Output)
+                    GameState = InternalGameState.DoTask;
+                
+                break;
+            case InternalGameState.DoTask:
+                if (stateChanged)
+                    _timeoutTimer = new TimerOn(120000);
+
+                if (_timeoutTimer.Output)
+                    GameState = InternalGameState.ShowResult;
+                break;
+            case InternalGameState.ShowResult:
+                if (stateChanged)
+                {
+                    ArcadeQuestionService.AskQuestion("REMOVE", 1, 1000);
+                    _timeoutTimer = new TimerOn(5000);
+                    _pointMutator.SubmitPoints(1,_sessionService.CurrentSession.PlayerData[0].Get<int>(GamePlayerData.Score));
+                }
+
+                if (_timeoutTimer.Output)
+                    GameState = InternalGameState.Idle;
+                break;
+        }
+        
+        if (_updateTimer.Output || _previousGameState != GameState)
+            InvokeAsync(StateHasChanged);
+    }
+
+    public void StartGame()
+    {
+        if (InputLocked)
+            return;
+        InputLocked = true;
+        
+        Error = string.Empty;
+        ReceiveItems.Clear();
+        GameState = InternalGameState.WaitingForPlayer;
+        TruthVote = 0;
+        DareVote = 0;
+        PlayerVoted = false;
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public void ChooseTruthDare(TruthDareType type)
+    {
+        if (InputLocked)
+            return;
+        InputLocked = true;
+        
+        if (PlayerVoted)
+            return;
+        
+        TruthOrDare = type;
+        PlayerVoted = true;
+        if (type == TruthDareType.Truth)
+            TruthVote++;
+        else
+            DareVote++;
+        
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void ChooseCategory(string type)
+    {
+        if (InputLocked)
+            return;
+        InputLocked = true;
+        InvokeAsync(StateHasChanged);
+
+        TruthDare = TruthOrDareService.GetRandomTruthDareItem(TruthOrDare, type);
+        if (TruthDare is null)
+        {
+            GameState = InternalGameState.WaitingForPlayer;
+            return;
+        }
+
+        GameState = InternalGameState.ConfirmTask;
+    }
+
+    public void IAmDone()
+    {
+        if (InputLocked)
+            return;
+        InputLocked = true;
+        InvokeAsync(StateHasChanged);
+
+        GameState = InternalGameState.ShowResult;
+    }
+    
+    public void ConfirmTask()
+    {
+        if (InputLocked)
+            return;
+        InputLocked = true;
+        InvokeAsync(StateHasChanged);
+
+        if (_pointMutator.RequestPoints(1, _gameInfo.PricePoints))
+        {
+            GameState = InternalGameState.DoTask;
+            ArcadeQuestionService.AskQuestion("CURRENT " + TruthOrDare.ToString() + ", VOTE FOR " + _playerCheckin.GetPlayerName(1), 1, 118000, "❤️", "👍", "👎", "💀");
+            firstVote = true;
+        }
+        else
+        {
+            GameState = InternalGameState.WaitingForPlayer;
+            Error = "Really luck! While starting truth or dare your life points dropped!";
+        }
+    }
+    
+    public enum InternalGameState
+    {
+        Idle,
+        WaitingForPlayer,
+        ChooseTruthDare,
+        ChooseCategory,
+        ConfirmTask,
+        DoTask,
+        ShowResult
+    }
+
+    public void Dispose()
+    {
+        _aliveToken.Dispose();
+    }
+}
