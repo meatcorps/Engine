@@ -56,7 +56,7 @@ public class FinalScoreCalculator : ResourceGameObject
         _inlineRender.LineSpacing = 2;
         _inlineRender.AddLabel(Fonts.GetFont(), null, _playerCheckin.GetPlayerName(_playerId), 16,
                 _playerId == 1 ? Color.Red : Color.Blue).AddNewLine()
-            .AddLabel(Fonts.GetFont(), null, "LET'S SUM IT UP!", 10, _playerId == 1 ? Color.Red : Color.Blue)
+            .AddLabel(Fonts.GetFont(), null, "NO MORE LIVES! HOW BAD DID YOU DO?", 10, _playerId == 1 ? Color.Red : Color.Blue)
             .AddSpacer(8, 16).AddNewLine();
 
         var highestScoreObject =
