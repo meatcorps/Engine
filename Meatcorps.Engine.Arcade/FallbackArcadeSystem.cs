@@ -75,7 +75,7 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
     public void SubmitPoints(int player, int points)
     {
         if (!TryGetPlayer(player, out var current))
-            throw new InvalidOperationException($"Player {player} has no points");
+            return;
         Console.WriteLine("SUBMITTING POINTS: " + points + " TO: " + current.Name + " CURRENT: " + current.Points);
         current!.Points += points;
     }
@@ -97,7 +97,7 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
         if (TryGetPlayer(player, out var current))
             return current!.Name;
         
-        throw new InvalidOperationException($"Player {player} has no name");
+        return "SIGNED OUT!";   
     }
 
     public void SignPlayerOut(int player)

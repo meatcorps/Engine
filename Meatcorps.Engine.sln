@@ -68,6 +68,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.Web.TruthOrD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.QuestionTest", "Meatcorps.Engine.QuestionTest\Meatcorps.Engine.QuestionTest.csproj", "{4744BCE8-6918-450E-83A2-FBA772142A26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.KillTheSkulls", "Meatcorps.Game.KillTheSkulls\Meatcorps.Game.KillTheSkulls.csproj", "{0D2E9F47-C741-45E8-9BE3-41925AB5597F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -178,6 +180,10 @@ Global
 		{4744BCE8-6918-450E-83A2-FBA772142A26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4744BCE8-6918-450E-83A2-FBA772142A26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4744BCE8-6918-450E-83A2-FBA772142A26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D2E9F47-C741-45E8-9BE3-41925AB5597F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D2E9F47-C741-45E8-9BE3-41925AB5597F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D2E9F47-C741-45E8-9BE3-41925AB5597F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D2E9F47-C741-45E8-9BE3-41925AB5597F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9F4FE9E3-4EE5-41B6-9EEB-B6AF597AF04B} = {BE6028C9-0015-457F-BCD2-DA31024F614D}
@@ -210,5 +216,6 @@ Global
 		{0ED7984E-3C11-4991-A6B3-0882AE0BEB3B} = {88D0F395-289A-4DC0-83CF-E18403537AD4}
 		{9247FEE2-EA37-4A08-BFA2-61DD76887B24} = {88D0F395-289A-4DC0-83CF-E18403537AD4}
 		{4744BCE8-6918-450E-83A2-FBA772142A26} = {66029EB6-09CD-4C9A-BC31-834C4C3A1E10}
+		{0D2E9F47-C741-45E8-9BE3-41925AB5597F} = {88D0F395-289A-4DC0-83CF-E18403537AD4}
 	EndGlobalSection
 EndGlobal
