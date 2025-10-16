@@ -307,6 +307,7 @@ public class LevelScene : BaseScene
                 var totalScore = 100 * Math.Min(player.Streak, 10);
                 player.Score += totalScore;
                 _scoreEmitter.ShowScore(new Vector2(counter * 128 + 32, 240), $"+{totalScore}");
+                Console.WriteLine($"Player {player.PlayerId} got {totalScore} points");
             }
 
             counter++;
@@ -345,6 +346,12 @@ public class LevelScene : BaseScene
         
         if (player.Lives == 0)
             EndGame();
+
+        foreach (var row in _level.LevelRows)
+        {
+            row.Miss = false;
+            row.Hit = false;
+        }
     }
 
     public void Died(BasePlayer? playerObject)

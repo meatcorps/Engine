@@ -1,6 +1,7 @@
 using Meatcorps.Engine.Core.Input;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;
+using Meatcorps.Engine.RayLib.Camera;
 using Meatcorps.Game.KillTheSkulls.Data;
 using Meatcorps.Game.KillTheSkulls.GameEnums;
 using Meatcorps.Game.KillTheSkulls.GameObjects.Abstractions;
@@ -16,6 +17,7 @@ public class RowManager : ResourceGameObject
     private readonly PlayerInputRouter<GameInput> _controller;
     private readonly GameInput _targetInput;
     private LevelScene _levelScene;
+    private CameraControllerGameObject _camera;
 
     public RowManager(LevelRow levelRow, int rowNumber)
     {
@@ -46,6 +48,7 @@ public class RowManager : ResourceGameObject
     {
         base.OnInitialize();
         _levelScene = (Scene as LevelScene)!;
+        _camera = Scene.GetGameObject<CameraControllerGameObject>()!;
     }
 
     protected override void OnUpdate(float deltaTime)
@@ -61,6 +64,9 @@ public class RowManager : ResourceGameObject
 
         if (pressed)
         {
+            if (!DemoMode)
+                _camera.Shake(4);
+            
             _levelRow.Thunder.Start();
             if (_levelRow.Enemy.InRange && _levelRow.Thunder.IsRunning)
                 _levelRow.Enemy.Die();
@@ -72,7 +78,9 @@ public class RowManager : ResourceGameObject
             _levelRow.Enemy.Start();
 
         if (_levelRow.Enemy.Died)
+        {
             _levelRow.Hit = true;
+        }
 
         if (_levelRow.Enemy.Attacked)
             _levelRow.Miss = true;
@@ -85,29 +93,31 @@ public class RowManager : ResourceGameObject
         if (_levelRow.Enemy.State == EnemyState.Waiting)
         {
             _levelRow.LedBar.Mode = LedBarMode.Blinking;
-            input.Animation = new BlinkAnimation(100);
+            if (!DemoMode)
+                input.Animation = new BlinkAnimation(100);
         }
         else if (_levelRow.Enemy.State == EnemyState.Up)
         {
             _levelRow.LedBar.Mode = LedBarMode.Wave;
-            input.Animation = new BlinkAnimation(500);
+            if (!DemoMode)
+                input.Animation = new BlinkAnimation(500);
         }
         else if (_levelRow.Enemy.State == EnemyState.Dying)
         {
             _levelRow.LedBar.Mode = LedBarMode.Charge;
             _levelRow.LedBar.Charge = _levelRow.Enemy.DieNormal;
-            input.Animation = new BlinkAnimation(50);
+            if (!DemoMode)
+                input.Animation = new BlinkAnimation(50);
         }
         else
         {
             input.Animation = null;
         }
-
-        input.EnableLightWhenPressed = true;
-
+        
         if (_levelRow.Enemy.State is EnemyState.Waiting or EnemyState.Up && !DemoMode)
-
-            _levelRow.Enemy.Died = false;
+            input.EnableLightWhenPressed = true;
+        
+        _levelRow.Enemy.Died = false;
         _levelRow.Enemy.Attacked = false;
     }
 

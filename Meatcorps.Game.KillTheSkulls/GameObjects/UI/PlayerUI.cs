@@ -1,6 +1,7 @@
 using System.Numerics;
 using Meatcorps.Engine.Arcade.Interfaces;
 using Meatcorps.Engine.Core.Data;
+using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Enums;
@@ -24,6 +25,7 @@ public class PlayerUI : ResourceGameObject
     private IPlayerCheckin _playerCheckin;
     private IRenderTargetStrategy _camera;
     private TextStyle _textStyle;
+    private float _lastValue = 0;
 
     public PlayerUI(Player player)
     {
@@ -48,8 +50,11 @@ public class PlayerUI : ResourceGameObject
     {
         _smoothValue.RealValue = _player.Score;
         _audioValueChangeTimer.Update(deltaTime);
-        if (_audioValueChangeTimer.Output && !_smoothValue.IsAtRealValue)
-            Sounds.Play(GameSounds.Scorechange, 0.3f);
+        if ((int)_lastValue != (int)_smoothValue.DisplayValue)
+        {
+            _lastValue = _smoothValue.DisplayValue;
+            Sounds.Play(GameSounds.Shortblip, 0.1f);
+        }
 
         _smoothValue.Update(deltaTime);
     }
