@@ -53,7 +53,11 @@ public class IntroScene : BaseScene
         leaderboard.Enabled = false;
         AddGameObject(leaderboard);
 
-        _controller.GetState(1, GameInput.Action).Animation = new BlinkAnimation(250);
+        _controller.GetState(1, GameInput.Smash1White).Animation = new BlinkAnimation(250);
+        _controller.GetState(1, GameInput.Smash2Blue).Animation = null;
+        _controller.GetState(1, GameInput.Smash3Yellow).Animation = null;
+        _controller.GetState(1, GameInput.Smash4Green).Animation = null;
+        _controller.GetState(1, GameInput.Smash5Red).Animation = null;
         _musicManager = GlobalObjectManager.ObjectManager.Get<MusicManager<GameMusic>>()!;
         _soundManager = GlobalObjectManager.ObjectManager.Get<SoundFxManager<GameSounds>>()!;
         _fontManager = GlobalObjectManager.ObjectManager.Get<TextManager<DefaultFont>>()!;

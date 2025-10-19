@@ -18,6 +18,7 @@ public class RowManager : ResourceGameObject
     private readonly GameInput _targetInput;
     private LevelScene _levelScene;
     private CameraControllerGameObject _camera;
+    private EnemyState _previousEnemyState;
 
     public RowManager(LevelRow levelRow, int rowNumber)
     {
@@ -55,7 +56,7 @@ public class RowManager : ResourceGameObject
     {
         var input = _controller.GetState(1, _targetInput);
         var pressed = input.IsPressed;
-
+       
         if (DemoMode)
         {
             if (Raylib.GetRandomValue(0, 100) < 10)
@@ -93,25 +94,26 @@ public class RowManager : ResourceGameObject
         if (_levelRow.Enemy.State == EnemyState.Waiting)
         {
             _levelRow.LedBar.Mode = LedBarMode.Blinking;
-            if (!DemoMode)
+            if (!DemoMode && _previousEnemyState != _levelRow.Enemy.State)
                 input.Animation = new BlinkAnimation(100);
         }
         else if (_levelRow.Enemy.State == EnemyState.Up)
         {
             _levelRow.LedBar.Mode = LedBarMode.Wave;
-            if (!DemoMode)
+            if (!DemoMode && _previousEnemyState != _levelRow.Enemy.State)
                 input.Animation = new BlinkAnimation(500);
         }
         else if (_levelRow.Enemy.State == EnemyState.Dying)
         {
             _levelRow.LedBar.Mode = LedBarMode.Charge;
             _levelRow.LedBar.Charge = _levelRow.Enemy.DieNormal;
-            if (!DemoMode)
+            if (!DemoMode && _previousEnemyState != _levelRow.Enemy.State)
                 input.Animation = new BlinkAnimation(50);
         }
         else
         {
-            input.Animation = null;
+            if (!DemoMode)
+                input.Animation = null;
         }
         
         if (_levelRow.Enemy.State is EnemyState.Waiting or EnemyState.Up && !DemoMode)
@@ -119,6 +121,7 @@ public class RowManager : ResourceGameObject
         
         _levelRow.Enemy.Died = false;
         _levelRow.Enemy.Attacked = false;
+        _previousEnemyState = _levelRow.Enemy.State;
     }
 
     protected override void OnDispose()

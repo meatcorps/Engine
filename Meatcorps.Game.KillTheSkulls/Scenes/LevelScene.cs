@@ -297,14 +297,16 @@ public class LevelScene : BaseScene
             if (row.Miss)
             {
                 missed = true;
+                player.AddValue(GamePlayerData.TotalMissed);
             }
 
             if (row.Hit)
             {
+                player.AddValue(GamePlayerData.TotalHits);
                 hit = true;
                 player.Streak++;
                 GetLiveCount++;
-                var totalScore = 100 * Math.Min(player.Streak, 10);
+                var totalScore = 10 * Math.Min(player.Streak, 20);
                 player.Score += totalScore;
                 _scoreEmitter.ShowScore(new Vector2(counter * 128 + 32, 240), $"+{totalScore}");
                 Console.WriteLine($"Player {player.PlayerId} got {totalScore} points");
@@ -331,7 +333,7 @@ public class LevelScene : BaseScene
         if (GetLiveCount == 10)
         {
             GetLiveCount = 0;
-            player.Score += 1000;
+            player.Score += 200;
             if (player.Lives < 10)
                 player.Lives++;
             _soundFxManager.Play(GameSounds.PowerUpScore);

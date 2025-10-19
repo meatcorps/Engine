@@ -63,5 +63,7 @@ public enum GameSprites
     ThunderChargeAnimationOn,
     ThunderChargeAnimationOff,
     ThunderAnimation,
-    SmokeSmall
+    SmokeSmall,
+    ExSkull,
+    ExSkullCharged,
 }

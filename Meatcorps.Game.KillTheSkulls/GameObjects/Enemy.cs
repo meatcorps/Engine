@@ -1,6 +1,8 @@
 using System.Numerics;
 using Meatcorps.Engine.Arcade.Enums;
+using Meatcorps.Engine.Arcade.Interfaces;
 using Meatcorps.Engine.Core.Enums;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Audio;
@@ -16,7 +18,7 @@ namespace Meatcorps.Game.KillTheSkulls.GameObjects;
 public class Enemy : ResourceGameObject
 {
     private readonly SmoothValue _position = new(1, 0.5f, false);
-    private readonly TimerOn _waitingTimer = new(1000);
+    private readonly TimerOn _waitingTimer = new(400);
     private readonly TimerOn _dieTimer = new(1000);
     private readonly TimerOn _attackTimer = new(1000);
     private readonly FixedTimer _dieAnimationTimer = new(100);
@@ -30,6 +32,9 @@ public class Enemy : ResourceGameObject
     private OneSoundManager _dieSound;
     private float _pitchOffset;
     private OneSoundManager _blipSound;
+    private GameSounds _attackSound = GameSounds.Attacking;
+    private GameSprites _normalSprite = GameSprites.Skull;
+    private GameSprites _chargedSprite = GameSprites.SkullCharged;
 
     private float _getNormalValue => Tween.ApplyEasing(_position.DisplayValue, EaseType.EaseInQuart);
 
@@ -47,6 +52,13 @@ public class Enemy : ResourceGameObject
         _blipSound = Sounds.GetOneSoundManager(GameSounds.Shortblip, 1, false); 
         _dieSound.Pitch = 0.9f + _pitchOffset;
         Layer = 3;
+
+        if (GlobalObjectManager.ObjectManager.Get<IPlayerCheckin>().GetPlayerName(1).Trim() == "FILLINARANDOMNAME:)")
+        {
+            _attackSound = GameSounds.Attack2;
+            _normalSprite = GameSprites.ExSkull;
+            _chargedSprite = GameSprites.ExSkullCharged;
+        }
     }
 
     protected override void OnUpdate(float deltaTime)
@@ -85,7 +97,7 @@ public class Enemy : ResourceGameObject
                 {
                     State = EnemyState.Attacking;
                     if (!DemoMode)
-                        Sounds.Play(GameSounds.Attacking);
+                        Sounds.Play(_attackSound);
                     Attacked = true;
                 }
 
@@ -96,7 +108,7 @@ public class Enemy : ResourceGameObject
                     _blipSound.Volume = 0.3f;
                     _blipSound.Play();
                 }
-
+                
                 Layer = 3;
                 break;
             case EnemyState.Dying:
@@ -139,7 +151,7 @@ public class Enemy : ResourceGameObject
             State = EnemyState.Attacking;
             _position.SnapToReal();
             if (!DemoMode)
-                Sounds.Play(GameSounds.Attacking);
+                Sounds.Play(_attackSound);
         }
     }
 
@@ -165,17 +177,17 @@ public class Enemy : ResourceGameObject
         {
             if (State is EnemyState.Up or EnemyState.Waiting)
             {
-                Sprites.Draw(GameSprites.Skull, Position + ((1f - _getNormalValue) * new Vector2(0, 128)), Color.White);
+                Sprites.Draw(_normalSprite, Position + ((1f - _getNormalValue) * new Vector2(0, 128)), Color.White);
             }
 
             if (State == EnemyState.Dying)
-                Sprites.Draw(_dieAnimationTimer.NormalizedElapsed < 0.5f ? GameSprites.SkullCharged : GameSprites.Skull,
+                Sprites.Draw(_dieAnimationTimer.NormalizedElapsed < 0.5f ? _chargedSprite : _normalSprite,
                     Position + ((1f - _getNormalValue) * new Vector2(0, 128)), Color.White);
 
             if (State == EnemyState.Attacking)
             {
                 var size = _attackTimer.NormalizedElapsed * 20 + 1;
-                Sprites.Draw(GameSprites.Skull,
+                Sprites.Draw(_normalSprite,
                     Position + ((1f - _getNormalValue) * new Vector2(0, 128)) + new Vector2(64, 64),
                     Raylib.ColorLerp(Color.Red, new Color(0, 0, 0, 0), _attackTimer.NormalizedElapsed), 0,
                     new Vector2(64, 64) * size, size);

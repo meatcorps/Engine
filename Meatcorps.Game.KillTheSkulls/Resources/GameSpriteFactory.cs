@@ -9,7 +9,7 @@ public static class GameSpriteFactory
 {
     public static Texture2DItem<GameSprites> Load()
     {
-        return new Texture2DItem<GameSprites>("Assets/GameSprites.png")
+        return new Texture2DItem<GameSprites>("Assets/GameSprites2.png")
             .WithFilter(TextureFilter.Point)
             .WithGridSize(new System.Drawing.Point(16, 16))
             .WithSpriteFromGrid(GameSprites.Explosion1, new Rect(0, 4, 2, 2))
@@ -60,6 +60,8 @@ public static class GameSpriteFactory
             .WithSprite(GameSprites.ThunderCharge4, new Rectangle(384, 784, 128, 80))
             .WithSprite(GameSprites.ThunderCharge5, new Rectangle(512, 784, 128, 80))
             .WithSprite(GameSprites.SmokeSmall, new Rectangle(0, 0, 48, 48))
+            .WithSprite(GameSprites.ExSkull, new Rectangle(384, 576, 128, 128))
+            .WithSprite(GameSprites.ExSkullCharged, new Rectangle(512, 576, 128, 128))
         
             // Animations
             .WithSpriteAnimation(GameSprites.ExplosionAnimation, new[]

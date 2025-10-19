@@ -13,6 +13,7 @@ public enum GameSounds
     SkullDieLoop,
     TVErrorHeavy,
     Alarm,
+    Attack2,
     Backgroundplaced,
     Explode1,
     Explode7,

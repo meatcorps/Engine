@@ -74,9 +74,9 @@ public class FinalScoreCalculator : ResourceGameObject
 
         ListValues("Score:", _playerSessionData.Get<int>(GamePlayerData.Score));
         ListValues("Finish:", _gameInfo.PricePoints * 9);
-        ListValues("Missed:", _playerSessionData.Get<int>(GamePlayerData.TotalMissed));
-        ListValues("Hit:", -_playerSessionData.Get<int>(GamePlayerData.TotalHits));
-        ListValues("Max streak:", -_playerSessionData.Get<int>(GamePlayerData.MaxStreak));
+        ListValues("Missed:", _playerSessionData.Get<int>(GamePlayerData.TotalMissed), 100);
+        ListValues("Hit:", _playerSessionData.Get<int>(GamePlayerData.TotalHits));
+        ListValues("Max streak:", _playerSessionData.Get<int>(GamePlayerData.MaxStreak));
         ListValues("End score:", finalScore, currentPoints);
         if (highestScore < finalScore)
             ListValues("Beat the HighScore!:", _gameInfo.PricePoints * 2, 0, "+ Points!");

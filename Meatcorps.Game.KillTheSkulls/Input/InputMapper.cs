@@ -15,10 +15,10 @@ public static class InputMapper
 
         // map logical → hardware
         mapper.AddMapping(GameInput.Smash1White, ControllerInputEnum.Button1);
-        mapper.AddMapping(GameInput.Smash5Red, ControllerInputEnum.Up);
-        mapper.AddMapping(GameInput.Smash2Blue, ControllerInputEnum.Down);
-        mapper.AddMapping(GameInput.Smash3Yellow, ControllerInputEnum.Left);
-        mapper.AddMapping(GameInput.Smash4Green, ControllerInputEnum.Right);
+        mapper.AddMapping(GameInput.Smash2Blue, ControllerInputEnum.Button2);
+        mapper.AddMapping(GameInput.Smash3Yellow, ControllerInputEnum.Button3);
+        mapper.AddMapping(GameInput.Smash4Green, ControllerInputEnum.Button4);
+        mapper.AddMapping(GameInput.Smash5Red, ControllerInputEnum.Button5);
         mapper.AddMapping(GameInput.Action, ControllerInputEnum.Button1);
 
         GlobalObjectManager.ObjectManager.Register<IInputMapper<GameInput>>(mapper);

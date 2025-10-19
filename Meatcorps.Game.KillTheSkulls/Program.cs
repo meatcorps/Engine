@@ -31,7 +31,7 @@ else
 {
     ArduinoControllerModule.Setup()
         .EnableJoystick()
-        .EnableButtons(1)
+        .EnableButtons(5)
         .Load(args[0])
         .SetupRouter(InputMapper.ArduinoInput());
 }

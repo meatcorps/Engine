@@ -20,6 +20,7 @@ public class Thunder : ResourceGameObject
     private readonly TimerOn _offTimer = new(180);
     private readonly FixedTimer _blinkTimer = new(64);
     private OneSoundManager _beamSoundManager;
+    
     public ThunderState State { get; private set; } = ThunderState.Idle;
 
     public bool IsRunning => State != ThunderState.Idle;
