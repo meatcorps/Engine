@@ -13,6 +13,7 @@ using Meatcorps.Game.Snake.Data;
 using Meatcorps.Game.Snake.GameObjects.Abstractions;
 using Meatcorps.Game.Snake.GameObjects.Consumables;
 using Meatcorps.Game.Snake.Resources;
+using Meatcorps.Game.Snake.Scenes;
 using Raylib_cs;
 
 namespace Meatcorps.Game.Snake.GameObjects.UI;
@@ -73,7 +74,9 @@ public class PlayerUI : SnakeGameObject
         _audioValueChangeTimer.Update(deltaTime);
         if (_audioValueChangeTimer.Output && (int)_smoothValue.DisplayValue != _oldScore)
         {
-            Sounds.Play(SnakeSounds.Scorechange);
+            if (Scene is LevelScene levelScene)
+                if (!levelScene.DemoMode)
+                    Sounds.Play(SnakeSounds.Scorechange, 0.3f);
             _oldScore = (int)_smoothValue.DisplayValue;
         }
 

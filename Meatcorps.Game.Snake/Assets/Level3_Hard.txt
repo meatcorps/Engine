@@ -65,14 +65,14 @@ PLAYSOUND=Warning
 
 // Hard push: raise the bar before the finale phase
 MESSAGE=HIT 2500 POINTS TO UNLOCK THE GAUNTLET!
-WAITFORPOINTS=2500
+// WAITFORPOINTS=2500
 REMOVEFLIES
 
 DELAY=1000
-MESSAGE=45s GAUNTLET – WORLD SPEED SHIFTS!
+MESSAGE=20s GAUNTLET – WORLD SPEED SHIFTS!
 PLAYSOUND=Alarm
-DELAYCOUNTDOWN=45000
-
+DELAYCOUNTDOWN=20000
+REPLACEWALLS
 // Alternating choke points, embedded meat, sparse ThroughWalls
 LEVELDATA:
 ######################################
@@ -96,7 +96,7 @@ LEVELDATA:
 ######################################
 ENDLEVELDATA
 
-DELAY=2000
 MESSAGE=YOU SURVIVED. TAKE A BOW.
+DELAYCOUNTDOWN=10000
 PLAYSONG=LevelAmbient
-// (No NEXTLEVEL – campaign ends here)
+NEXTLEVEL=Level4.txt

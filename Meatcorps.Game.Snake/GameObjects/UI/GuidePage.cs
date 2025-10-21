@@ -84,7 +84,7 @@ public class GuidePage : SnakeGameObject, IIntroSlide
         Raylib.DrawTextEx(Fonts.GetFont(), "MULTIPLY THE POINTS!", new Vector2(80, positionY + 4), 8, 0, Color.White);
         
         positionY += 24;
-        Raylib.DrawTextEx(Fonts.GetFont(), "LITTLE WARNING. WHEN REACHING LEVEL 10 THE GAME WILL END!", new Vector2(16, positionY + 4), 8, 0, Color.Red);
+        Raylib.DrawTextEx(Fonts.GetFont(), "LITTLE WARNING. WHEN REACHING LEVEL 5 THE GAME WILL END!", new Vector2(16, positionY + 4), 8, 0, Color.Red);
         positionY += 16;
         Raylib.DrawTextEx(Fonts.GetFont(), "THINK SMART WITH THE POWER UPS! ", new Vector2(16, positionY + 4), 8, 0, Color.Red);
         positionY += 16;
