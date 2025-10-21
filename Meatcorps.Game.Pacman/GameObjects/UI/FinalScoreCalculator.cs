@@ -68,7 +68,7 @@ public class FinalScoreCalculator : ResourceGameObject
         finalScore -= _playerSessionData.Get<int>(GamePlayerData.Died) * 1000;
         var pointsWon = (int)MathF.Ceiling(finalScore / 100f);
         if (highestScore < finalScore)
-            pointsWon += _gameInfo.PricePoints * 10;
+            pointsWon += _gameInfo.PricePoints * 2;
         _relativePoints = pointsWon;
 
         ListValues("Score:", _playerSessionData.Get<int>(GamePlayerData.Score));
@@ -79,7 +79,7 @@ public class FinalScoreCalculator : ResourceGameObject
         ListValues("Hitting Ghost:", _playerSessionData.Get<int>(GamePlayerData.GhostEaten));
         ListValues("End score:", finalScore, currentPoints);
         if (highestScore < finalScore)
-            ListValues("Beat the HighScore!:", _gameInfo.PricePoints * 10, 0, "+ Points!");
+            ListValues("Beat the HighScore!:", _gameInfo.PricePoints * 2, 0, "+ Points!");
         ListValues("Leaderboard rank:",
             GlobalObjectManager.ObjectManager.Get<HighScoreService>()!.GetLeaderboardPosition(finalScore), 0);
 

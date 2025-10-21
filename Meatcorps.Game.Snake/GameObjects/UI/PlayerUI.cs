@@ -13,6 +13,7 @@ using Meatcorps.Game.Snake.Data;
 using Meatcorps.Game.Snake.GameObjects.Abstractions;
 using Meatcorps.Game.Snake.GameObjects.Consumables;
 using Meatcorps.Game.Snake.Resources;
+using Meatcorps.Game.Snake.Scenes;
 using Raylib_cs;
 
 namespace Meatcorps.Game.Snake.GameObjects.UI;
@@ -30,6 +31,7 @@ public class PlayerUI : SnakeGameObject
     private TextStyle _textStyle;
     private IArcadePointsMutator _pointMutator;
     private IPlayerCheckin _playerCheckin;
+    private int _oldScore = 0;
 
     public PlayerUI(Player player)
     {
@@ -70,9 +72,14 @@ public class PlayerUI : SnakeGameObject
     {
         _smoothValue.RealValue = _player.Score;
         _audioValueChangeTimer.Update(deltaTime);
-        if (_audioValueChangeTimer.Output && !_smoothValue.IsAtRealValue)
-            Sounds.Play(SnakeSounds.Scorechange);
-        
+        if (_audioValueChangeTimer.Output && (int)_smoothValue.DisplayValue != _oldScore)
+        {
+            if (Scene is LevelScene levelScene)
+                if (!levelScene.DemoMode)
+                    Sounds.Play(SnakeSounds.Scorechange, 0.3f);
+            _oldScore = (int)_smoothValue.DisplayValue;
+        }
+
         _smoothValue.Update(deltaTime);
     }
 

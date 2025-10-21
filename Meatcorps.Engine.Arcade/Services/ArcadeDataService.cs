@@ -102,6 +102,12 @@ public class ArcadeDataService: IDisposable
 
     private void AllDataOnValueChanged(ArcadeCentralData value)
     {
+        lock (_playerSyncLock)
+        {
+            _data.Players.Clear();
+            _data.Games.Clear();
+        }
+
         foreach (var external in value.Games)
             SyncGame(external);
         

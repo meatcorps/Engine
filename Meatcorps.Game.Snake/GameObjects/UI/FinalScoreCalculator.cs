@@ -65,19 +65,19 @@ public class FinalScoreCalculator: SnakeGameObject
         finalScore -= _playerSessionData.Get<int>(SnakePlayerData.Died) * 1000;
         var pointsWon = (int)MathF.Ceiling(finalScore / 100f);
         if (highestScore < finalScore)
-            pointsWon += _gameInfo.PricePoints * 10;
+            pointsWon += _gameInfo.PricePoints * 2;
         _relativePoints = pointsWon;
         
         ListValues("Score:", _playerSessionData.Get<int>(SnakePlayerData.Score));
         ListValues("Power ups:", _playerSessionData.Get<int>(SnakePlayerData.PickupsTaken), 0);
         ListValues("Meat eaten:", _playerSessionData.Get<int>(SnakePlayerData.MeatEaten), 0);
-        ListValues("Snake length:", _playerSessionData.Get<int>(SnakePlayerData.SnakeLength), 0, " x1000");
+        ListValues("Snake length:", _playerSessionData.Get<int>(SnakePlayerData.SnakeLength), 0, " x10");
         ListValues("Gained:", _playerSessionData.Get<int>(SnakePlayerData.SnakeLength) * 100);
         ListValues("Died:", _playerSessionData.Get<int>(SnakePlayerData.Died), 1000, " x100");
         ListValues("Lost:", -_playerSessionData.Get<int>(SnakePlayerData.Died) * 1000);
         ListValues("End score:", finalScore, currentPoints);
         if (highestScore < finalScore)
-            ListValues("Beat the HighScore!:", _gameInfo.PricePoints * 10, 0, "+ Points!");
+            ListValues("Beat the HighScore!:", _gameInfo.PricePoints * 2, 0, "+ Points!");
         ListValues("Leaderboard rank:", GlobalObjectManager.ObjectManager.Get<HighScoreService>()!.GetLeaderboardPosition(finalScore), 0);
 
         if (_relativePoints != 0)

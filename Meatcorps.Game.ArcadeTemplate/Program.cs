@@ -5,6 +5,7 @@ using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.Modules;
 using Meatcorps.Engine.Logging.Module;
+using Meatcorps.Engine.MQTT.Modules;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
 using Meatcorps.Engine.RayLib.Resources;
@@ -36,14 +37,22 @@ else
         .SetupRouter(InputMapper.ArduinoInput());
 }
 
-ArcadeEmulatorModule.Load(new ArcadeGame
+var mqtt = MQTTModule.Load();
+var game = new ArcadeGame
 {
     MaxPlayers = 1,
     Name = "TEMPLATE!",
     Code = settings.GetOrDefault("ArcadeGame", "Code", 0000),
     PricePoints = settings.GetOrDefault("ArcadeGame", "PricePoints", 1000),
     Description = "The most gore version of the game ever made.",
-}).SetIntroScene<IntroScene>();
+};
+
+if (settings.GetOrDefault("ArcadeGame", "UseEmulator", false))
+    ArcadeEmulatorModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+else
+    ArcadeGameSystemModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+
+mqtt.Create();
 
 GameSession.Load();
 Raylib.SetTraceLogLevel(TraceLogLevel.Warning);
@@ -59,9 +68,9 @@ using var _ = RayLibModule.Setup()
         ))
     .SetResource(GameSpriteFactory.Load())
     .SetResource(AudioEnumBinder.BindAllMusic(
-            MusicResource<GameMusic>.Create().UsePlaceHoldersForMissingFiles().SetMasterVolume(1),"Assets/Music/")) 
+            MusicResource<GameMusic>.Create().UsePlaceHoldersForMissingFiles(),"Assets/Music/")) 
     .SetResource(AudioEnumBinder.BindAllSounds(
-        SoundFxResource<GameSounds>.Create(6).UsePlaceHoldersForMissingFiles().SetMasterVolume(1), "Assets/SoundFX/"))
+        SoundFxResource<GameSounds>.Create(6).UsePlaceHoldersForMissingFiles(), "Assets/SoundFX/"))
     .SetResource(TextManager.OnlyOneFont("Assets/Fonts/PressStart2P-Regular.ttf"))
     .Load(new IntroScene())
     .Run();

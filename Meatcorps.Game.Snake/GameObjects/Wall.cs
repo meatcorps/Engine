@@ -18,6 +18,7 @@ public class Wall: SnakeGameObject
     private readonly bool _placeDirect;
     public SnakeSprites Sprite { get; private set; }
     private bool _movingToPosition = false;
+    private bool _movingAway = false;
     private bool _waitingToPosition = true;
     private Vector2 _flyFromPosition = Vector2.Zero;
     private Vector2 _flyToPosition = Vector2.Zero;
@@ -67,7 +68,19 @@ public class Wall: SnakeGameObject
                 _waitingToPosition = false;
                 _movingToPosition = true;
             }
-        } else if (_movingToPosition)
+        } 
+        else if (_movingAway)
+        {
+            LevelData.WallGrid.Remove(_position);
+            Layer = 4;
+            _flyTimer.Update(deltaTime);
+            _flyPosition = Vector2.Lerp(_flyToPosition, _flyFromPosition, Tween.ApplyEasing(_flyTimer.NormalizedElapsed, EaseType.EaseInCubic));
+            if (_flyTimer.Output)
+            {
+                Scene.RemoveGameObject(this);
+            }
+        }
+        else if (_movingToPosition)
         {
             if (LevelData.SnakeGrid.IsOccupied(_position))
                 return;
@@ -92,6 +105,13 @@ public class Wall: SnakeGameObject
         
     }
 
+    public void Remove()
+    {
+        _movingAway = true;
+        _flyTimer = new FixedTimer(Raylib.GetRandomValue(250, 750));
+        Sounds.Play(SnakeSounds.Wallplaced, 1f, 0.5f);
+    }
+
     protected override void OnDraw()
     {
         if (_waitingToPosition)
@@ -99,11 +119,12 @@ public class Wall: SnakeGameObject
             var normalToUpDown = Tween.NormalToUpDown(_warningPulse.NormalizedElapsed);
             Sprites.Draw(SnakeSprites.Warning, LevelData.ToWorldPosition(_position), Raylib.ColorAlpha(Color.Red, Tween.ApplyEasing(normalToUpDown, EaseType.EaseInOut)));
         } 
-        else if (_movingToPosition)
+        else if (_movingToPosition || _movingAway)
         {
-            Sprites.Draw(Sprite, _flyPosition, Color.White);
+            Sprites.Draw(Sprite, _flyPosition, Color.Gray);
             
-            Sprites.Draw(SnakeSprites.Warning, LevelData.ToWorldPosition(_position), Raylib.ColorAlpha(Color.Red, 1 - _flyTimer.NormalizedElapsed));
+            if (!_movingAway)
+                Sprites.Draw(SnakeSprites.Warning, LevelData.ToWorldPosition(_position), Raylib.ColorAlpha(Color.Red, 1 - _flyTimer.NormalizedElapsed));
         }
         else
         {
@@ -114,7 +135,7 @@ public class Wall: SnakeGameObject
 
     protected override void OnDispose()
     {
-        if (_position != new PointInt(-1, -1))
+        if (_position != new PointInt(-1, -1) && !_movingAway)
             LevelData.WallGrid.Remove(_position);
     }
 }

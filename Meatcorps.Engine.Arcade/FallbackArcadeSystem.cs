@@ -36,7 +36,7 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
         _maxPlayers = maxPlayers;
         _startingPoints = startingPoints;
 
-        for (var i = 0; i < totalPlayers; i++)
+        for (var i = 0; i < Game.MaxPlayers; i++)
             _players.Add(new ArcadePlayer
             {
                 Id = Guid.NewGuid().ToString(),
@@ -67,6 +67,7 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
         if (current!.Points < points)
             return false;
         
+        Console.WriteLine("DEDUCTING POINTS: " + points + " TO: " + current.Name + " CURRENT: " + current.Points);
         current!.Points -= points;
         return true;
     }
@@ -74,8 +75,8 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
     public void SubmitPoints(int player, int points)
     {
         if (!TryGetPlayer(player, out var current))
-            throw new InvalidOperationException($"Player {player} has no points");
-        
+            return;
+        Console.WriteLine("SUBMITTING POINTS: " + points + " TO: " + current.Name + " CURRENT: " + current.Points);
         current!.Points += points;
     }
 
@@ -96,7 +97,7 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
         if (TryGetPlayer(player, out var current))
             return current!.Name;
         
-        throw new InvalidOperationException($"Player {player} has no name");
+        return "SIGNED OUT!";   
     }
 
     public void SignPlayerOut(int player)

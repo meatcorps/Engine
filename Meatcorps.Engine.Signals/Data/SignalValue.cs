@@ -65,7 +65,7 @@ public  class SignalValue<TValueType, TGroup> : IEqualityComparer<SignalValue<TV
         if (value is not TValueType valueType)
             return;
         
-        IncomingValue.Invoke(_value);
+        IncomingValue.Invoke(valueType);
         
         if (_value?.Equals(value) ?? false)
             return;

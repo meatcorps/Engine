@@ -1,5 +1,8 @@
+using Meatcorps.Engine.Core.Extensions;
+using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.RayLib.Audio;
 using Meatcorps.Engine.RayLib.Interfaces;
 
@@ -16,7 +19,10 @@ public class SoundFxResource<T> : ILoadAfterRayLibInit, IAudioInitNeeded where T
     {
         _poolSize = poolSize;
         _name = name;
-        _masterVolume = masterVolume;
+        var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new BasicConfig();
+        _masterVolume = config.GetOrDefault("Audio", "SoundFxVolume", 1f);
+        if (!masterVolume.EqualsSafe(1f))
+            _masterVolume = masterVolume;
     }
 
     public SoundFxResource<T> AddSound(T sound, string path)

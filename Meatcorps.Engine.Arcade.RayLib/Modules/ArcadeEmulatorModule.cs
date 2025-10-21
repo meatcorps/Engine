@@ -6,6 +6,7 @@ using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.Interfaces.Trackers;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Storage.Services;
+using Meatcorps.Engine.MQTT.Modules;
 using Meatcorps.Engine.RayLib.Abstractions;
 
 namespace Meatcorps.Engine.Arcade.RayLib.Modules;
@@ -14,7 +15,7 @@ public class ArcadeEmulatorModule
 {
     private readonly ArcadeGame _game;
 
-    public static ArcadeEmulatorModule Load(ArcadeGame game, string serverUrl = "http://localhost:8080/")
+    public static ArcadeEmulatorModule Load(ArcadeGame game, MQTTModule? mqttModule, string serverUrl = "http://localhost:8080/")
     {
         var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new FallbackConfig();
         GlobalObjectManager.ObjectManager.Register<ArcadeGame>(game);

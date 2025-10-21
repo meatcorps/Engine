@@ -39,6 +39,7 @@ public class EndGameGameObject : ResourceGameObject
         Raylib.DrawTextEx(Fonts.GetFont(), str,
             new Vector2((float)_renderer.RenderWidth / 2 - size.X / 2, _renderer.RenderHeight - 16 - size.Y), 10, 1,
             Color.White);
+        
         base.OnDraw();
     }
 

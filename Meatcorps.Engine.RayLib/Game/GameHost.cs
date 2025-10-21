@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.Numerics;
+using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.Interfaces.Trackers;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Interfaces;
@@ -23,6 +25,10 @@ public sealed class GameHost : IDisposable
     private BaseScene? _newSceneToLoad = null;
     private readonly List<IBackgroundService> _backgroundServices = new();
     private bool _gameHasAudio = false;
+    private IUniversalConfig _config;
+    private int _borderLessPosX;
+    private int _borderLessPosY;
+    private bool _disableMouseCursor = false;
     public RenderService RenderService { get; }
     
     public GameHost(int width, int height, string title, int targetFps = 60, ICamera? camera = null)
@@ -45,9 +51,20 @@ public sealed class GameHost : IDisposable
     
     public void ToggleFullscreen()
     {
+        var monitor = _config.GetOrDefault("Graphics", "Monitor", -1);
+        if (monitor > -1)
+            Raylib.SetWindowMonitor(monitor);
         Raylib.ToggleFullscreen();
         Width = Raylib.GetScreenWidth();
         Height = Raylib.GetScreenHeight();
+    }
+
+    public void ToggleBorderlessWindow()
+    {
+        if (_borderLessPosX != -1 && _borderLessPosY != -1)
+            Raylib.SetWindowPosition(_borderLessPosX, _borderLessPosY);
+
+        Raylib.ToggleBorderlessWindowed();
     }
 
     public void SetWindowSize(int newWidth, int newHeight)
@@ -71,6 +88,15 @@ public sealed class GameHost : IDisposable
 
     public void Run()
     {
+        _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new BasicConfig();
+
+        if (_config.GetOrDefault("General", "HideMouseCursor", false))
+            Raylib.HideCursor();
+        _disableMouseCursor = _config.GetOrDefault("General", "DisableMouseCursor", true);
+        
+        _borderLessPosX = _config.GetOrDefault("Graphics", "BorderlessWindowPositionX", -1);
+        _borderLessPosY = _config.GetOrDefault("Graphics", "BorderlessWindowPositionY", -1);
+        
         Raylib.InitWindow(Width, Height, _title);
         Raylib.SetTargetFPS(_targetFps);
         var updateLoopTime = new FrameTimer();
@@ -83,6 +109,15 @@ public sealed class GameHost : IDisposable
             _gameHasAudio = true;
         }
 
+        if (_config.GetOrDefault("Graphics", "Borderless", false))
+        {
+            ToggleBorderlessWindow();
+        }
+        if (_config.GetOrDefault("Graphics", "FullScreen", false))
+        {
+            ToggleFullscreen();
+        }
+        
         foreach (var instance in GlobalObjectManager.ObjectManager.GetList<ILoadAfterRayLibInit>()!)
             instance.Load();
         
@@ -138,7 +173,7 @@ public sealed class GameHost : IDisposable
             var scope = renderLoopTime.Scope();
             activeScene.RegisterForRender();
             activeScene.Draw();
-            RenderService.Render(scope);
+            RenderService.Render(scope, !_disableMouseCursor);
             
 #if DEBUG
             Raylib.SetWindowTitle($"Update time {updateLoopTime:F4}, Render time {renderLoopTime:F4}, FPS {Raylib.GetFPS()}");

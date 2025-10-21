@@ -16,6 +16,7 @@ public class PersistentLoaderAndSaverService : IKeyValueLoader<string>, IKeyValu
     public PersistentLoaderAndSaverService()
     {
         _logger = LoggingService.GetLogger<PersistentLoaderAndSaverService>();
+        _ = Task.Run(MonitorAsync, _cancellationTokenSource.Token);
     }
 
     public async Task MonitorAsync()

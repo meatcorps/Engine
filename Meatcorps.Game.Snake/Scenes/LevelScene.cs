@@ -46,6 +46,7 @@ public class LevelScene : BaseScene
     private SessionService<SnakeSessionData, SnakePlayerData> _sessionService;
     private int _cachedScore;
     private IPlayerCheckin _playerCheckin;
+    private bool _levelReplaceMode = false;
 
     public LevelScene(string levelPath = "Assets/Level1_Easy.txt", bool demoMode = false)
     {
@@ -95,6 +96,14 @@ public class LevelScene : BaseScene
             {
                 _flies.KillAll();
             }))
+            .Register(() => new SimpleCommand("REPLACEWALLS", () =>
+            {
+                _levelReplaceMode = true;
+            }))
+            .Register(() => new SimpleCommand("ADDWALLS", () =>
+            {
+                _levelReplaceMode = false;
+            }))
             .Register(() => new BlockGridCommand("LEVELDATA", LoadLevel));
 
         if (!DemoMode)
@@ -128,6 +137,11 @@ public class LevelScene : BaseScene
                 }))
                 .Register(() => new StringVariableCommand("NEXTLEVEL", level =>
                 {
+                    foreach (var player in _players)
+                    {
+                        if (player.IsDead)
+                            return;
+                    }
                     GameHost.SwitchScene(new LevelScene("Assets/" + level));
                 }))
                 .Register(() => new DelayCommand("DELAYCOUNTDOWN", (on, firstTick) =>
@@ -152,6 +166,10 @@ public class LevelScene : BaseScene
             _parser.Register(() => new SimpleCommand("ENDLEVEL", () =>
                 {
                     Died(null);
+                }))
+                .Register(() => new SimpleCommand("ENDGAME", () =>
+                {
+                    EndGame();
                 }))
                 .Register(() => new StringVariableCommand("NEXTLEVEL", level =>
                 {
@@ -221,6 +239,10 @@ public class LevelScene : BaseScene
         {
             var position = gridItem.Item1;
             var character = gridItem.Item2;
+            
+            if (_levelReplaceMode && character != '#' && _level.WallGrid.IsOccupied(position))
+                _level.WallGrid.Get(position)!.Remove();
+            
             switch (character)
             {
                 case '#':
@@ -395,7 +417,6 @@ public class LevelScene : BaseScene
 
     public void EndGame()
     {
-        // Todo: EndGame
         GameHost.SwitchScene(new EndScene());
     }
 

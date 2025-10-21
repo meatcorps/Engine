@@ -1,0 +1,210 @@
+001|Truth|Creepy|What’s the creepiest sound you’ve ever heard when you were alone?
+002|Truth|Creepy|What’s a nightmare that still freaks you out when you remember it?
+003|Truth|Creepy|Would you spend a night in an abandoned hospital for €100?
+004|Truth|Creepy|Have you ever felt something watching you?
+005|Truth|Creepy|Which object around you feels cursed?
+006|Truth|Creepy|If you died tonight, who would you haunt first?
+007|Truth|Creepy|What’s a horror movie that secretly made you sleep with the lights on?
+008|Truth|Creepy|Have you ever heard your name whispered when no one was there?
+009|Truth|Creepy|What ghost story do you actually believe could be real?
+010|Truth|Creepy|If the power suddenly went out, what would you do first?
+011|Truth|Creepy|Have you ever felt cold air move past you for no reason?
+012|Truth|Creepy|What’s your biggest fear in the dark?
+013|Truth|Creepy|Would you rather see a shadow figure or hear one whisper?
+014|Truth|Creepy|What’s the creepiest coincidence that’s ever happened to you?
+015|Truth|Creepy|If you became a ghost, what would your unfinished business be?
+016|Truth|Creepy|Which cabinet here would be haunted if ghosts played games?
+017|Truth|Creepy|If the dead could text you, who would message first?
+018|Truth|Creepy|Would you trade a year of your life to talk to someone gone?
+019|Truth|Creepy|What moment in your life felt the most like a horror movie?
+020|Truth|Creepy|If your reflection smiled before you did, what would you say?
+021|Truth|Punk|What’s the most punk thing you’ve ever done?
+022|Truth|Punk|Which band changed your life completely?
+023|Truth|Punk|What’s your favorite lyric that defines you?
+024|Truth|Punk|What’s the worst gig you’ve ever seen?
+025|Truth|Punk|If you had a band, what would you name it?
+026|Truth|Punk|Which song do you always scream instead of sing?
+027|Truth|Punk|What’s your guilty pleasure song you’d never admit to a punk friend?
+028|Truth|Punk|Have you ever argued about music for more than an hour?
+029|Truth|Punk|What’s the first song that made you feel unstoppable?
+030|Truth|Punk|Which punk icon do you secretly think is overrated?
+031|Truth|Punk|What’s your favorite protest or rebellion moment?
+032|Truth|Punk|What would your punk name be?
+033|Truth|Punk|Ever made your own DIY merch or patch?
+034|Truth|Punk|Which band tattoo would you actually get?
+035|Truth|Punk|Who’s your dream band to open for?
+036|Truth|Arcade|Which game made you rage the hardest?
+037|Truth|Arcade|Have you ever faked a win on an arcade game?
+038|Truth|Arcade|Which character would you marry or destroy instantly?
+039|Truth|Arcade|If you could live inside any arcade game, which one?
+040|Truth|Arcade|What’s your proudest high score moment?
+041|Truth|Arcade|Which game music gets stuck in your head all the time?
+042|Truth|Arcade|Have you ever tried to cheat on a high score?
+043|Truth|Arcade|Which arcade cabinet here is your favorite?
+044|Truth|Arcade|If you could add blood and chaos to one classic game, which?
+045|Truth|Arcade|What’s your secret gaming ritual?
+046|Truth|Arcade|What’s the weirdest bug or glitch you’ve seen?
+047|Truth|Arcade|If you could revive any old console, which would it be?
+048|Truth|Arcade|Have you ever named your player character something embarrassing?
+049|Truth|Arcade|Would you rather win every game or make everyone else lose?
+050|Truth|Arcade|Which game world would make the worst horror movie?
+051|Truth|Embarrassing|What’s your most awkward moment this year?
+052|Truth|Embarrassing|What’s the weirdest lie you’ve told to get out of plans?
+053|Truth|Embarrassing|Who would you hate to see your search history?
+054|Truth|Embarrassing|What’s your cringiest text ever sent?
+055|Truth|Embarrassing|What’s your secret obsession no one knows about?
+056|Truth|Embarrassing|What’s something you’ve broken and blamed on someone else?
+057|Truth|Embarrassing|Who here do you think would survive a horror movie the least?
+058|Truth|Embarrassing|What’s the dumbest thing you’ve done while tired?
+059|Truth|Embarrassing|What’s a talent you pretend to have?
+060|Truth|Embarrassing|Have you ever sung in the shower too dramatically?
+061|Truth|Embarrassing|What was your last major fail in public?
+062|Truth|Embarrassing|What’s a word you always mispronounce?
+063|Truth|Embarrassing|What was your worst hairstyle choice ever?
+064|Truth|Embarrassing|Have you ever walked into something because of your phone?
+065|Truth|Embarrassing|What’s the last thing that made you blush hard?
+066|Truth|Embarrassing|Have you ever pretended to know a band to look cool?
+067|Truth|Embarrassing|What’s your most embarrassing playlist song?
+068|Truth|Embarrassing|Who here intimidates you the most?
+069|Truth|Embarrassing|What’s a childhood secret your parents still don’t know?
+070|Truth|Embarrassing|What trend did you follow that you now regret?
+071|Truth|Embarrassing|What’s the weirdest food combo you actually like?
+072|Truth|Embarrassing|What’s the most ridiculous thing you believed as a kid?
+073|Truth|Embarrassing|Have you ever tried to act smart and failed instantly?
+074|Truth|Embarrassing|If your life were a meme, what would the caption be?
+075|Truth|Embarrassing|What’s something you can’t do that everyone assumes you can?
+076|Dare|Creepy|Whisper 'They’re watching' every 10 seconds until time runs out.
+077|Dare|Creepy|Stand perfectly still with a smile for 30 seconds.
+078|Dare|Creepy|Act like a possessed doll slowly coming to life.
+079|Dare|Creepy|Pretend to have a conversation with an invisible ghost.
+080|Dare|Creepy|Scream suddenly for no reason, then act like nothing happened.
+081|Dare|Creepy|Laugh like a horror movie clown for 15 seconds.
+082|Dare|Creepy|Crawl across the floor like a ghost from The Ring.
+083|Dare|Creepy|Say 'Don’t turn around' in your creepiest voice.
+084|Dare|Creepy|Speak only in whispers until the next round.
+085|Dare|Creepy|Describe a fake haunting as if it’s real.
+086|Dare|Creepy|Freeze mid-sentence as if something possessed you.
+087|Dare|Creepy|Move like a puppet controlled by unseen strings.
+088|Dare|Creepy|Announce a prophecy of doom dramatically.
+089|Dare|Creepy|Walk backwards while staring at the ceiling.
+090|Dare|Creepy|Talk to your reflection (or camera) like it’s answering back.
+091|Dare|Creepy|Act like you’re hearing voices giving you orders.
+092|Dare|Creepy|Pretend the arcade machine is whispering secrets to you.
+093|Dare|Creepy|Summon a 'ghost player' and cheer them on.
+094|Dare|Creepy|Repeat 'it wasn’t supposed to happen' softly until timer ends.
+095|Dare|Creepy|Make everyone believe you just saw something behind them.
+096|Dare|Punk|Headbang for the full timer!
+097|Dare|Punk|Air guitar your favorite riff like you’re on stage.
+098|Dare|Punk|Shout a random protest slogan passionately.
+099|Dare|Punk|Mosh solo in place for 20 seconds.
+100|Dare|Punk|Sing any chorus with fake confidence and power.
+101|Dare|Punk|Pretend you just broke your guitar and apologize to the crowd.
+102|Dare|Punk|Introduce yourself like a rock star about to destroy the stage.
+103|Dare|Punk|Stage dive in slow motion (safe zone only).
+104|Dare|Punk|Do a mock interview about your ‘legendary tour’.
+105|Dare|Punk|Pretend to argue with your imaginary bandmate.
+106|Dare|Punk|Make a drum solo using only your mouth.
+107|Dare|Punk|Play air bass dramatically for 15 seconds.
+108|Dare|Punk|Bow to your invisible fans repeatedly.
+109|Dare|Punk|Do a full rock outro with imaginary fireworks.
+110|Dare|Punk|Shout 'WE ARE THE CHAOS' and drop a mic pose.
+111|Dare|Arcade|Act like you’re controlling yourself with invisible buttons.
+112|Dare|Arcade|Narrate your moves like a retro game announcer.
+113|Dare|Arcade|Pretend you’re glitching out in slow motion.
+114|Dare|Arcade|Do the most dramatic 'Game Over' death scene possible.
+115|Dare|Arcade|Make arcade sound effects for 30 seconds.
+116|Dare|Arcade|Dance like a pixel character looping an idle animation.
+117|Dare|Arcade|Announce every action you take like a speedrun streamer.
+118|Dare|Arcade|Mimic the startup noise of your favorite console.
+119|Dare|Arcade|Act out your victory dance for a fake boss battle.
+120|Dare|Arcade|Freeze like a paused game for 15 seconds.
+121|Dare|Arcade|Do a fake boss intro animation of yourself.
+122|Dare|Arcade|Act like you’re stuck in a lag spike.
+123|Dare|Arcade|Do three different NPC idle animations.
+124|Dare|Arcade|Describe your own actions as if in patch notes.
+125|Dare|Arcade|Lose dramatically, fall to your knees and shout 'LAG!'.
+126|Dare|Embarrassing|Read your last message aloud dramatically.
+127|Dare|Embarrassing|Sing the chorus of any random song you barely know.
+128|Dare|Embarrassing|Act like a bad actor in a romance movie.
+129|Dare|Embarrassing|Do your best imitation of a celebrity you dislike.
+130|Dare|Embarrassing|Explain how you’d survive a zombie apocalypse as an influencer.
+131|Dare|Embarrassing|Give a fake award speech for something absurd.
+132|Dare|Embarrassing|Make a motivational speech about pizza.
+133|Dare|Embarrassing|Act like your phone just exposed your search history.
+134|Dare|Embarrassing|Improvise a breakup text with your sandwich.
+135|Dare|Embarrassing|Pretend to be on a reality show explaining your life choices.
+136|Dare|Embarrassing|Announce your ‘villain origin story’ dramatically.
+137|Dare|Embarrassing|Give a public apology for eating someone else’s fries.
+138|Dare|Embarrassing|Act like you just saw your ex at this party.
+139|Dare|Embarrassing|Do your best 'embarrassed laugh' for 10 seconds.
+140|Dare|Embarrassing|Pretend to host a cringe talent show.
+141|Dare|Embarrassing|Describe your most awkward moment using hand gestures only.
+142|Dare|Embarrassing|Do a fake commercial for the weirdest product you can imagine.
+143|Dare|Embarrassing|Make everyone believe you just remembered something horrible.
+144|Dare|Embarrassing|Pretend you’re giving life advice to your past self.
+145|Dare|Embarrassing|Announce something serious but end it with a random joke.
+146|Dare|Embarrassing|Say a random word like it’s a world-shattering revelation.
+147|Dare|Embarrassing|Overreact to touching something ‘disgusting’.
+148|Dare|Embarrassing|Do an emotional speech about losing a sock.
+149|Dare|Embarrassing|Pretend your favorite song just started and dance awkwardly.
+150|Dare|Embarrassing|Act like you’re trying to flirt with a vending machine.
+151|Dare|Physical|Do 10 squats while yelling a random word.
+152|Dare|Physical|Balance on one foot while shouting your name backwards.
+153|Dare|Physical|Spin in place five times, then walk straight.
+154|Dare|Physical|Jump in slow motion like an action hero.
+155|Dare|Physical|Do your best zombie walk for 15 seconds.
+156|Dare|Physical|Crawl like a cat escaping danger.
+157|Dare|Physical|Do your best superhero landing and freeze.
+158|Dare|Physical|Act like you’re in a slow-motion fight scene.
+159|Dare|Physical|Run in place like you’re late for your own concert.
+160|Dare|Physical|Pretend the floor is lava for 10 seconds.
+161|Dare|Physical|Do jumping jacks while singing something random.
+162|Dare|Physical|Walk like a robot with low battery.
+163|Dare|Physical|Freeze mid-jump and hold the pose.
+164|Dare|Physical|Balance an invisible plate on your head and walk.
+165|Dare|Physical|Do your best impression of a broken animatronic.
+166|Dare|Physical|Shadowbox against an invisible ghost.
+167|Dare|Physical|Stretch like you’re waking from a 100-year nap.
+168|Dare|Physical|Act out dodging lasers for 20 seconds.
+169|Dare|Physical|Do a dance that would get you banned from TV in the 80s.
+170|Dare|Physical|Pretend to faint dramatically, then recover instantly.
+171|Truth|Creepy|Have you ever dreamed of someone who later appeared in real life?
+172|Truth|Creepy|If you could ask a ghost one question, what would it be?
+173|Truth|Creepy|What’s your theory on what happens after we die?
+174|Truth|Creepy|Would you sleep in a graveyard if you had friends with you?
+175|Truth|Creepy|If a mirror spoke back to you, what would it say?
+176|Truth|Arcade|If you could merge two games into one, which ones?
+177|Truth|Arcade|Which old game deserves a brutal horror remake?
+178|Truth|Arcade|What’s your worst 'controller rage' story?
+179|Truth|Arcade|If you could glitch reality once, what would you change?
+180|Truth|Arcade|Have you ever lied about your high score to impress someone?
+181|Dare|Physical|Do a slow-motion mosh pit for 10 seconds.
+182|Dare|Physical|Pretend the floor is a drum kit and play it.
+183|Dare|Physical|Do your best evil laugh while tiptoeing like a villain.
+184|Dare|Physical|March in place like a broken toy soldier.
+185|Dare|Physical|Pretend your arms are spaghetti noodles for 15 seconds.
+186|Dare|Physical|Do your most dramatic rockstar collapse on stage.
+187|Dare|Physical|Act like a power-up just made you invincible.
+188|Dare|Physical|Pretend gravity stopped working for 10 seconds.
+189|Dare|Physical|Dance like static electricity just hit you.
+190|Dare|Physical|Try to moonwalk while humming creepy music.
+191|Dare|Punk|Pretend you’re spray-painting rebellion slogans in the air.
+192|Dare|Punk|Shout the title of a random song like it’s your life motto.
+193|Dare|Punk|Drum a solo on your chest until the timer ends.
+194|Dare|Punk|Pretend to fire your entire imaginary band on stage.
+195|Dare|Punk|Do your best punk scream followed by a polite bow.
+196|Dare|Embarrassing|Announce something normal like it’s breaking news.
+197|Dare|Embarrassing|Say a random food name in your most seductive voice.
+198|Dare|Embarrassing|Do a fake commercial for your least favorite snack.
+199|Dare|Embarrassing|Explain how to brush your teeth like it’s rocket science.
+200|Dare|Embarrassing|Sing the alphabet like it’s an emotional ballad.
+201|Dare|Embarrassing|Pretend to call your boss to quit your job dramatically.
+202|Dare|Embarrassing|Act like you just won a lifetime supply of socks.
+203|Dare|Embarrassing|Give a weather forecast using only your hands.
+204|Dare|Embarrassing|Pretend you’re the host of the worst cooking show ever.
+205|Dare|Embarrassing|Do your best awkward small-talk impression.
+206|Dare|Embarrassing|Pretend to get possessed by your phone.
+207|Dare|Embarrassing|Narrate your own life like a true-crime documentary.
+208|Dare|Embarrassing|Try to convince everyone you’re secretly famous.
+209|Dare|Embarrassing|Do a fake motivational speech that makes no sense.
+210|Dare|Embarrassing|End the dare with your most dramatic movie stare.

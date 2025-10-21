@@ -1,0 +1,52 @@
+using Meatcorps.Engine.Core.Data;
+using Meatcorps.Engine.Core.Input;
+using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Utilities;
+using Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;
+using Meatcorps.Engine.RayLib.Abstractions;
+using Meatcorps.Engine.RayLib.Audio;
+using Meatcorps.Engine.RayLib.Interfaces;
+using Meatcorps.Engine.Session;
+using Meatcorps.Game.KillTheSkulls.Data;
+using Meatcorps.Game.KillTheSkulls.GameEnums;
+using Meatcorps.Game.KillTheSkulls.GameObjects.UI;
+using Meatcorps.Game.KillTheSkulls.Resources;
+
+namespace Meatcorps.Game.KillTheSkulls.Scenes;
+
+public class EndScene : BaseScene
+{
+    private TimerOn _timer = new(30000);
+    private PlayerInputRouter<GameInput> _controller;
+
+    public int TimeLeft => (int)(_timer.TimeRemaining / 1000);
+
+    protected override void OnInitialize()
+    {
+        var totalPlayers = GlobalObjectManager.ObjectManager.Get<SessionService<GameSessionData, GamePlayerData>>()!
+            .CurrentSession.TotalPlayers;
+        var renderer = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
+        GlobalObjectManager.ObjectManager.Get<MusicManager<GameMusic>>()!.Play(GameMusic.IntroOutro);
+        AddGameObject(new EndGameGameObject());
+        for (var i = 0; i < totalPlayers; i++)
+        {
+            var width = renderer.RenderWidth / totalPlayers;
+            var bounds = new Rect(i * width, 16, width, renderer.RenderHeight - 32);
+            AddGameObject(new FinalScoreCalculator(bounds, i + 1));
+        }
+
+        _controller = GlobalObjectManager.ObjectManager.Get<PlayerInputRouter<GameInput>>()!;
+        _controller.GetState(1, GameInput.Action).Animation = new BlinkAnimation(250);
+    }
+
+    protected override void OnUpdate(float deltaTime)
+    {
+        _timer.Update(true, deltaTime);
+        if (_timer.Output || (TimeLeft < 12 && (_controller.GetState(1, GameInput.Action).IsPressed)))
+            GameHost.SwitchScene(new IntroScene());
+    }
+
+    protected override void OnDispose()
+    {
+    }
+}

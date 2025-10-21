@@ -421,7 +421,7 @@ rivate licensed assets
 **/Assets/Music/**
 **/Assets/SoundFX/**
 !**/Assets/PlaceHolders/**
-
+Config.json
 # Build outputs
 bin/
 obj/

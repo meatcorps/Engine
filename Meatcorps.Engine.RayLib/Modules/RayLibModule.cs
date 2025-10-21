@@ -73,14 +73,14 @@ public class RayLibModule
         return this;
     }
 
-    public RayLibModule SetResource<T>(T instance) where T : class, ILoadAfterRayLibInit
+    public RayLibModule SetResource<T>(T instance, string tag = "default") where T : class, ILoadAfterRayLibInit
     {
 #if DEBUG
         if (!_config.GetOrDefault("Debug", "SetResource_" + instance.GetType().Name, true))
             return this;
 #endif
         GlobalObjectManager.ObjectManager.Add<ILoadAfterRayLibInit>(instance);
-        GlobalObjectManager.ObjectManager.Register(instance);
+        GlobalObjectManager.ObjectManager.Register(instance, tag);
         return this;
     }
 

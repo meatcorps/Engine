@@ -39,14 +39,21 @@ else
 }
 
 var mqtt = MQTTModule.Load();
-ArcadeGameSystemModule.Load(new ArcadeGame
+
+var game = new ArcadeGame
 {
     MaxPlayers = 2,
     Name = "PACMAN!",
     Code = settings.GetOrDefault("ArcadeGame", "Code", 8271),
     PricePoints = settings.GetOrDefault("ArcadeGame", "PricePoints", 1000),
     Description = "The most gore version of the pacman game ever made.",
-}, mqtt).SetIntroScene<IntroScene>();
+};
+
+if (settings.GetOrDefault("ArcadeGame", "UseEmulator", false))
+    ArcadeEmulatorModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+else
+    ArcadeGameSystemModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+
 mqtt.Create();
 
 GameSession.Load();
@@ -67,9 +74,9 @@ using var _ = RayLibModule.Setup()
     ))
     .SetResource(GameSpriteFactory.Load())
     .SetResource(AudioEnumBinder.BindAllMusic(
-        MusicResource<GameMusic>.Create().SetMasterVolume(0), "Assets/Music/"))
+        MusicResource<GameMusic>.Create(), "Assets/Music/"))
     .SetResource(AudioEnumBinder.BindAllSounds(
-        SoundFxResource<GameSounds>.Create(10).SetMasterVolume(1), "Assets/SoundFX/"))
+        SoundFxResource<GameSounds>.Create(10), "Assets/SoundFX/"))
     .SetResource(TextManager.OnlyOneFont("Assets/Fonts/PressStart2P-Regular.ttf"))
     .Load(new IntroScene())
     .Run();

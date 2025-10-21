@@ -11,7 +11,7 @@ public class GhostInkyBehaviour : GhostLogic
 {
     private GhostBehaviour? _blinky;
     private Vector2 _previousVelocity = new Vector2(0, -1); 
-    public override int TimeoutBeforeStart => 2000;
+    public override int TimeoutBeforeStart => 3000;
     
     public GhostInkyBehaviour(LevelData levelData) : base(levelData)
     {

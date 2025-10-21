@@ -73,7 +73,7 @@ public class GhostStateManager
     {
         _startTimer.Update(true, deltaTime);
         if (_startTimer.Output && _state == GhostState.Idle) 
-            _state = GhostState.Chase;
+            _state = GhostState.Scatter;
         
         if (_state != _previousState)
         {

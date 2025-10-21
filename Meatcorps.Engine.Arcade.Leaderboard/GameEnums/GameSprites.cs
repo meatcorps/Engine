@@ -44,4 +44,5 @@ public enum GameSprites
     ArcadeStickAnimationLeftRight,
     ArcadeStickAnimationTopDown,
     ArcadeStickAnimationRotate,
+    Background,
 }

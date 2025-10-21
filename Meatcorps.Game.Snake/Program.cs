@@ -37,14 +37,21 @@ else
 }
 
 var mqtt = MQTTModule.Load();
-ArcadeGameSystemModule.Load(new ArcadeGame
+
+var game = new ArcadeGame
 {
     MaxPlayers = 2,
     Name = "SNAKE!",
     Code = settings.GetOrDefault("ArcadeGame", "Code", 1234),
     PricePoints = settings.GetOrDefault("ArcadeGame", "PricePoints", 1000),
     Description = "The most gore version of the game snake ever made.",
-}, mqtt).SetIntroScene<IntroScene>();
+};
+
+if (settings.GetOrDefault("ArcadeGame", "UseEmulator", false))
+    ArcadeEmulatorModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+else
+    ArcadeGameSystemModule.Load(game, mqtt).SetIntroScene<IntroScene>();
+
 mqtt.Create();
 
 SnakeSession.Load();
@@ -63,13 +70,11 @@ using var _ = RayLibModule.Setup()
     .SetResource(AudioEnumBinder.BindAllMusic(
             MusicResource<SnakeMusic>
                 .Create()
-                .UsePlaceHoldersForMissingFiles()
-                .SetMasterVolume(1),"Assets/Music/")) 
+                .UsePlaceHoldersForMissingFiles(),"Assets/Music/")) 
     .SetResource(AudioEnumBinder.BindAllSounds(
             SoundFxResource<SnakeSounds>
                 .Create(6)
-                .UsePlaceHoldersForMissingFiles()
-                .SetMasterVolume(1), "Assets/SoundFX/"))
+                .UsePlaceHoldersForMissingFiles(), "Assets/SoundFX/"))
     .SetResource(TextManager.OnlyOneFont("Assets/Fonts/PressStart2P-Regular.ttf"))
     .Load(new IntroScene())
     .Run();

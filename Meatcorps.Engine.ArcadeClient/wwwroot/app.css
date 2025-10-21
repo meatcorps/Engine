@@ -119,6 +119,18 @@ p.intro-title strong {
     animation: pulse-green 1.5s infinite alternate;
 }
 
+.game-card.Vote h2 {
+    color: cyan !important;
+    text-shadow: 0 0 6px rgba(0, 255, 255, 0.8), 0 0 12px rgba(0, 255, 255, 0.8);
+    animation: pulse-green 1.5s infinite alternate;
+    font-size: 1.5rem;
+}
+
+.game-card.Vote .tag {
+    color: cyan !important;
+}
+
+
 .game-card .tag {
     display: block;
     text-align: right;
@@ -137,6 +149,11 @@ p.intro-title strong {
 
 button.active {
     animation: pulse-box 1.5s infinite alternate;
+}
+
+.game-card.Vote button.active {
+    animation: pulse-box-cyan 1.5s infinite alternate;
+    margin-left: 1rem;
 }
 
 button:hover.active {
@@ -161,6 +178,10 @@ p.alert-danger, p.alert-warning {
 @keyframes pulse-box {
     from { box-shadow: 0 0 4px #f00, 0 0 8px #f00; }
     to   { box-shadow: 0 0 8px #f00, 0 0 16px #f00, 0 0 24px #f00; }
+}
+@keyframes pulse-box-cyan {
+    from { box-shadow: 0 0 4px #0FF, 0 0 8px #0FF; }
+    to   { box-shadow: 0 0 8px #0FF, 0 0 16px #0FF, 0 0 24px #0FF; }
 }
 
 @keyframes pan {

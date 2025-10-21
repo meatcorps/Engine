@@ -1,10 +1,13 @@
 @page "/admin"
 @using System.Reactive.Disposables
+@using Meatcorps.Engine.Arcade.Constants
 @using Meatcorps.Engine.Arcade.Data
 @using Meatcorps.Engine.Arcade.Enums
 @using Meatcorps.Engine.Arcade.Services
 @using Meatcorps.Engine.ArcadeClient.Interfaces
 @using Meatcorps.Engine.ArcadeClient.Services
+@using Meatcorps.Engine.MQTT.Enums
+@using Meatcorps.Engine.Signals.Data
 @inject PlayerService PlayerService
 @inject ArcadeDataService ArcadeDataService
 @inject IUserIdProvider UserIdProvider
@@ -19,23 +22,51 @@
 <h3>I'm the LAW!</h3>
 
 <table>
-@foreach (var player in ArcadeDataService.Players())
-{
-    <tr>
-        <td>
-            @player.Name <small>(@player.Points)</small>&nbsp;
-        </td>
-        <td>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, 10)">+10</button>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, 100)">+100</button>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, 1000)">+1000</button>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, -10)">-10</button>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, -100)">-100</button>
-            <button @onclick="() => PlayerService.MutatePoints(player.Id, -1000)">-1000</button>
-        </td>
-    </tr>
-}
+    @foreach (var player in ArcadeDataService.Players())
+    {
+        <tr>
+            <td>
+                @player.Name <small>(@player.Points)</small><br/>
+                <small style="font-size: 12px; font-family: Arial; opacity: 0.5;">@player.Id</small>
+            </td>
+            <td>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, 10)">+10</button>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, 100)">+100</button>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, 1000)">+1000</button>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, -10)">-10</button>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, -100)">-100</button>
+                <button @onclick="() => PlayerService.MutatePoints(player.Id, -1000)">-1000</button>
+            </td>
+        </tr>
+    }
 </table>
+
+<style>
+    table td {
+        border: 2px solid gray;
+        padding: 4px;
+    }
+</style>
+
+<h3>Register</h3>
+    <input type="text" @bind="NewPlayerName" maxlength="16"/>
+    <button @onclick="RegisterPlayer">Save</button>
+
+<h3>Remove by ID</h3>
+    <input type="text" @bind="RemoveId" maxlength="40"/>
+    <button @onclick="RemovePlayer">Save</button>
+    
+<h3>SETPOINTS</h3>
+    <input type="text" @bind="ExactId1" maxlength="40"/>
+    <input type="number" @bind="ExactPointsAmount" maxlength="40"/>
+    <button @onclick="SwapPlayer">Save</button>
+    
+<h3>Rename player</h3>
+    <input type="text" @bind="RenameId" maxlength="40"/>
+    <input type="text" @bind="RenamePlayerName" maxlength="16"/>
+    <button @onclick="RenamePlayer">Save</button>
+
+<h3>Games</h3>
 
 @foreach (var game in ArcadeDataService.Games())
 {
@@ -55,9 +86,17 @@
 
 @code {
 
+    public string RemoveId = "";
+    public string RenameId = "";
+    public string ExactId1 = "";
+    public string ExactPointsAmount = "";
+    public string NewPlayerName = "";
+    public string RenamePlayerName = "";
+    public bool ProcessingInformation;
     private bool _admin;
     private CancellationDisposable _pageAliveCts = new ();
-    
+    private SignalValue<ArcadeAdminActions, MQTTGroup> _adminActions = null!;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -73,13 +112,85 @@
             {
                 await InvokeAsync(StateHasChanged);
             }, _pageAliveCts.Token);
+
+            _adminActions = new SignalValue<ArcadeAdminActions, MQTTGroup>(MQTTGroup.Exchange, ArcadeEndpointTopics.ADMIN_ACTIONS, new ArcadeAdminActions());
             
             await InvokeAsync(StateHasChanged);
         }
     }
     
+    public async Task RegisterPlayer()
+    {
+        if (NewPlayerName.Trim().Length < 2)
+        { 
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (ArcadeDataService.Players().Any(x => x.Name.Trim().ToLower() == NewPlayerName.Trim().ToLower()))
+        {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        ProcessingInformation = true;
+        await InvokeAsync(StateHasChanged);
+        await PlayerService.RegisterPlayerAsync(Guid.NewGuid().ToString(), NewPlayerName.Trim());
+        NewPlayerName = "";
+        
+        ProcessingInformation = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    
     public void Dispose()
     {
+    }
+
+    private async Task RemovePlayer()
+    {
+        _adminActions.Value = new ArcadeAdminActions
+        {
+            Action = "REMOVE",
+            Param1 = RemoveId
+        };
+        RemoveId = "";
+        _adminActions.Push();
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(1000);
+        ArcadeDataService.SendMessage(ArcadeSystemMessageCommands.GET_ALL_DATA);
+        
+    }
+
+    private async Task SwapPlayer()
+    {
+        _adminActions.Value = new ArcadeAdminActions
+        {
+            Action = "EXACTPOINTS",
+            Param1 = ExactId1,
+            Param2 = ExactPointsAmount
+        };
+        ExactId1 = "";
+        ExactPointsAmount = "";
+        _adminActions.Push();
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(1000);
+        ArcadeDataService.SendMessage(ArcadeSystemMessageCommands.GET_ALL_DATA);
+    }
+    
+    private async Task RenamePlayer()
+    {
+        _adminActions.Value = new ArcadeAdminActions
+        {
+            Action = "RENAME",
+            Param1 = RenameId,
+            Param2 = RenamePlayerName
+        };
+        RenameId = "";
+        RenamePlayerName = "";
+        _adminActions.Push();
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(1000);
+        ArcadeDataService.SendMessage(ArcadeSystemMessageCommands.GET_ALL_DATA);
     }
 
 }
