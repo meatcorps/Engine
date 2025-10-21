@@ -8,5 +8,5 @@ public class GhostBlinkyBehaviour: GhostLogic
     {
     }
 
-    public override int TimeoutBeforeStart => 0;
+    public override int TimeoutBeforeStart => 1000;
 }

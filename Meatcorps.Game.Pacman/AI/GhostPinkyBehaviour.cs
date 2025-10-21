@@ -8,7 +8,7 @@ namespace Meatcorps.Game.Pacman.AI;
 public class GhostPinkyBehaviour: GhostLogic
 {
     private Vector2 _previousVelocity = new Vector2(0, -1);
-    public override int TimeoutBeforeStart => 1000;
+    public override int TimeoutBeforeStart => 2000;
 
     public GhostPinkyBehaviour(LevelData levelData) : base(levelData)
     {

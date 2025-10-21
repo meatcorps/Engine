@@ -3,8 +3,10 @@ using Meatcorps.Engine.Arcade.Data;
 using Meatcorps.Engine.Arcade.Leaderboard.GameEnums;
 using Meatcorps.Engine.RayLib.GameObjects;
 using Meatcorps.Engine.Arcade.Leaderboard.GameObjects.Abstractions;
+using Meatcorps.Engine.Arcade.RayLib.Utilities;
 using Meatcorps.Engine.Arcade.Services;
 using Meatcorps.Engine.Core.Enums;
+using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.Core.Utilities;
@@ -35,7 +37,10 @@ public class MainGameObject : ResourceGameObject
     private Color _titleColor;
     private IRenderTargetStrategy _renderer;
     private UIMessageEmitter _uiMessage;
-
+    private Texture2D _qrCodeTexture;
+    private string _qrText = "";
+    private bool _showQr = false;
+    
     protected override void OnInitialize()
     {
         base.OnInitialize();
@@ -45,7 +50,13 @@ public class MainGameObject : ResourceGameObject
         _uiMessage = Scene.GetGameObject<UIMessageEmitter>()!;
         _renderer = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
         _arcadeDataService = GlobalObjectManager.ObjectManager.Get<ArcadeDataService>()!;
+        var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!;
         
+        _showQr = config.GetOrDefault("General", "ShowQrCode", false);
+        var qrLink = config.GetOrDefault("General", "QrLink", "https://www.meatcorps.nl/");
+        _qrText = config.GetOrDefault("General", "QrTitle", "Donation?");
+        
+        _qrCodeTexture = QrcodeHelper.CreateTexture(qrLink, 4, 2, Color.Gray, Color.Blank);
         _subscription = _arcadeDataService.DataChanged.Subscribe(_ =>
         {
             UpdateScorePositions();
@@ -153,15 +164,27 @@ public class MainGameObject : ResourceGameObject
             var points = (int)_scores[player.Id].DisplayValue;
             var stringLength = (points == 0 ? 1 : (int)Math.Floor(Math.Log10(Math.Abs(points))) + 1) * 17;
             var startPos = new Vector2(16, 48 + 22 * _scorePositions[player.Id].DisplayValue);
-            var endPos = new Vector2(_renderer.RenderWidth - 128 - stringLength, startPos.Y);
+            var endPos = new Vector2(_renderer.RenderWidth - 192 - stringLength, startPos.Y);
             if (counter > 1)
-                Raylib.DrawRectangle(0, 44 + counter * 22, _renderer.RenderWidth - 128, 2, new Color(0,0,0,0.2f));
+                Raylib.DrawRectangle(0, 44 + counter * 22, _renderer.RenderWidth - 192, 2, new Color(0,0,0,0.2f));
             
             Raylib.DrawTextEx(Fonts.GetFont(), rank.ToString() + "#", startPos, 12f, 1, counter == 1 ? color : Color.Blue);
             Raylib.DrawTextEx(Fonts.GetFont(), player.Name, startPos + new Vector2(48, 0), 16f, 1, color);
             Raylib.DrawTextEx(Fonts.GetFont(), points.ToString(), endPos, 16f, 1, color);
-            previousPoints = player.Points;
             
+            
+            previousPoints = player.Points;
+            if (_showQr)
+            {
+                Raylib.DrawTextEx(Fonts.GetFont(), _qrText,
+                    new Vector2(_renderer.RenderWidth - 145, _renderer.RenderHeight - 175), 12f, 1,
+                    new Color(0, 255, 255));
+                Raylib.DrawRectangle(_renderer.RenderWidth - 150, _renderer.RenderHeight - 160, 125, 125,
+                    new Color(0, 0, 0, 1f));
+                Raylib.DrawTextureEx(_qrCodeTexture,
+                    new Vector2(_renderer.RenderWidth - 170, _renderer.RenderHeight - 180), 0, 1f, Color.White);
+            }
+
             if (counter > 9)
                 break;
         }
@@ -173,7 +196,7 @@ public class MainGameObject : ResourceGameObject
             return;
 
         _subscription.Dispose();
-
+        Raylib.UnloadTexture(_qrCodeTexture);
         _isDisposed = true;
     }
 }
