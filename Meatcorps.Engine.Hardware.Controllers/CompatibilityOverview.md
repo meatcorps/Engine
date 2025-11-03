@@ -1,5 +1,8 @@
 # Cross-platform controller compatibility matrix for C# Raylib + SDL2 game engine (Windows, Linux, macOS, Steam Deck).
 
+I also created video about this!
+[I Tested Every Controller for Game Dev (YouTube)](https://youtu.be/kxKnuaniW3M)
+
 ### Tested With
 - Raylib-cs 5.0
 - SDL2-CS 2.30
@@ -57,5 +60,3 @@ Everything is tested as-is / out of the box. I did not want to do special patche
 - Detected as other (Xi-Mi dual)
 - SDL buttons works until 10 buttons (Implementation issue)
 - Detected as Other
-
-[I Tested Every Controller for Game Dev (YouTube)](https://youtube.com/@MeatcorpsOfficial)
