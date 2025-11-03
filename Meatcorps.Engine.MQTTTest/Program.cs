@@ -7,7 +7,7 @@ using Meatcorps.Engine.MQTT.Enums;
 using Meatcorps.Engine.MQTT.Modules;
 using Meatcorps.Engine.Signals.Data;
 
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 CoreModule.Load();
 BasicConfig.Load();
 

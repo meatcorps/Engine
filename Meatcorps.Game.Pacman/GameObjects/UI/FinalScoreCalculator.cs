@@ -66,7 +66,7 @@ public class FinalScoreCalculator : ResourceGameObject
         var currentPoints = _playerSessionData.Get<int>(GamePlayerData.Score);
         var finalScore = currentPoints;
         finalScore -= _playerSessionData.Get<int>(GamePlayerData.Died) * 1000;
-        var pointsWon = (int)MathF.Ceiling(finalScore / 100f);
+        var pointsWon = (int)MathF.Ceiling(finalScore / 500f);
         if (highestScore < finalScore)
             pointsWon += _gameInfo.PricePoints * 2;
         _relativePoints = pointsWon;

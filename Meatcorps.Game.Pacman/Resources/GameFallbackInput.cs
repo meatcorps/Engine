@@ -1,6 +1,11 @@
 using Meatcorps.Engine.Core.Input;
+using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.Modules;
+using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Hardware.Controllers.Enums;
+using Meatcorps.Engine.Hardware.Controllers.Mapper;
 using Meatcorps.Engine.RayLib.Extensions;
+using Meatcorps.Engine.RayLib.Input;
 using Meatcorps.Game.Pacman.GameEnums;
 using Raylib_cs;
 
@@ -25,7 +30,26 @@ public static class GameFallbackInput
             .AddInputKeyboard(2, GameInput.Start, KeyboardKey.F)
             .AddInputKeyboard(2, GameInput.Action, KeyboardKey.F)
             .AddAxis(2, 1, GameInput.Left, GameInput.Right, GameInput.Up, GameInput.Down);
-
+        
         GenericInputModule.Create(mapper, 2);
+        /*var device = new SDLControllerDeviceManager();
+        var mapper = new ControllerInputMapper<GameInput>(device);
+
+        mapper.Map(GameInput.Start, ControllerInputEnum.BorCircle);
+        mapper.Map(GameInput.Action, ControllerInputEnum.AorCross);
+        mapper.Map(GameInput.Down, ControllerInputEnum.DPadDown);
+        mapper.Map(GameInput.Left, ControllerInputEnum.DPadLeft);
+        mapper.Map(GameInput.Up, ControllerInputEnum.DPadUp);
+        mapper.Map(GameInput.Right, ControllerInputEnum.DPadRight);
+        mapper.SetDPadIsAxis(true);
+        device.AssignDevice(1, 0);
+        device.AssignDevice(2, 1);
+        GlobalObjectManager.ObjectManager.RegisterOnce(new PlayerInputRouter<GameInput>());
+        var router = GlobalObjectManager.ObjectManager.Get<PlayerInputRouter<GameInput>>()!;
+        
+        router.AssignMapper(1, mapper);
+        router.AssignMapper(2, mapper);
+
+        GlobalObjectManager.ObjectManager.Add<IBackgroundService>(mapper);*/
     }
 }

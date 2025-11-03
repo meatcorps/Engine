@@ -14,7 +14,7 @@ using Meatcorps.Engine.MQTT.Modules;
 using Meatcorps.Engine.QuestionTest;
 using Meatcorps.Game.Pacman.GameEnums;
 
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 var serverApplication = new ServerApplication();
 var simpleGameLoop = new SimpleGameLoop();
 CoreModule.Load();

@@ -18,6 +18,7 @@
         <ProjectReference Include="..\Meatcorps.Engine.Pathfinding\Meatcorps.Engine.Pathfinding.csproj" />
         <ProjectReference Include="..\Meatcorps.Engine.RayLib.Pathfinding\Meatcorps.Engine.RayLib.Pathfinding.csproj" />
         <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj"/>
+        <ProjectReference Include="..\Meatcorps.Engine.SDL\Meatcorps.Engine.SDL.csproj" />
         <ProjectReference Include="..\Meatcorps.Engine.Session\Meatcorps.Engine.Session.csproj"/>
     </ItemGroup>
 

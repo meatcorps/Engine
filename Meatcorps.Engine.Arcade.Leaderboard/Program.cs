@@ -17,7 +17,7 @@ using Meatcorps.Engine.Arcade.Services;
 using Meatcorps.Engine.MQTT.Modules;
 using Raylib_cs;
 
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 CoreModule.Load();
 
 GameConfig<GameSettings>.Create();

@@ -15,7 +15,7 @@ using Meatcorps.Game.Snake.Resources;
 using Meatcorps.Game.Snake.Scenes;
 using Raylib_cs;
 
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 CoreModule.Load();
 HighScoreModule.Load();
 

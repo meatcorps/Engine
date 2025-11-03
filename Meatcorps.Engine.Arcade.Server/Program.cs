@@ -11,7 +11,7 @@ using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.MQTT.Modules;
 using Meatcorps.Engine.Signals.Modules;
 
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 CoreModule.Load();
 BasicConfig.Load();
 SignalModule.Load();

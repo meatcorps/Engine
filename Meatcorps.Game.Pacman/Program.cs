@@ -17,7 +17,7 @@ using Meatcorps.Game.Pacman.Resources;
 using Meatcorps.Game.Pacman.Scenes;
 using Raylib_cs;
 
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 CoreModule.Load();
 HighScoreModule.Load();
 

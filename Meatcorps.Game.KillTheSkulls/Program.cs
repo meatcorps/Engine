@@ -16,7 +16,7 @@ using Meatcorps.Game.KillTheSkulls.Resources;
 using Meatcorps.Game.KillTheSkulls.Scenes;
 using Raylib_cs;
 
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 CoreModule.Load();
 HighScoreModule.Load();
 
