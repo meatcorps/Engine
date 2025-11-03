@@ -6,4 +6,5 @@ public interface IInputMapper<in T> where T : Enum
 {
     IInput GetState(int player, T input);
     Vector2 GetAxis(int player, int axis = 1);
+    void Rumble(int player, float left, float right, float duration);
 }

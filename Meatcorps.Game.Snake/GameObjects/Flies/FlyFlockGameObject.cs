@@ -12,6 +12,7 @@ using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Game.Snake.Data;
 using Meatcorps.Game.Snake.GameObjects.Abstractions;
 using Meatcorps.Game.Snake.Resources;
+using Meatcorps.Game.Snake.Scenes;
 using Raylib_cs;
 
 namespace Meatcorps.Game.Snake.GameObjects.Flies;
@@ -23,6 +24,7 @@ public class FlyFlockGameObject : SnakeGameObject
     private readonly List<FlyAgent> _agents = new();
     private const float _targetCatchRadius = 12f;
     private OneSoundManager _buzzSound;
+    private bool _demoMode = false;
     
     public FlyFlockGameObject(
         BoidConfig config,
@@ -44,6 +46,9 @@ public class FlyFlockGameObject : SnakeGameObject
         
         _buzzSound = Sounds.GetOneSoundManager(SnakeSounds.Insectswarm);
         _buzzSound.Repeat = false;
+        
+        if (Scene is LevelScene levelScene)
+            _demoMode = levelScene.DemoMode;
     }
 
     public void AddFly(FlyAgent agent)
@@ -95,8 +100,14 @@ public class FlyFlockGameObject : SnakeGameObject
         
         averageVelocity /= _agents.Count;
         var averageVelocityLength = averageVelocity.Length() / _config.MaxSpeed;
-        _buzzSound.Volume = (averageVelocityLength * 0.8f + 0.2f) * 0.8f;
-        _buzzSound.Pitch = Tween.Lerp(0.8f, 1.2f, averageVelocityLength);
+        
+        if (_demoMode)
+            _buzzSound.Volume = 0;
+        else
+        {
+            _buzzSound.Volume = (averageVelocityLength * 0.8f + 0.2f) * 0.8f;
+            _buzzSound.Pitch = Tween.Lerp(0.8f, 1.2f, averageVelocityLength);
+        }
     }
 
     protected override void OnDisabled()

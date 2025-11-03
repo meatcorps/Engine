@@ -177,12 +177,12 @@ public class MainGameObject : ResourceGameObject
             if (_showQr)
             {
                 Raylib.DrawTextEx(Fonts.GetFont(), _qrText,
-                    new Vector2(_renderer.RenderWidth - 145, _renderer.RenderHeight - 175), 12f, 1,
+                    new Vector2(_renderer.RenderWidth - 175, _renderer.RenderHeight - 225), 12f, 1,
                     new Color(0, 255, 255));
-                Raylib.DrawRectangle(_renderer.RenderWidth - 150, _renderer.RenderHeight - 160, 125, 125,
+                Raylib.DrawRectangle(_renderer.RenderWidth - 180, _renderer.RenderHeight - 210, 125, 125,
                     new Color(0, 0, 0, 1f));
                 Raylib.DrawTextureEx(_qrCodeTexture,
-                    new Vector2(_renderer.RenderWidth - 170, _renderer.RenderHeight - 180), 0, 1f, Color.White);
+                    new Vector2(_renderer.RenderWidth - 200, _renderer.RenderHeight - 230), 0, 1f, Color.White);
             }
 
             if (counter > 9)

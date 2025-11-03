@@ -16,7 +16,7 @@ using Meatcorps.Game.HorrorJackpot.Resources;
 using Meatcorps.Game.HorrorJackpot.Scenes;
 using Raylib_cs;
 
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 CoreModule.Load();
 HighScoreModule.Load();
 

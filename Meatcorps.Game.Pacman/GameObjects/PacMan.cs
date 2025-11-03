@@ -294,18 +294,21 @@ public class PacMan: BasePlayer, ICollisionEventsFiltered
         {
             Player.AddValue(GamePlayerData.Eaten);
             AddScore(100);
+            Controller.Rumble(Player.PlayerId, 0f, 0.5f, 0.1f);
             _bloodParticle.Emit(4, Player.Body.BoundingBox.Center + Player.Body.Velocity.NormalizedCopy() * 8);
         }
         if (pair.TryGetOwner<ExtraCollectable>(out var _))
         {
             Player.AddValue(GamePlayerData.Eaten);
             AddScore(1000);
+            Controller.Rumble(Player.PlayerId, 0f, 0.5f, 0.5f);
             _smokeParticle.Emit(4, Player.Body.BoundingBox.Center + Player.Body.Velocity.NormalizedCopy() * 8);
         }
 
         if (pair.TryGetOwner<PowerPellet>(out var _))
         {
             AddScore(200);
+            Controller.Rumble(Player.PlayerId, 1f, 1f, 1f);
             Player.AddValue(GamePlayerData.SuperPacMan);
         }
 

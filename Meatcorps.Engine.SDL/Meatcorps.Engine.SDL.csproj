@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" />
+        <PackageReference Include="Sdl2.Native" Version="1.0.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Meatcorps.Engine.Hardware.Controllers\Meatcorps.Engine.Hardware.Controllers.csproj" />
+    </ItemGroup>
+</Project>

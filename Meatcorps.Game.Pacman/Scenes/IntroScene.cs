@@ -63,6 +63,11 @@ public class IntroScene : BaseScene
         _sessionService.StartSession();
     }
 
+    protected override void OnPreUpdate(float deltaTime)
+    {
+        base.OnPreUpdate(deltaTime);
+    }
+
     protected override void OnUpdate(float deltaTime)
     {
 #if DEBUG
@@ -81,6 +86,7 @@ public class IntroScene : BaseScene
         if (TotalPlayersReady == 0)
             _sliderTimer.Update(deltaTime);
 
+        Console.WriteLine(_controller.GetState(1, GameInput.Action).Normalized);
         if (TotalPlayersReady > 0)
         {
             _startTimer.Update(true, deltaTime);
@@ -95,7 +101,7 @@ public class IntroScene : BaseScene
 
             return;
         }
-
+        
         if (_controller.GetState(1, GameInput.Action).IsPressed)
         {
             TotalPlayersReady = 1;

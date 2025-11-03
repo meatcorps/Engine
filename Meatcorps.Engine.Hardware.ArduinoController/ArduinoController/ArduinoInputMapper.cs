@@ -26,6 +26,11 @@ public class ArduinoInputMapper<T> : IInputMapperWithManager<T, ArduinoControlle
         return Manager.GetAxis(player);
     }
 
+    public void Rumble(int player, float left, float right, float duration)
+    {
+        // No rumble support
+    }
+
     public ControllerInputEnum MapInput(T input)
     {
         return Map[input];

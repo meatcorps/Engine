@@ -63,6 +63,11 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
         return inputState.GetAxis();
     }
 
+    public void Rumble(int player, float left, float right, float duration)
+    {
+        // No rumble support
+    }
+
     public void PreUpdate(float deltaTime)
     {
         foreach (var (_, playerInputs) in _inputMap)

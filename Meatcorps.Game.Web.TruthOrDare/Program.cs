@@ -15,7 +15,7 @@ using Meatcorps.Game.Web.TruthOrDare.GameEnums;
 using Meatcorps.Game.Web.TruthOrDare.Services;
 
 var simpleGameLoop = new SimpleGameLoop();
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 CoreModule.Load();
 HighScoreModule.Load();
 GlobalObjectManager.ObjectManager.Register(simpleGameLoop);

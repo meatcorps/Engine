@@ -17,7 +17,7 @@ using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.MQTT.Modules;
 
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 CoreModule.Load();
 BasicConfig.Load();
 

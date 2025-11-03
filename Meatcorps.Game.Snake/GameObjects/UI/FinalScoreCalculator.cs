@@ -61,7 +61,7 @@ public class FinalScoreCalculator: SnakeGameObject
         
         var currentPoints = _playerSessionData.Get<int>(SnakePlayerData.Score);
         var finalScore = currentPoints;
-        finalScore += _playerSessionData.Get<int>(SnakePlayerData.SnakeLength) * 100;
+        finalScore += _playerSessionData.Get<int>(SnakePlayerData.SnakeLength) * 10;
         finalScore -= _playerSessionData.Get<int>(SnakePlayerData.Died) * 1000;
         var pointsWon = (int)MathF.Ceiling(finalScore / 100f);
         if (highestScore < finalScore)

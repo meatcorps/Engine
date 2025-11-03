@@ -16,7 +16,7 @@ using Meatcorps.Game.ArcadeTemplate.Resources;
 using Meatcorps.Game.ArcadeTemplate.Scenes;
 using Raylib_cs;
 
-ConsoleLoggingModule.Load();
+LoggingModule.Load();
 CoreModule.Load();
 HighScoreModule.Load();
 

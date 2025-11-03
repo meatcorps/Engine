@@ -66,4 +66,10 @@ public class PlayerInputRouter<T> : IInputMapper<T> where T : Enum
         return Vector2.Zero;
 #endif
     }
+
+    public void Rumble(int player, float left, float right, float duration)
+    {
+        if (_playerMappers.TryGetValue(player, out var mapper))
+            mapper.Rumble(player, left, right, duration);
+    }
 }
