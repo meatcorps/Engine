@@ -1,4 +1,13 @@
-# Controller compatibility overview
+# Cross-platform controller compatibility matrix for C# Raylib + SDL2 game engine (Windows, Linux, macOS, Steam Deck).
+
+### Tested With
+- Raylib-cs 5.0
+- SDL2-CS 2.30
+- Windows 11 (23H2), macOS Sequoia, Ubuntu 24.04
+- Controllers: Xbox 360, Xbox One S, PlayStation 3/4, 8BitDo SN30 Pro, SNES USB, Dual Arcade HID
+
+### Notice
+Everything is tested as-is / out of the box. I did not want to do special patches or tricks to get it to work. Reason? Most gamers are not tweakers. They just like the "it just works" experience
 
 ## Windows 11
 
@@ -35,24 +44,18 @@
 
 ## SteamDeck
 
-Ray Buttons work
-
-Ray rumble did not work
-
-Detected as Steam!
-
-SDL Buttons work
-
-SDL Rumble don't work
-
-Detected as Xbox
+- Ray Buttons work
+- Ray rumble did not work
+- Detected as Steam!
+- SDL Buttons work
+- SDL Rumble don't work
+- Detected as Xbox
 
 ### Arcade cabinet
 
-Ray Butttons did not work
+- Ray Butttons did not work
+- Detected as other (Xi-Mi dual)
+- SDL buttons works until 10 buttons (Implementation issue)
+- Detected as Other
 
-Detected as other (Xi-Mi dual)
-
-SDL buttons works until 10 buttons (Implementation issue)
-
-Detected as Other
+[I Tested Every Controller for Game Dev (YouTube)](https://youtube.com/@MeatcorpsOfficial)
