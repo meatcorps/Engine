@@ -1,4 +1,4 @@
-namespace Meatcorps.Game.CyberPlayer.GameEnums;
+namespace Meatcorps.Game.CyberMaze.GameEnums;
 
 public enum GameSessionData
 {

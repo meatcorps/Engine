@@ -12,7 +12,7 @@ using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.MQTT;
 using Meatcorps.Engine.MQTT.Modules;
 using Meatcorps.Engine.QuestionTest;
-using Meatcorps.Game.Pacman.GameEnums;
+using Meatcorps.Game.CyberPlayer.GameEnums;
 
 LoggingModule.Load();
 var serverApplication = new ServerApplication();

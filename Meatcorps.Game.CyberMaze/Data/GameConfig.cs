@@ -2,7 +2,7 @@ using System.Globalization;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Storage.Abstractions;
 
-namespace Meatcorps.Game.CyberPlayer.Data;
+namespace Meatcorps.Game.CyberMaze.Data;
 
 [Serializable]
 public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum
@@ -11,7 +11,7 @@ public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum
 
     protected override void DoRegisterDefaultValues()
     {
-        GetOrDefault("General", "Name", "TruthOrDare");
+        GetOrDefault("General", "Name", "Snake");
     }
 
     protected override GameConfig<T> Instance => this;

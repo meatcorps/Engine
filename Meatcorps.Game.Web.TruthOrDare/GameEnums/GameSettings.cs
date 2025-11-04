@@ -1,4 +1,4 @@
-namespace Meatcorps.Game.Pacman.GameEnums;
+namespace Meatcorps.Game.CyberPlayer.GameEnums;
 
 public enum GameSettings
 {

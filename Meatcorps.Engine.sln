@@ -38,7 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{66029EB6
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hardware", "Hardware", "{7D462AA7-D1CD-4D77-89C6-7E3134420038}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.Pacman", "Meatcorps.Game.Pacman\Meatcorps.Game.Pacman.csproj", "{3349E076-F7D9-43E8-B3CD-665D9B23629B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.CyberMaze", "Meatcorps.Game.CyberMaze\Meatcorps.Game.CyberMaze.csproj", "{3349E076-F7D9-43E8-B3CD-665D9B23629B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Arcade", "Arcade", "{E7F61BAD-76A6-4AD3-B476-F677096DAEB7}"
 EndProject
