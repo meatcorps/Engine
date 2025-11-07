@@ -83,6 +83,8 @@ public class ArduinoControllerManager
         _previousButtonLights1 = buttonLights1;
         _previousButtonLights2 = buttonLights2;
     }
+    
+    public bool IsConnected => _arduinoControllerCommunication.IsConnected;
 
 
     private ButtonLightsEnum? MapToButtonLights(ControllerInputEnum input)

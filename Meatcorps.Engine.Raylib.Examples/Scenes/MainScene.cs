@@ -1,13 +1,13 @@
-using Meatcorps.Engine.ControllerTest.GameObjects;
 using Meatcorps.Engine.RayLib.Abstractions;
+using Meatcorps.Engine.Raylib.Examples.GameObjects;
 
-namespace Meatcorps.Engine.ControllerTest.Scenes;
+namespace Meatcorps.Engine.Raylib.Examples.Scenes;
 
 public class MainScene: BaseScene
 {
     protected override void OnInitialize()
     {
-        AddGameObject(new MainGameObject());
+        AddGameObject(new InputSelectionTest());
     }
 
     protected override void OnUpdate(float deltaTime)

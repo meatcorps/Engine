@@ -1,3 +1,4 @@
+using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Game;
 
@@ -39,6 +40,7 @@ public abstract class BaseScene: IDisposable
         SceneObjectManager.Register(this);
         SceneObjectManager.RegisterSet<BaseScene>();
         SceneObjectManager.RegisterList<BaseGameObject>();
+        SceneObjectManager.RegisterList<IBackgroundService>();
     }
 
     public void SetGameHost(GameHost gameHost)
@@ -108,6 +110,9 @@ public abstract class BaseScene: IDisposable
     {
         if (Paused || !Enabled) 
             return;
+
+        foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
+            backgroundService.PreUpdate(deltaTime);
         
         foreach (var scene in _subScenesToDispose)
         {
@@ -158,6 +163,9 @@ public abstract class BaseScene: IDisposable
         if (Paused || !Enabled) 
             return;
         
+        foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
+            backgroundService.Update(deltaTime);
+        
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
             subScene.Update(deltaTime);
         foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
@@ -180,6 +188,9 @@ public abstract class BaseScene: IDisposable
     {
         if (Paused || !Enabled) 
             return;
+        
+        foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
+            backgroundService.LateUpdate(deltaTime);
         
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
             subScene.LateUpdate(deltaTime);

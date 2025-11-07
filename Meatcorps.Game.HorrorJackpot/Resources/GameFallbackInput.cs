@@ -11,8 +11,8 @@ public static class GameFallbackInput
     public static void Load()
     {
         var mapper = new GenericMapper<GameInput>()
-            .AddInputKeyboard(1, GameInput.Action, KeyboardKey.Enter);
+            .AddInputKeyboard(0, GameInput.Action, KeyboardKey.Enter);
 
-        GenericInputModule.Create(mapper, 1);
+        InputModule<GameInput>.CreateOnlyKeyboardMouseMapper(mapper, 1);
     }
 }

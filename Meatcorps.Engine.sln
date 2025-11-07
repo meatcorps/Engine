@@ -70,7 +70,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.QuestionTe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.KillTheSkulls", "Meatcorps.Game.KillTheSkulls\Meatcorps.Game.KillTheSkulls.csproj", "{0D2E9F47-C741-45E8-9BE3-41925AB5597F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.ControllerTest", "Meatcorps.Engine.ControllerTest\Meatcorps.Engine.ControllerTest.csproj", "{D1D0295F-5BB5-49E7-850A-6E2F66E17A13}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.Raylib.Examples", "Meatcorps.Engine.Raylib.Examples\Meatcorps.Engine.Raylib.Examples.csproj", "{D1D0295F-5BB5-49E7-850A-6E2F66E17A13}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.Hardware.Controllers", "Meatcorps.Engine.Hardware.Controllers\Meatcorps.Engine.Hardware.Controllers.csproj", "{07EB7811-E515-472E-AC44-85BE11626F5B}"
 EndProject

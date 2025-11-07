@@ -11,6 +11,8 @@ public class ArduinoControllerCommunication : IDisposable
     public ControllerInputEnum ControllerState1 { get; private set; }
     public ControllerInputEnum ControllerState2 { get; private set; }
 
+    public bool IsConnected => _serialPort.IsOpen;
+    
     private readonly ConcurrentQueue<(ButtonLightsEnum, ButtonLightsEnum)> _buttonLightsQue = new();
     private CancellationTokenSource _cts = new();
 

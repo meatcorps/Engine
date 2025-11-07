@@ -38,9 +38,24 @@ public class RayLibControllerDeviceManager: IControllerDeviceManager
         _assignedDevices[player] = device;
     }
 
+    public void UnassignDevice(int player)
+    {
+        _assignedDevices.Remove(player);
+    }
+
     public bool IsDeviceAssigned(int player)
     {
         return GetDevice(player) is not null;
+    }
+    
+    public int WhichPlayerOnDevice(int device)
+    {
+        foreach (var (playerId, deviceId) in _assignedDevices)
+        {
+            if (deviceId == device && GetDevice(playerId) is not null)
+                return playerId;
+        }
+        return -1;
     }
 
     public void Initialize()

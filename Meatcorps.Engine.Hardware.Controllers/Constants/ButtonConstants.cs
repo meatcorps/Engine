@@ -1,0 +1,52 @@
+namespace Meatcorps.Engine.Hardware.Controllers.Constants;
+
+public static class ButtonConstants
+{
+    public const string DpadDown = "DPAD Down";
+    public const string DpadLeft = "DPAD Left";
+    public const string DpadRight = "DPAD Right";
+    public const string DPadUp = "DPAD Up";
+    public const string LeftJoyConClick = "Left Joy Con Click";
+    public const string LeftX = "LeftX";
+    public const string LeftY = "LeftY";
+    public const string RightJoyConClick = "Right Joy Con Click";
+    public const string RightX = "RightX";
+    public const string RightY = "RightY";
+    public const string RightFaceDown = "RightFaceDown";
+    public const string RightFaceRight = "RightFaceRight";
+    public const string RightFaceLeft = "RightFaceLeft";
+    public const string RightFaceUp = "RightFaceUp";
+    public const string LeftBumper = "LeftBumper";
+    public const string RightBumper = "RightBumper";
+    public const string LeftTrigger = "LeftTrigger";
+    public const string RightTrigger = "RightTrigger";
+    public const string Middle = "Middle";
+    public const string MiddleRight = "MiddleRight";
+    public const string MiddleLeft = "MiddleLeft";
+    public const string Button1 = "Button1";
+    public const string Button2 = "Button2";
+    public const string Button3 = "Button3";
+    public const string Button4 = "Button4";
+    public const string Button5 = "Button5";
+    public const string Button6 = "Button6";
+    public const string Button7 = "Button7";
+    public const string Button8 = "Button8";
+    public const string Button9 = "Button9";
+    public const string Button10 = "Button10";
+    public const string A = "A";
+    public const string B = "B";
+    public const string X = "X";
+    public const string Y = "Y";
+    public const string Cross = "Cross";
+    public const string Circle = "Circle";
+    public const string Triangle = "Triangle";
+    public const string Square = "Square";
+    public const string Options = "Options";
+    public const string Share = "Share";
+    public const string Back = "Back";
+    public const string Start = "Start";
+    public const string L1 = "L1";
+    public const string L2 = "L2";
+    public const string R1 = "R1";
+    public const string R2 = "R2";
+}

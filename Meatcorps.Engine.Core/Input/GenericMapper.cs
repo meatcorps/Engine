@@ -1,4 +1,5 @@
 using System.Numerics;
+using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.Interfaces.Services;
 
@@ -8,7 +9,10 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
 {
     private Dictionary<int, Dictionary<T, GenericInput>> _inputMap = new();
     private Dictionary<int, Dictionary<int, GenericAxisInput<T>>> _inputAxisMap = new();
-
+    private Dictionary<int, int> _indexProfile = new();
+    private GenericInput _defaultInput = new GenericInput(() => 0, "UNKNOWN");
+    
+    
     public IReadOnlyDictionary<T, GenericInput> GetInputs(int player)
     {
         if (!_inputMap.TryGetValue(player, out var playerInputs))
@@ -16,56 +20,133 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
         return playerInputs;
     }
     
-    public GenericMapper<T> AddInput(int player, T input, GenericInput inputState)
+    public GenericMapper<T> AddInput(int profileId, T input, GenericInput inputState)
     {
-        if (!_inputMap.TryGetValue(player, out var playerInputs))
-            _inputMap[player] = playerInputs = new Dictionary<T, GenericInput>();
+        if (!_inputMap.TryGetValue(profileId, out var playerInputs))
+            _inputMap[profileId] = playerInputs = new Dictionary<T, GenericInput>();
         playerInputs[input] = inputState;
         return this;
     }
     
-    public GenericMapper<T> AddInput(int player, T input, string label, Func<float> pressedFunc)
+    public GenericMapper<T> AddInput(int profileId, T input, string label, Func<float> pressedFunc)
     {
-        AddInput(player, input, new GenericInput(pressedFunc, label));
+        AddInput(profileId, input, new GenericInput(pressedFunc, label));
         return this;
     }
     
-    public GenericMapper<T> AddInput(int player, T input, string label, Func<bool> pressedFunc)
+    public GenericMapper<T> AddInput(int profileId, T input, string label, Func<bool> pressedFunc)
     {
-        AddInput(player, input, new GenericInput(() => pressedFunc() ? 1 : 0, label));
+        AddInput(profileId, input, new GenericInput(() => pressedFunc() ? 1 : 0, label));
         return this;
     }
     
-    public GenericMapper<T> AddAxis(int player, int axis, T left, T right, T top, T bottom)
+    public GenericMapper<T> AddAxis(int profileId, int axis, T left, T right, T up, T down)
     {
-        if (!_inputAxisMap.TryGetValue(player, out var playerIndexSet))
-            _inputAxisMap[player] = playerIndexSet = new Dictionary<int, GenericAxisInput<T>>();
-        playerIndexSet[axis] = new GenericAxisInput<T>(this, player, left, right, top, bottom);
+        if (!_inputAxisMap.TryGetValue(profileId, out var playerIndexSet))
+            _inputAxisMap[profileId] = playerIndexSet = new Dictionary<int, GenericAxisInput<T>>();
+        playerIndexSet[axis] = new GenericAxisInput<T>(this, left, right, up, down);
         return this;
     }
     
     public IInput GetState(int player, T input)
     {
-        if (!_inputMap.TryGetValue(player, out var playerInputs))
-            throw new InvalidOperationException($"No input map for player {player}");
+        if (!_indexProfile.TryGetValue(player, out var profileId))
+        {
+            return _defaultInput;
+        }
+        
+        if (!_inputMap.TryGetValue(profileId, out var playerInputs))
+            throw new InvalidOperationException($"No input map for profile {profileId}");
         if (!playerInputs.TryGetValue(input, out var inputState))
-            throw new InvalidOperationException($"No input state for input {input} on player {player}");
+            throw new InvalidOperationException($"No input state for input {input} on profile {profileId}");
         return inputState;
     }
 
     public Vector2 GetAxis(int player, int axis = 1)
     {
-        if (!_inputAxisMap.TryGetValue(player, out var playerIndexSet))
+        if (!_indexProfile.TryGetValue(player, out var profileId))
+        {
+            return Vector2.Zero;
+        }
+        
+        if (!_inputAxisMap.TryGetValue(profileId, out var playerIndexSet))
             throw new InvalidOperationException($"No input map for player {player}");
         if (!playerIndexSet.TryGetValue(axis, out var inputState))
             throw new InvalidOperationException($"No input state for axis {axis} on player {player}");
         
-        return inputState.GetAxis();
+        return inputState.GetAxis(player);
     }
 
     public void Rumble(int player, float left, float right, float duration)
     {
         // No rumble support
+    }
+
+    public void AssignProfile(int profileId, int player)
+    {
+        var existingProfile = -1;
+        foreach (var (plaId, proId) in _indexProfile)
+        {
+            if (proId == profileId)
+            {
+                existingProfile = plaId;
+                break;
+            }
+        }
+        UnassignProfile(existingProfile);
+        _indexProfile[player] = profileId;
+    }
+
+    public void UnassignProfile(int player)
+    {
+        _indexProfile.Remove(player);
+    }
+
+    public bool IsAssigned(int player)
+    {
+        return _indexProfile.ContainsKey(player);
+    }
+
+    public bool IsConnected(int player)
+    {
+        return _indexProfile.TryGetValue(player, out var profileId);
+    }
+
+    public bool AnyInputPressed(out int profileId, out int playerid)
+    {
+        foreach (var inputs in _inputMap)
+        {
+            foreach (var input in inputs.Value)
+            {
+                if (input.Value.IsPressed)
+                {
+                    profileId = inputs.Key;
+                    playerid = -1;
+                    foreach (var (plaId, proId) in _indexProfile)
+                    {
+                        if (proId == profileId)
+                        {
+                            playerid = plaId;
+                            break;
+                        }
+                    }
+                    return true;
+                }   
+            }
+        }
+        profileId = -1;
+        playerid = -1;
+        return false;
+    }
+
+    public PlayerInputType InputType(int _)
+    {
+        return PlayerInputType.KeyboardMouse; 
+    } 
+    
+    public IReadOnlyList<int> GetAvailableProfiles()
+    {
+        return _inputMap.Keys.ToList();
     }
 
     public void PreUpdate(float deltaTime)

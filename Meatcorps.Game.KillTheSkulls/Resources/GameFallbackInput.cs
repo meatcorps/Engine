@@ -18,6 +18,6 @@ public static class GameFallbackInput
             .AddInputKeyboard(1, GameInput.Smash5Red, KeyboardKey.Five)
             .AddInputKeyboard(1, GameInput.Action, KeyboardKey.One);
 
-        GenericInputModule.Create(mapper, 1);
+        InputModule<GameInput>.CreateOnlyKeyboardMouseMapper(mapper, 1);
     }
 }

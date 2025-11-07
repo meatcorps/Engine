@@ -1,4 +1,5 @@
 using System.Numerics;
+using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.Input;
 using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.Interfaces.Services;
@@ -14,7 +15,8 @@ public class ControllerInputMapper<T> : IBackgroundService, IInputMapper<T> wher
     private readonly GenericInput _nothingInput = new GenericInput(() => 0, "Unknown");
     private bool _dPadIsAxis = false;
     private bool _initialized = false;
-
+    private List<int> _profiles = new();
+    
     public ControllerInputMapper(IControllerDeviceManager manager)
     {
         _manager = manager;
@@ -57,8 +59,9 @@ public class ControllerInputMapper<T> : IBackgroundService, IInputMapper<T> wher
 
         if (axis == 1)
         {
-            var value = new Vector2(device.GetState(ControllerInputEnum.LeftStickX).Normalized,
-                device.GetState(ControllerInputEnum.LeftStickY).Normalized);
+            var stateX = device.GetState(ControllerInputEnum.LeftStickX);
+            var stateY = device.GetState(ControllerInputEnum.LeftStickY);
+            var value = new Vector2(stateX.Normalized, stateY.Normalized);
             if (_dPadIsAxis)
             {
                 if (device.GetState(ControllerInputEnum.DPadUp).Down)
@@ -90,6 +93,73 @@ public class ControllerInputMapper<T> : IBackgroundService, IInputMapper<T> wher
         device?.Rumble(left, right, duration);
     }
 
+    public void AssignProfile(int profileId, int player)
+    {
+        _manager.AssignDevice(player, profileId);
+    }
+
+    public void UnassignProfile(int player)
+    {
+        _manager.UnassignDevice(player);
+    }
+
+    public bool IsAssigned(int player)
+    {
+        return _manager.IsDeviceAssigned(player);
+    }
+
+    public bool IsConnected(int player)
+    {
+        if (!_manager.IsDeviceAssigned(player))
+        {
+            return false;
+        }
+        
+        var device = _manager.GetDevice(player);
+        return device?.IsConnected ?? false;
+    }
+
+    public bool AnyInputPressed(out int profileId, out int player)
+    {
+        var deviceId = 0;
+        foreach (var device in _manager.GetDevices())
+        {
+            // Exception because this is common to use on the controller
+            if (device.GetState(ControllerInputEnum.LeftStickX).IsPressed || device.GetState(ControllerInputEnum.LeftStickY).IsPressed)
+            {
+                profileId = deviceId;
+                player = _manager.WhichPlayerOnDevice(profileId);
+                return true;
+            }
+                
+            foreach (var button in _mapping.Values)
+            {
+                if (device.GetState(button).IsPressed)
+                {
+                    profileId = deviceId;
+                    player = _manager.WhichPlayerOnDevice(profileId);
+                    return true;
+                }
+            }
+            deviceId++;
+        }
+        profileId = -1;
+        player = -1;
+        return false;
+    }
+
+    public PlayerInputType InputType(int _) => PlayerInputType.GamePad;
+    
+    public IReadOnlyList<int> GetAvailableProfiles()
+    {
+        _profiles.Clear();
+        for (var i = 0; i < _manager.TotalDevices; i++)
+        {
+            _profiles.Add(i);
+        }
+        return _profiles;
+    }
+
     public void PreUpdate(float deltaTime)
     {
         if (!_initialized)
@@ -102,7 +172,7 @@ public class ControllerInputMapper<T> : IBackgroundService, IInputMapper<T> wher
 
         foreach (var device in _manager.GetDevices())
         {
-            foreach (var mapping in _mapping.Values)
+            foreach (var mapping in Enum.GetValues<ControllerInputEnum>())
             {
                 if (device.GetState(mapping) is BaseInput input)
                     input.Update();

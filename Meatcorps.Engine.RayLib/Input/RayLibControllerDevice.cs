@@ -3,6 +3,8 @@ using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Storage.Services;
+using Meatcorps.Engine.Hardware.Controllers;
+using Meatcorps.Engine.Hardware.Controllers.Constants;
 using Meatcorps.Engine.Hardware.Controllers.Enums;
 using Meatcorps.Engine.Hardware.Controllers.Interfaces;
 using Raylib_cs;
@@ -24,67 +26,67 @@ public class RayLibControllerDevice : IControllerDevice
         Id = id;
         _inputs.Add(
             ControllerInputEnum.DPadDown, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftFaceDown) ? 1 : 0, "LeftFaceDown"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftFaceDown) ? 1 : 0, ButtonConstants.DpadDown));
         _inputs.Add(
             ControllerInputEnum.DPadLeft, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftFaceLeft) ? 1 : 0, "LeftFaceLeft"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftFaceLeft) ? 1 : 0, ButtonConstants.DpadLeft));
         _inputs.Add(
             ControllerInputEnum.DPadRight, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftFaceRight) ? 1 : 0, "LeftFaceRight"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftFaceRight) ? 1 : 0, ButtonConstants.DpadRight));
         _inputs.Add(
             ControllerInputEnum.DPadUp, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftFaceUp) ? 1 : 0, "LeftFaceUp"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftFaceUp) ? 1 : 0, ButtonConstants.DPadUp));
         _inputs.Add(
             ControllerInputEnum.LeftStick, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftThumb) ? 1 : 0, "LeftThumb"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftThumb) ? 1 : 0, ButtonConstants.LeftJoyConClick));
         _inputs.Add(
             ControllerInputEnum.LeftStickX, 
-            new GenericInput(() => GetAxisWithDeadZone(Raylib.GetGamepadAxisMovement(id, GamepadAxis.LeftX)), "LeftX"));
+            new ControllerInput(() => Type, () => GetAxisWithDeadZone(Raylib.GetGamepadAxisMovement(id, GamepadAxis.LeftX)), ButtonConstants.LeftX));
         _inputs.Add(
             ControllerInputEnum.LeftStickY, 
-            new GenericInput(() => GetAxisWithDeadZone(Raylib.GetGamepadAxisMovement(id, GamepadAxis.LeftY)), "LeftY"));
+            new ControllerInput(() => Type, () => GetAxisWithDeadZone(Raylib.GetGamepadAxisMovement(id, GamepadAxis.LeftY)), ButtonConstants.LeftY));
         _inputs.Add(
             ControllerInputEnum.RightStick, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.RightThumb) ? 1 : 0, "RightThumb"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.RightThumb) ? 1 : 0, ButtonConstants.RightJoyConClick));
         _inputs.Add(
             ControllerInputEnum.RightStickX, 
-            new GenericInput(() => GetAxisWithDeadZone(Raylib.GetGamepadAxisMovement(id, GamepadAxis.RightX)), "RightX"));
+            new ControllerInput(() => Type, () => GetAxisWithDeadZone(Raylib.GetGamepadAxisMovement(id, GamepadAxis.RightX)), ButtonConstants.RightX));
         _inputs.Add(
             ControllerInputEnum.RightStickY, 
-            new GenericInput(() => GetAxisWithDeadZone(Raylib.GetGamepadAxisMovement(id, GamepadAxis.RightY)), "RightY"));
+            new ControllerInput(() => Type, () => GetAxisWithDeadZone(Raylib.GetGamepadAxisMovement(id, GamepadAxis.RightY)), ButtonConstants.RightY));
         _inputs.Add(
             ControllerInputEnum.AorCross, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.RightFaceDown) ? 1 : 0, "RightFaceDown"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.RightFaceDown) ? 1 : 0, ButtonConstants.RightFaceDown));
         _inputs.Add(
             ControllerInputEnum.BorCircle, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.RightFaceRight) ? 1 : 0, "RightFaceRight"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.RightFaceRight) ? 1 : 0, ButtonConstants.RightFaceRight));
         _inputs.Add(
             ControllerInputEnum.XorSquare, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.RightFaceLeft) ? 1 : 0, "RightFaceLeft"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.RightFaceLeft) ? 1 : 0, ButtonConstants.RightFaceLeft));
         _inputs.Add(
             ControllerInputEnum.YorTriangle, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.RightFaceUp) ? 1 : 0, "RightFaceUp"));
-        _inputs.Add(
-            ControllerInputEnum.LeftTrigger, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftTrigger1) ? 1 : 0, "LeftTrigger1"));
-        _inputs.Add(
-            ControllerInputEnum.RightTrigger, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.RightTrigger1) ? 1 : 0, "RightTrigger1"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.RightFaceUp) ? 1 : 0, ButtonConstants.RightFaceUp));
         _inputs.Add(
             ControllerInputEnum.LeftBumper, 
-            new GenericInput(() => (Raylib.GetGamepadAxisMovement(id, GamepadAxis.LeftTrigger) + 1) / 2, "LeftTrigger"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.LeftTrigger1) ? 1 : 0, ButtonConstants.LeftBumper));
         _inputs.Add(
             ControllerInputEnum.RightBumper, 
-            new GenericInput(() => (Raylib.GetGamepadAxisMovement(id, GamepadAxis.RightTrigger) + 1) / 2, "RightTrigger"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.RightTrigger1) ? 1 : 0, ButtonConstants.RightBumper));
+        _inputs.Add(
+            ControllerInputEnum.LeftTrigger, 
+            new ControllerInput(() => Type, () => (Raylib.GetGamepadAxisMovement(id, GamepadAxis.LeftTrigger) + 1) / 2, ButtonConstants.LeftTrigger));
+        _inputs.Add(
+            ControllerInputEnum.RightTrigger, 
+            new ControllerInput(() => Type, () => (Raylib.GetGamepadAxisMovement(id, GamepadAxis.RightTrigger) + 1) / 2, ButtonConstants.RightTrigger));
         _inputs.Add(
             ControllerInputEnum.Middle, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.Middle) ? 1 : 0, "Middle"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.Middle) ? 1 : 0, ButtonConstants.Middle));
         _inputs.Add(
             ControllerInputEnum.Start, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.MiddleRight) ? 1 : 0, "MiddleRight"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.MiddleRight) ? 1 : 0, ButtonConstants.MiddleRight));
         _inputs.Add(
             ControllerInputEnum.Select, 
-            new GenericInput(() => Raylib.IsGamepadButtonDown(id, GamepadButton.MiddleLeft) ? 1 : 0, "MiddleLeft"));
+            new ControllerInput(() => Type, () => Raylib.IsGamepadButtonDown(id, GamepadButton.MiddleLeft) ? 1 : 0, ButtonConstants.MiddleLeft));
     }
 
     private float GetAxisWithDeadZone(float axis)
@@ -105,4 +107,6 @@ public class RayLibControllerDevice : IControllerDevice
     }
 
     public ControllerType Type { get; set; }
+    
+    public bool IsConnected => Raylib.IsGamepadAvailable(Id);
 }

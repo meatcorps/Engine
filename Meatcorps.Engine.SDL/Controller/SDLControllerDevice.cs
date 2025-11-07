@@ -3,11 +3,12 @@ using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Storage.Services;
+using Meatcorps.Engine.Hardware.Controllers;
+using Meatcorps.Engine.Hardware.Controllers.Constants;
 using Meatcorps.Engine.Hardware.Controllers.Enums;
 using Meatcorps.Engine.Hardware.Controllers.Interfaces;
-using Meatcorps.Engine.SDL.Controller;
 
-namespace Meatcorps.Engine.RayLib.Input;
+namespace Meatcorps.Engine.SDL.Controller;
 
 public class SDLControllerDevice : IControllerDevice
 {
@@ -25,97 +26,97 @@ public class SDLControllerDevice : IControllerDevice
         
         _inputs.Add(
             ControllerInputEnum.DPadDown, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_DOWN), "LeftFaceDown"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_DOWN), ButtonConstants.DpadDown));
         _inputs.Add(
             ControllerInputEnum.DPadLeft, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_LEFT), "LeftFaceLeft"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_LEFT), ButtonConstants.DpadLeft));
         _inputs.Add(
             ControllerInputEnum.DPadRight, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_RIGHT), "LeftFaceRight"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_RIGHT), ButtonConstants.DpadRight));
         _inputs.Add(
             ControllerInputEnum.DPadUp, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_UP), "LeftFaceUp"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_UP), ButtonConstants.DPadUp));
         _inputs.Add(
             ControllerInputEnum.LeftStick, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_LEFTSTICK), "LeftThumb"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_LEFTSTICK), ButtonConstants.LeftJoyConClick));
         _inputs.Add(
             ControllerInputEnum.LeftStickX, 
-            new GenericInput(() => GetAxisWithDeadZone(device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTX) / short.MaxValue), "LeftX"));
+            new ControllerInput(() => Type, () => GetAxisWithDeadZone(device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTX) / short.MaxValue), ButtonConstants.LeftX));
         _inputs.Add(
             ControllerInputEnum.LeftStickY, 
-            new GenericInput(() => GetAxisWithDeadZone(device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTY) / short.MaxValue), "LeftY"));
+            new ControllerInput(() => Type, () => GetAxisWithDeadZone(device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTY) / short.MaxValue), ButtonConstants.LeftY));
         _inputs.Add(
             ControllerInputEnum.RightStick, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_RIGHTSTICK), "RightThumb"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_RIGHTSTICK), ButtonConstants.RightJoyConClick));
         _inputs.Add(
             ControllerInputEnum.RightStickX, 
-            new GenericInput(() => GetAxisWithDeadZone(device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTX) / short.MaxValue), "RightX"));
+            new ControllerInput(() => Type, () => GetAxisWithDeadZone(device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTX) / short.MaxValue), ButtonConstants.RightX));
         _inputs.Add(
             ControllerInputEnum.RightStickY, 
-            new GenericInput(() => GetAxisWithDeadZone(device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTY) / short.MaxValue), "RightY"));
+            new ControllerInput(() => Type, () => GetAxisWithDeadZone(device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTY) / short.MaxValue), ButtonConstants.RightY));
         _inputs.Add(
             ControllerInputEnum.AorCross, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_A), "RightFaceDown"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_A), ButtonConstants.RightFaceDown));
         _inputs.Add(
             ControllerInputEnum.BorCircle, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_B), "RightFaceRight"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_B), ButtonConstants.RightFaceRight));
         _inputs.Add(
             ControllerInputEnum.XorSquare, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_X), "RightFaceLeft"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_X), ButtonConstants.RightFaceLeft));
         _inputs.Add(
             ControllerInputEnum.YorTriangle, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_Y), "RightFaceUp"));
-        _inputs.Add(
-            ControllerInputEnum.LeftTrigger, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_LEFTSHOULDER), "LeftTrigger1"));
-        _inputs.Add(
-            ControllerInputEnum.RightTrigger, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_RIGHTSHOULDER), "RightTrigger1"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_Y), ButtonConstants.RightFaceUp));
         _inputs.Add(
             ControllerInputEnum.LeftBumper, 
-            new GenericInput(() => device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERLEFT) / short.MaxValue, "LeftTrigger"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_LEFTSHOULDER), ButtonConstants.LeftBumper));
         _inputs.Add(
             ControllerInputEnum.RightBumper, 
-            new GenericInput(() => device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / short.MaxValue, "RightTrigger"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_RIGHTSHOULDER), ButtonConstants.RightBumper));
+        _inputs.Add(
+            ControllerInputEnum.LeftTrigger, 
+            new ControllerInput(() => Type, () => device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERLEFT) / short.MaxValue, ButtonConstants.LeftTrigger));
+        _inputs.Add(
+            ControllerInputEnum.RightTrigger, 
+            new ControllerInput(() => Type, () => device.GetAxis(SDL2.SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / short.MaxValue, ButtonConstants.RightTrigger));
         _inputs.Add(
             ControllerInputEnum.Middle, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE), "Middle"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE), ButtonConstants.Middle));
         _inputs.Add(
             ControllerInputEnum.Start, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_START), "MiddleRight"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_START), ButtonConstants.MiddleRight));
         _inputs.Add(
             ControllerInputEnum.Select, 
-            new GenericInput(() => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK), "MiddleLeft"));
+            new ControllerInput(() => Type, () => device.GetButton(SDL2.SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK), ButtonConstants.MiddleLeft));
         _inputs.Add(
             ControllerInputEnum.Button1, 
-            new GenericInput(() => device.GetButton(0), "Button1"));
+            new ControllerInput(() => Type, () => device.GetButton(0), ButtonConstants.Button1));
         _inputs.Add(
             ControllerInputEnum.Button2, 
-            new GenericInput(() => device.GetButton(1), "Button2"));
+            new ControllerInput(() => Type, () => device.GetButton(1), ButtonConstants.Button2));
         _inputs.Add(
             ControllerInputEnum.Button3, 
-            new GenericInput(() => device.GetButton(2), "Button3"));
+            new ControllerInput(() => Type, () => device.GetButton(2), ButtonConstants.Button3));
         _inputs.Add(
             ControllerInputEnum.Button4, 
-            new GenericInput(() => device.GetButton(3), "Button4"));
+            new ControllerInput(() => Type, () => device.GetButton(3), ButtonConstants.Button4));
         _inputs.Add(
             ControllerInputEnum.Button5, 
-            new GenericInput(() => device.GetButton(4), "Button5"));
+            new ControllerInput(() => Type, () => device.GetButton(4), ButtonConstants.Button5));
         _inputs.Add(
             ControllerInputEnum.Button6, 
-            new GenericInput(() => device.GetButton(5), "Button6"));
+            new ControllerInput(() => Type, () => device.GetButton(5), ButtonConstants.Button6));
         _inputs.Add(
             ControllerInputEnum.Button7, 
-            new GenericInput(() => device.GetButton(6), "Button7"));
+            new ControllerInput(() => Type, () => device.GetButton(6), ButtonConstants.Button7));
         _inputs.Add(
             ControllerInputEnum.Button8, 
-            new GenericInput(() => device.GetButton(7), "Button8"));
+            new ControllerInput(() => Type, () => device.GetButton(7), ButtonConstants.Button8));
         _inputs.Add(
             ControllerInputEnum.Button9, 
-            new GenericInput(() => device.GetButton(8), "Button9"));
+            new ControllerInput(() => Type, () => device.GetButton(8), ButtonConstants.Button9));
         _inputs.Add(
             ControllerInputEnum.Button10, 
-            new GenericInput(() => device.GetButton(9), "Button10"));
+            new ControllerInput(() => Type, () => device.GetButton(9), ButtonConstants.Button10));
     }
     
     public SDLControllerDevice()
@@ -142,4 +143,6 @@ public class SDLControllerDevice : IControllerDevice
     }
 
     public ControllerType Type { get; set; }
+    
+    public bool IsConnected => _device.IsAttached();
 }

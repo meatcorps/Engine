@@ -2,6 +2,7 @@ namespace Meatcorps.Engine.Core.Interfaces.Input;
 
 public interface IInput
 {
+    string Label { get; }
     bool Enable { get; set; }
     bool Down { get; }
     bool Up { get; }

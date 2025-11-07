@@ -8,4 +8,5 @@ public interface IControllerDevice
     public IInput GetState(ControllerInputEnum input);
     public void Rumble(float left, float right, float duration);
     public ControllerType Type { get; }
+    public bool IsConnected { get; }
 }

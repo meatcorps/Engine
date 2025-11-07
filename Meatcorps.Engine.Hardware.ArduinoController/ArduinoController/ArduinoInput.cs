@@ -5,6 +5,7 @@ namespace Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;
 
 public class ArduinoInput : IInput
 {
+    public string Label { get; private set; }
     public bool Enable { get; set; }
     private readonly ControllerInputEnum _button;
     private readonly int _player;
@@ -25,6 +26,7 @@ public class ArduinoInput : IInput
         _player = player;
         _light = light;
         Enable = enable;
+        Label = button.ToString();
     }
 
     public void Update(ControllerInputEnum input1, ControllerInputEnum input2, ref ButtonLightsEnum lights1, ref ButtonLightsEnum lights2)

@@ -39,9 +39,24 @@ public class SDLControllerDeviceManager: IControllerDeviceManager, IDisposable
         _assignedDevices[player] = device;
     }
 
+    public void UnassignDevice(int player)
+    {
+        _assignedDevices.Remove(player);
+    }
+
     public bool IsDeviceAssigned(int player)
     {
         return GetDevice(player) is not null;
+    }
+
+    public int WhichPlayerOnDevice(int device)
+    {
+        foreach (var (playerId, deviceId) in _assignedDevices)
+        {
+            if (deviceId == device)
+                return playerId;
+        }
+        return -1;
     }
 
     public void Initialize()

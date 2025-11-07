@@ -6,7 +6,7 @@ namespace Meatcorps.Engine.Core.Input;
 
 public abstract class BaseInput : IInput
 {
-    public string Label { get; }
+    public virtual string Label { get; }
     public bool Enable { get; set; } = true;
     public bool Down { get; private set; }
     public bool Up { get; private set; }
@@ -32,10 +32,10 @@ public abstract class BaseInput : IInput
         
         Normalized = Math.Clamp(PressedState(), -1, 1);
         var state = Normalized;
-        _edgeDetector.Update(state.EqualsSafe(1));
+        Down = Math.Abs(Normalized) > 0.5f;
+        Up = Math.Abs(Normalized) < 0.5f;
+        _edgeDetector.Update(Down);
         IsPressed = _edgeDetector.IsRisingEdge;
-        Down = Normalized > 0.5f;
-        Up = Normalized < 0.5f;
         Animation?.Update(this);
     }
 }

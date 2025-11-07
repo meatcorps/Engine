@@ -12,24 +12,24 @@ using Meatcorps.Engine.RayLib.Resources;
 using Microsoft.Extensions.Logging;
 using Raylib_cs;
 
-namespace Meatcorps.Engine.ControllerTest.GameObjects;
+namespace Meatcorps.Engine.Raylib.Examples.GameObjects;
 
-public class MainGameObject : BaseGameObject
+public class RawControllerTest : BaseGameObject
 {
     private ControllerInputMapper<ControllerInputEnum> _controllerInputMapper;
     private IControllerDeviceManager _controllerDeviceManager;
     private TextManager<DefaultFont> _fonts;
-    private ILogger<MainGameObject> _logger;
+    private ILogger<RawControllerTest> _logger;
     private string _previousText = "";
     protected override void OnInitialize()
     {
         
-        _logger = LoggingService.GetLogger<MainGameObject>();
+        _logger = LoggingService.GetLogger<RawControllerTest>();
         Camera = CameraLayer.UI;
         
-        if (GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("Debug", "UseRayLibController", true))
-            _controllerDeviceManager = new RayLibControllerDeviceManager();
-        else
+        //if (GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("Debug", "UseRayLibController", true))
+            //_controllerDeviceManager = new RayLibControllerDeviceManager();
+        //else
             _controllerDeviceManager = new SDLControllerDeviceManager();
         
         _controllerInputMapper = new ControllerInputMapper<ControllerInputEnum>(_controllerDeviceManager);
@@ -77,6 +77,8 @@ public class MainGameObject : BaseGameObject
             outputViewer.Clear();
             if (_controllerDeviceManager.IsDeviceAssigned(player))
             {
+                outputViewer.AppendLine("AXIS1: " + _controllerInputMapper.GetAxis(player, 1).ToString());
+                outputViewer.AppendLine("AXIS2: " + _controllerInputMapper.GetAxis(player, 2).ToString());
                 var count = 0;
                 var type = _controllerDeviceManager.GetDevice(player)?.Type ?? ControllerType.Other;
                 foreach (var controllerType in Enum.GetValues<ControllerInputEnum>())
@@ -99,7 +101,7 @@ public class MainGameObject : BaseGameObject
 
                 _previousText = text;
 
-                Raylib.DrawTextEx(_fonts.GetFont(), "> " + player + "(" + type + ")\n" + outputViewer.ToString(), new Vector2(16 + counter, 16), 16f, 1f, Color.White);
+                Raylib_cs.Raylib.DrawTextEx(_fonts.GetFont(), "> " + player + "(" + type + ")\n" + outputViewer.ToString(), new Vector2(16 + counter, 16), 16f, 1f, Color.White);
             }
 
             counter += 400;
