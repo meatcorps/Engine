@@ -29,6 +29,7 @@ public sealed class GameHost : IDisposable
     private int _borderLessPosX;
     private int _borderLessPosY;
     private bool _disableMouseCursor = false;
+    private KeyboardKey _exitKey = KeyboardKey.Escape;
     public RenderService RenderService { get; }
     
     public GameHost(int width, int height, string title, int targetFps = 60, ICamera? camera = null)
@@ -86,6 +87,11 @@ public sealed class GameHost : IDisposable
             service.OnActiveSceneSwitch(_newSceneToLoad);
     }
 
+    public void SetExistKey(KeyboardKey key = KeyboardKey.Null)
+    {
+        _exitKey = key;
+    }
+
     public void Run()
     {
         _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new BasicConfig();
@@ -98,6 +104,7 @@ public sealed class GameHost : IDisposable
         _borderLessPosY = _config.GetOrDefault("Graphics", "BorderlessWindowPositionY", -1);
         
         Raylib.InitWindow(Width, Height, _title);
+        Raylib.SetExitKey(_exitKey);
         Raylib.SetTargetFPS(_targetFps);
         var updateLoopTime = new FrameTimer();
         var renderLoopTime = new FrameTimer();

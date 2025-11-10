@@ -4,11 +4,11 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Storage.Abstractions;
 using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.Logging.Module;
-using Meatcorps.Engine.Raylib.Examples.Scenes;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
 using Meatcorps.Engine.RayLib.Resources;
+using Meatcorps.Engine.Visualizer.Scenes;
 
 LoggingModule.Load();
 CoreModule.Load();
@@ -17,14 +17,16 @@ var settings = new BasicConfig();
 
 GlobalObjectManager.ObjectManager.Register<IUniversalConfig>(settings);
 using var _ = RayLibModule.Setup()
-    .SetTitle("Controller Test")
+    .SetTitle("Visualizer")
     .SetInitialSize(1920, 1080)
-    .SetFixedSizeCamera(640, 360)
+    .SetFps(0)
+    .SetFixedSizeCamera(960, 540)
     .SetupProcessingBloom(0.6f, 0.2f, 0.8f, 4f)
     .SetProcessing(new CrtNewPixiePostProcessor())
     .SetResource(new OneTexture("Assets/CRTSidePanels.png", texture2D => 
         GlobalObjectManager.ObjectManager.Get<CrtNewPixiePostProcessor>()!.SetFrameTexture(texture2D)
     ))
     .SetResource(TextManager.OnlyOneFont("PressStart2P-Regular.ttf"))
+    .SetExitKey()
     .Load(new MainScene())
     .Run();

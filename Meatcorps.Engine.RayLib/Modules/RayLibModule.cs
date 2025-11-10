@@ -11,6 +11,7 @@ using Meatcorps.Engine.RayLib.Game;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Renderer;
 using Microsoft.Extensions.Logging;
+using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Modules;
 
@@ -23,6 +24,7 @@ public class RayLibModule
     private ICamera? _camera;
     private IRenderTargetStrategy? _renderTargetStrategy;
     private IUniversalConfig _config;
+    private KeyboardKey _exitKey = KeyboardKey.Escape;
     
     public static RayLibModule Setup()
     {
@@ -49,6 +51,12 @@ public class RayLibModule
         return this;
     }
 
+    public RayLibModule SetFps(int fps)
+    {
+        _fps = fps;
+        return this;
+    }
+    
     public RayLibModule SetCustomCamera(ICamera camera)
     {
         _camera = camera;
@@ -94,6 +102,12 @@ public class RayLibModule
         GlobalObjectManager.ObjectManager.Register<T>(postProcessor);
         return this;
     }
+
+    public RayLibModule SetExitKey(KeyboardKey key = KeyboardKey.Null)
+    {
+        _exitKey = key;
+        return this;
+    }
     
     public RayLibModule Load<T>(T scene) where T : BaseScene
     {
@@ -103,6 +117,7 @@ public class RayLibModule
             GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(new BasicScreenRenderTarget());
         
         var gameHost = new GameHost(_initialWidth, _initialHeight, _title, _fps, _camera);
+        gameHost.SetExistKey(_exitKey);
         gameHost.SwitchScene(scene);
         
         return this;

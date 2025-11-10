@@ -13,6 +13,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     private List<int> _profileIds = new();
     public bool AutoAssign { get; set; } = false;
     private int _useAutoMapper = 0;
+    private GenericInput _defaultInput = new GenericInput(() => 0, "UNKNOWN");
     
     public void AssignMapper(int player, IInputMapper<T> mapper)
     {
@@ -68,7 +69,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     public IInput GetState(int player, T input)
     {
         if (AutoAssign)
-            return _inputMappers[_useAutoMapper].GetState(1, input);
+            return player == 1 ? _inputMappers[_useAutoMapper].GetState(1, input) : _defaultInput;
         
         if (_playerMappers.TryGetValue(player, out var mapper))
             return mapper.GetState(player, input);
@@ -79,7 +80,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     public Vector2 GetAxis(int player, int axis = 1)
     {
         if (AutoAssign)
-            return _inputMappers[_useAutoMapper].GetAxis(1, axis);
+            return player == 1 ? _inputMappers[_useAutoMapper].GetAxis(1, axis) : Vector2.Zero;
         
         if (_playerMappers.TryGetValue(player, out var mapper))
             return mapper.GetAxis(player, axis);

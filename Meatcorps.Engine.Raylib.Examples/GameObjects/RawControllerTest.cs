@@ -14,6 +14,8 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.Raylib.Examples.GameObjects;
 
+// Change the MainScene.cs load this example
+
 public class RawControllerTest : BaseGameObject
 {
     private ControllerInputMapper<ControllerInputEnum> _controllerInputMapper;

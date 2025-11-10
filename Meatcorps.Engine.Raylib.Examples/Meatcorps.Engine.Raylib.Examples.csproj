@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Meatcorps.Engine.RayLib.ImGuiTools\Meatcorps.Engine.RayLib.ImGuiTools.csproj" />
       <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
       <ProjectReference Include="..\Meatcorps.Engine.SDL\Meatcorps.Engine.SDL.csproj" />
     </ItemGroup>
@@ -28,6 +29,16 @@
       <None Update="PressStart2P-Regular.ttf">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <Compile Remove="Assets/**/*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Assets/**/*.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

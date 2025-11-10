@@ -7,7 +7,10 @@ public class MainScene: BaseScene
 {
     protected override void OnInitialize()
     {
-        AddGameObject(new InputSelectionTest());
+        AddGameObject(new InputLocalMultiPlayerExample());
+        //AddGameObject(new InputLocalSinglePlayerExample());
+        //AddGameObject(new ImGuiTest());
+        //AddGameObject(new RawControllerTest());
     }
 
     protected override void OnUpdate(float deltaTime)

@@ -146,10 +146,11 @@ public sealed class PixelPerfectRenderTarget : IRenderTargetStrategy, IDisposabl
         var screenWidth = _renderTextureFinal!.Value.Texture.Width;
         var screenHeight = _renderTextureFinal!.Value.Texture.Height;
 
-        _screenScale = MathF.Floor(MathF.Min(
+        var _preScreenScale = MathF.Min(
             screenWidth / (float)_targetWidth,
             screenHeight / (float)_targetHeight
-        ));
+        );
+        _screenScale = MathF.Floor(_preScreenScale);
 
         var renderWidth = _targetWidth * _screenScale;
         var renderHeight = _targetHeight * _screenScale;
