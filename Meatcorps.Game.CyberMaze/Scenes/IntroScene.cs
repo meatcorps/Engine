@@ -85,7 +85,6 @@ public class IntroScene : BaseScene
         if (TotalPlayersReady == 0)
             _sliderTimer.Update(deltaTime);
 
-        Console.WriteLine(_controller.GetState(1, GameInput.Action).Normalized);
         if (TotalPlayersReady > 0)
         {
             _startTimer.Update(true, deltaTime);

@@ -49,7 +49,6 @@ public class OverlayGameObject: ResourceGameObject
         {
             case OverlayState.Appearing:
                 _overlayColor = Raylib.ColorAlpha(Color.White, _showHideTimer.NormalizedElapsed);
-                Console.WriteLine(_state.ToString() + ": " + _showHideTimer.NormalizedElapsed + "");
                 if (_showHideTimer.Output)
                     _state = OverlayState.Visible;
                 break;
@@ -61,7 +60,6 @@ public class OverlayGameObject: ResourceGameObject
             case OverlayState.Disappearing:
                 _overlayColor = Raylib.ColorAlpha(Color.White, 1 - _showHideTimer.NormalizedElapsed);
                 
-                Console.WriteLine(_state.ToString() + ": " + _showHideTimer.NormalizedElapsed + "");
                 if (_showHideTimer.Output)
                 {
                     Done = true;

@@ -19,7 +19,7 @@ GlobalObjectManager.ObjectManager.Register<IUniversalConfig>(settings);
 using var _ = RayLibModule.Setup()
     .SetTitle("Visualizer")
     .SetInitialSize(1920, 1080)
-    .SetFps(0)
+    //.SetFps(0)
     .SetFixedSizeCamera(960, 540)
     .SetupProcessingBloom(0.6f, 0.2f, 0.8f, 4f)
     .SetProcessing(new CrtNewPixiePostProcessor())

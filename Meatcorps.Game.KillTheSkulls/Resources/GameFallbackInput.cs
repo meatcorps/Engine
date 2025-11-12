@@ -11,12 +11,12 @@ public static class GameFallbackInput
     public static void Load()
     {
         var mapper = new GenericMapper<GameInput>()
-            .AddInputKeyboard(1, GameInput.Smash1White, KeyboardKey.One)
-            .AddInputKeyboard(1, GameInput.Smash2Blue, KeyboardKey.Two)
-            .AddInputKeyboard(1, GameInput.Smash3Yellow, KeyboardKey.Three)
-            .AddInputKeyboard(1, GameInput.Smash4Green, KeyboardKey.Four)
-            .AddInputKeyboard(1, GameInput.Smash5Red, KeyboardKey.Five)
-            .AddInputKeyboard(1, GameInput.Action, KeyboardKey.One);
+            .AddInputKeyboard(0, GameInput.Smash1White, KeyboardKey.One)
+            .AddInputKeyboard(0, GameInput.Smash2Blue, KeyboardKey.Two)
+            .AddInputKeyboard(0, GameInput.Smash3Yellow, KeyboardKey.Three)
+            .AddInputKeyboard(0, GameInput.Smash4Green, KeyboardKey.Four)
+            .AddInputKeyboard(0, GameInput.Smash5Red, KeyboardKey.Five)
+            .AddInputKeyboard(0, GameInput.Action, KeyboardKey.One);
 
         InputModule<GameInput>.CreateOnlyKeyboardMouseMapper(mapper, 1);
     }

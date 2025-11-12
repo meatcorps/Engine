@@ -49,9 +49,10 @@ var game = new ArcadeGame
 if (settings.GetOrDefault("ArcadeGame", "UseEmulator", false))
     ArcadeEmulatorModule.Load(game, mqtt).SetIntroScene<IntroScene>();
 else
+{
     ArcadeGameSystemModule.Load(game, mqtt).SetIntroScene<IntroScene>();
-
-mqtt.Create();
+    mqtt.Create();
+}
 
 GameSession.Load();
 Raylib.SetTraceLogLevel(TraceLogLevel.Warning);
