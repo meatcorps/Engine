@@ -43,6 +43,9 @@ public class TextNode: IVisualItem
 
     public void OnDraw()
     {
+        if (_mainGameObject is null)
+            return;
+        
         var color = new Color(0, 255, 255);
         if (Selected)
         {

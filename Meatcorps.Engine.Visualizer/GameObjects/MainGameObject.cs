@@ -3,6 +3,7 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Interfaces;
+using Meatcorps.Engine.Visualizer.Services;
 using Meatcorps.Engine.Visualizer.VisualItems;
 using Raylib_cs;
 
@@ -21,7 +22,7 @@ public class MainGameObject : BaseGameObject
     private bool _validMove;
     private FixedTimer _animationTimer = new FixedTimer(1000);
     private Editor _editor = null!;
-
+    public DataLoaderService DataLoaderService { get; }  = new DataLoaderService();
 
     public bool ValidMove => _validMove;
     public Font Font => _font.GetFont();
@@ -33,6 +34,7 @@ public class MainGameObject : BaseGameObject
 
         _font = GlobalObjectManager.ObjectManager.Get<IDefaultFont>()!;
         _editor = Scene.GetGameObject<Editor>()!;
+        _editor.SetDataLoaderService(this);
     }
 
     protected override void OnUpdate(float deltaTime)
@@ -44,12 +46,24 @@ public class MainGameObject : BaseGameObject
 
         _animationTimer.Update(deltaTime);
         
-        if (Raylib.IsKeyDown(KeyboardKey.F2))
+        if (IsKeyDown(KeyboardKey.F2))
             _visualTypeToAdd = VisualType.Node;
         
-        if (Raylib.IsKeyDown(KeyboardKey.F3))
+        if (IsKeyDown(KeyboardKey.F3))
             _visualTypeToAdd = VisualType.Line;
 
+
+
+        if (IsKeyDown(KeyboardKey.F5))
+        {
+            var items = DataLoaderService.LoadFile(_editor.Name);
+            LoadData(items);
+        }
+
+        if (IsKeyDown(KeyboardKey.LeftControl) && IsKeyDown(KeyboardKey.S))
+            DataLoaderService.SaveFile(_editor.Name, _visualItems);
+        
+        
         UpdateValidMove();
         UpdateCheckIfWeNeedToDeselect();
         UpdateCheckIfWeNeedToOpenEditor();
@@ -62,9 +76,22 @@ public class MainGameObject : BaseGameObject
         UpdateIfTheEditorIsDone();
     }
 
+    public void LoadData(IEnumerable<IVisualItem>? items)
+    {
+        if (items is not null)
+        {
+            _visualItems.Clear();
+                
+            foreach (var item in items)
+                item.OnInitialize(this);
+                
+            _visualItems.AddRange(items);
+        }
+    }
+
     private void UpdateIfTheEditorIsDone()
     {
-        if (Raylib.IsMouseButtonUp(MouseButton.Left) && _editType != EditType.None && _editType != EditType.DataEnter &&
+        if (IsMouseUp(MouseButton.Left) && _editType != EditType.None && _editType != EditType.DataEnter &&
             _validMove)
         {
             _editType = EditType.None;
@@ -73,7 +100,7 @@ public class MainGameObject : BaseGameObject
 
     private void UpdateOnDelete()
     {
-        if (_selectedVisualItem is not null && Raylib.IsKeyDown(KeyboardKey.Delete))
+        if (_selectedVisualItem is not null && IsKeyDown(KeyboardKey.Delete) && _editType != EditType.DataEnter)
         {
             _visualItems.Remove(_selectedVisualItem);
             _selectedVisualItem = null;
@@ -82,7 +109,7 @@ public class MainGameObject : BaseGameObject
 
     private void UpdateOnDragEnd()
     {
-        if (_selectedVisualItem is not null && Raylib.IsMouseButtonUp(MouseButton.Left) && _validMove &&
+        if (_selectedVisualItem is not null && IsMouseUp(MouseButton.Left) && _validMove &&
             _editType != EditType.DataEnter)
         {
             _selectedVisualItem.OnDragEnd(_mousePosition, _editType);
@@ -103,7 +130,7 @@ public class MainGameObject : BaseGameObject
 
     private void UpdateCheckIfWeCanAdd()
     {
-        if (_selectedVisualItem is null && Raylib.IsMouseButtonDown(MouseButton.Left) && _editType == EditType.None)
+        if (_selectedVisualItem is null && IsMouseDown(MouseButton.Left) && _editType == EditType.None)
         {
             IVisualItem? item = null;
 
@@ -145,11 +172,11 @@ public class MainGameObject : BaseGameObject
 
     private void UpdateOnDragStartLogic()
     {
-        if (_selectedVisualItem is null && Raylib.IsMouseButtonDown(MouseButton.Left) && _editType == EditType.None)
+        if (_selectedVisualItem is null && IsMouseDown(MouseButton.Left) && _editType == EditType.None)
         {
             if (GetItemBasedOn(_mousePosition, out var item))
             {
-                if (Raylib.IsKeyDown(KeyboardKey.LeftAlt))
+                if (IsKeyDown(KeyboardKey.LeftAlt))
                 {
                     _selectedVisualItem = item!.Clone();
                     _selectedVisualItem.Selected = true;
@@ -160,7 +187,7 @@ public class MainGameObject : BaseGameObject
                 {
                     _selectedVisualItem = item!;
                     _selectedVisualItem.Selected = true;
-                    _editType = Raylib.IsKeyDown(KeyboardKey.R) ? EditType.Resize : EditType.Drag;
+                    _editType = IsKeyDown(KeyboardKey.R) ? EditType.Resize : EditType.Drag;
                 }
 
                 _selectedVisualItem.OnDragStart(_mousePosition, _editType);
@@ -180,7 +207,7 @@ public class MainGameObject : BaseGameObject
 
     private void UpdateCheckIfWeNeedToOpenEditor()
     {
-        if (Raylib.IsMouseButtonDown(MouseButton.Right) && _editType == EditType.None)
+        if (IsMouseDown(MouseButton.Right) && _editType == EditType.None)
         {
             if (GetItemBasedOn(_mousePosition, out var item))
             {
@@ -194,10 +221,12 @@ public class MainGameObject : BaseGameObject
 
     private void UpdateCheckIfWeNeedToDeselect()
     {
-        if (Raylib.IsKeyDown(KeyboardKey.Escape) && _selectedVisualItem is not null)
+        if (IsKeyDown(KeyboardKey.Escape, true) && _selectedVisualItem is not null)
         {
             _selectedVisualItem.Selected = false;
             _selectedVisualItem = null;
+            _editor.Item = null;
+            _editType = EditType.None;
         }
     }
 
@@ -216,6 +245,30 @@ public class MainGameObject : BaseGameObject
         }
 
         _validMove = true;
+    }
+
+    private bool IsKeyDown(KeyboardKey key, bool ignoreEditor = false)
+    {
+        if ((_editType == EditType.DataEnter || _editor.BlockTheEditor) && !ignoreEditor)
+            return false;
+
+        return Raylib.IsKeyDown(key);
+    }
+    
+    private bool IsMouseDown(MouseButton button)
+    {
+        if (_editType == EditType.DataEnter || _editor.BlockTheEditor)
+            return false;
+
+        return Raylib.IsMouseButtonDown(button);
+    }
+    
+    private bool IsMouseUp(MouseButton button)
+    {
+        if (_editType == EditType.DataEnter || _editor.BlockTheEditor)
+            return false;
+
+        return Raylib.IsMouseButtonUp(button);
     }
 
     private bool GetItemBasedOn(Vector2 position, out IVisualItem? item)
@@ -240,6 +293,8 @@ public class MainGameObject : BaseGameObject
 
     protected override void OnDraw()
     {
+        Raylib.DrawTextEx(_font.GetFont(), "Name: " + _editor.Name, _camera.ScreenToWorld(new Vector2(32, 32)), 8, 1, Color.Gray);
+        
         Raylib.DrawTriangleLines(_mousePosition, _mousePosition + new Vector2(5, 30),
             _mousePosition + new Vector2(30, 15), Color.White);
         Raylib.DrawTriangleLines(_mousePosition + new Vector2(1, 1), _mousePosition + new Vector2(6, 31),
@@ -266,35 +321,6 @@ public class MainGameObject : BaseGameObject
     {
     }
 }
-
-/*public class VisualItem
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public string Name2 { get; set; }
-    public int Size1 { get; set; } = 16;
-    public int Size2 { get; set; } = 8;
-    public Rectangle Bounds { get; set; }
-    public bool Selected { get; set; }
-    public int Order { get; set; }
-    public VisualType Type { get; set; }
-
-    public VisualItem Clone()
-    {
-        return new VisualItem
-        {
-            Id = new Guid(),
-            Name = Name,
-            Name2 = Name2,
-            Size1 = Size1,
-            Size2 = Size2,
-            Bounds = Bounds,
-            Selected = Selected,
-            Order = Order,
-            Type = Type
-        };
-    }
-}*/
 
 public enum VisualType
 {

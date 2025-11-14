@@ -34,6 +34,10 @@ public class NodeLine: IVisualItem
 
     public void OnDraw()
     {
+        
+        if (_mainGameObject is null)
+            return;
+        
         var color = new Color(0, 255, 255);
         if (Selected)
             color = _mainGameObject.ValidMove ? Color.Yellow : Color.Red;
