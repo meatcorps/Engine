@@ -8,6 +8,7 @@ using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Audio;
 using Meatcorps.Engine.RayLib.Camera;
 using Meatcorps.Engine.RayLib.Game;
+using Meatcorps.Engine.RayLib.Game.GameTasks;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Renderer;
 using Microsoft.Extensions.Logging;
@@ -30,6 +31,7 @@ public class RayLibModule
     {
         GlobalObjectManager.ObjectManager.RegisterList<ILoadAfterRayLibInit>();
         GlobalObjectManager.ObjectManager.RegisterList<IPostProcessor>();
+        GlobalObjectManager.ObjectManager.RegisterList<IGameLoopTask>();
         return new RayLibModule();
     }
 
@@ -111,6 +113,12 @@ public class RayLibModule
     
     public RayLibModule Load<T>(T scene) where T : BaseScene
     {
+        GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new AudioTask());
+        GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new BackgroundServicesTask());
+        GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new LoadAfterRayLibInitTask());
+        GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new MouseTask());
+        GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new SceneTask());
+        
         if (_renderTargetStrategy is not null)
             GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(_renderTargetStrategy);
         else 

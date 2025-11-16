@@ -57,11 +57,13 @@ public class RenderService
         _camera.Update(deltaTime, _renderTargetStrategy);
     }
 
-    public void Render(FrameTimer.ScopedScope renderTimer, bool showCursor)
+    public void StartRenderer()
     {
         _renderTargetStrategy.BeginRender(BackgroundColor, _camera);
-        if (!showCursor)
-            Raylib.DisableCursor();
+    }
+    
+    public void Render()
+    {
         _camera.StartWorldCamera();
 
         foreach (var layer in _gameObjects)
@@ -92,7 +94,10 @@ public class RenderService
         _renderTargetStrategy.PostProcess(CameraLayer.UI);
 
         _renderTargetStrategy.EndRender();
-        renderTimer.Dispose();
+    }
+
+    public void StopRendering()
+    {
         _renderTargetStrategy.EndDrawing();
     }
 }

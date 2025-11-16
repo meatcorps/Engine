@@ -44,14 +44,6 @@ public abstract class BaseImGuiGameObject: BaseGameObject
     
     protected abstract void OnGuiUpdate(float deltaTime);
 
-
-    private void MapMousePosition()
-    {
-        var io = ImGui.GetIO();
-       
-        io.DisplaySize = new System.Numerics.Vector2(_renderer.RenderWidth, _renderer.RenderHeight);
-    }
-
     private Vector2 GetMouseCursorPosition()
     {
        var mouse = Raylib.GetMousePosition();
@@ -64,12 +56,25 @@ public abstract class BaseImGuiGameObject: BaseGameObject
            (mouse.Y - viewportY) / scaleY
        );
     }
+
+    private Vector2 GetScreenSize()
+    {
+        return new Vector2(_renderer.RenderWidth, _renderer.RenderHeight);
+    }
     
     protected override void OnDraw()
     {
+        if (_previousDeltaTime == 0)
+        {
+            Console.WriteLine("Delta time is 0. This is bad.");
+            return;
+        }
+        
         rlImGui.GetMouseCursorPosition = GetMouseCursorPosition;
-        rlImGui.Begin();
-        MapMousePosition();
+        rlImGui.GetScreenSize = GetScreenSize;
+        rlImGui.UseHighDPI = false;
+        rlImGui.Begin(_previousDeltaTime);
+
         OnGuiUpdate(_previousDeltaTime);
         rlImGui.End();
         base.OnDraw();

@@ -9,12 +9,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Meatcorps.Engine.RayLib.ImGuiTools\Meatcorps.Engine.RayLib.ImGuiTools.csproj"/>
-    </ItemGroup>
-    
-    <ItemGroup>
-        <None Update="PressStart2P-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        <ProjectReference Include="..\Meatcorps.Engine.RayLib.RemixIcons\Meatcorps.Engine.RayLib.RemixIcons.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -29,6 +24,12 @@
 
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Assets\Fonts\PressStart2P-Regular.ttf">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

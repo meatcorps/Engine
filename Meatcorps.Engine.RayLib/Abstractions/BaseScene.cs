@@ -110,6 +110,8 @@ public abstract class BaseScene: IDisposable
     {
         if (Paused || !Enabled) 
             return;
+        
+        GameHost.SetMultiplier(UpdateTimeMultiplier);
 
         foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
             backgroundService.PreUpdate(deltaTime);

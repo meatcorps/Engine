@@ -8,7 +8,7 @@ namespace Meatcorps.Engine.RayLib.Resources;
 public sealed class TextManager<T> : ILoadAfterRayLibInit, IDisposable, IDefaultFont where T: Enum
 {
     private Dictionary<T, Font> _fonts = new();
-    private List<(string, T, int, TextureFilter)> _fontPaths = new();
+    private List<(string, T, int, TextureFilter, int[]? codePoints)> _fontPaths = new();
     private T? _defaultFont;
     private bool _isDisposed;
     private bool _isLoaded;
@@ -18,12 +18,12 @@ public sealed class TextManager<T> : ILoadAfterRayLibInit, IDisposable, IDefault
         GlobalObjectManager.ObjectManager.RegisterOnce<IDefaultFont>(this);
     }
     
-    public TextManager<T> AddFont(string fontPath, T type, int size = 32, TextureFilter filter = TextureFilter.Point)
+    public TextManager<T> AddFont(string fontPath, T type, int size = 32, TextureFilter filter = TextureFilter.Point, int[] codePoints = null)
     {
         if (_defaultFont == null)
             _defaultFont = type;
         
-        _fontPaths.Add((fontPath, type, size, filter));
+        _fontPaths.Add((fontPath, type, size, filter, codePoints));
         return this;
     }
     
@@ -33,7 +33,7 @@ public sealed class TextManager<T> : ILoadAfterRayLibInit, IDisposable, IDefault
             return;
         foreach (var fontToBeLoaded in _fontPaths)
         {
-            var font = Raylib.LoadFontEx(fontToBeLoaded.Item1, fontToBeLoaded.Item3, null, 0);
+            var font = Raylib.LoadFontEx(fontToBeLoaded.Item1, fontToBeLoaded.Item3, fontToBeLoaded.codePoints, fontToBeLoaded.codePoints?.Length ?? 0);
             Raylib.SetTextureFilter(font.Texture, fontToBeLoaded.Item4);
             _fonts.Add(fontToBeLoaded.Item2, font);
         }

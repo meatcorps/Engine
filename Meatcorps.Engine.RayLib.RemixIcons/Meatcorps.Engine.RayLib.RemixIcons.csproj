@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Meatcorps.Engine.RayLib.RemixIcons</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Meatcorps.Engine.Arcade.RayLib\Meatcorps.Engine.Arcade.RayLib.csproj" />
+    </ItemGroup>
+
+</Project>

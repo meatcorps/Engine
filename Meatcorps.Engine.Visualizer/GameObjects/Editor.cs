@@ -1,5 +1,8 @@
+using System.Numerics;
 using ImGuiNET;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.ImGuiTools;
+using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.Visualizer.Services;
 using Meatcorps.Engine.Visualizer.VisualItems;
 using Raylib_cs;
@@ -19,26 +22,36 @@ public class Editor: BaseImGuiGameObject
 
     private string[] _fileItems = [];
     private int _currentFileIndex = 0;
-    
+    private ICameraFixedWidthAndHeight _camera;
+
     public void SetDataLoaderService(MainGameObject mainGameObject) 
         => _mainGameObject = mainGameObject;
     
     protected override void OnGuiInitialize()
     {
-        
+        if (GlobalObjectManager.ObjectManager.Get<ICamera>()! is ICameraFixedWidthAndHeight camera)
+            _camera = camera;
+    }
+
+    public void OpenFile()
+    {
+        _fileItems = _mainGameObject.DataLoaderService.GetFiles().ToArray();
+        _openFile = true;
+        _currentFileIndex = 0;
+    }
+    
+    public void EditName()
+    {
+        _editName = true;
     }
 
     protected override void OnGuiUpdate(float deltaTime)
     {
         if (Raylib.IsKeyDown(KeyboardKey.LeftShift) && Raylib.IsKeyPressed(KeyboardKey.F4) && !BlockTheEditor)
-        {
-            _fileItems = _mainGameObject.DataLoaderService.GetFiles().ToArray();
-            _openFile = true;
-            _currentFileIndex = 0;
-        } 
-        
-        if (Raylib.IsKeyPressed(KeyboardKey.F4) && !BlockTheEditor) 
-            _editName = true;
+            OpenFile();
+
+        if (Raylib.IsKeyPressed(KeyboardKey.F4) && !BlockTheEditor)
+            EditName();
 
         if (_openFile)
         {
@@ -101,6 +114,23 @@ public class Editor: BaseImGuiGameObject
            
            if (done)
                Item = null;
+        }
+    }
+
+    protected override void OnDraw()
+    {
+        base.OnDraw();
+        
+        if (BlockTheEditor)
+        {
+            var mousePosition = Raylib.GetMousePosition() /
+                             ((float) Scene.GameHost.Width / _camera.TargetWidth);
+
+            Raylib.DrawTriangleLines(mousePosition, mousePosition + new Vector2(5, 30),
+                mousePosition + new Vector2(30, 15), Color.White);
+            Raylib.DrawTriangleLines(mousePosition + new Vector2(1, 1), mousePosition + new Vector2(6, 31),
+                mousePosition + new Vector2(31, 16), Color.White);
+
         }
     }
 }

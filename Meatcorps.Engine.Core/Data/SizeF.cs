@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Runtime.Serialization;
 
 namespace Meatcorps.Engine.Core.Data;
@@ -16,6 +17,8 @@ public struct SizeF : IEquatable<SizeF>
         Width = width;
         Height = height;
     }
+    
+    public Vector2 ToVector2() => new(Width, Height);
     
     public bool Equals(SizeF other)
     {

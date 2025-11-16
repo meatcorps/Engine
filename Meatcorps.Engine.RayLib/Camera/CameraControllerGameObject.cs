@@ -10,6 +10,8 @@ namespace Meatcorps.Engine.RayLib.Camera;
 
 public class CameraControllerGameObject : BaseGameObject
 {
+    public float Zoom => _targetZoom;
+    
     private readonly ICamera _camera;
 
     // --- Smooth Follow ---

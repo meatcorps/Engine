@@ -19,6 +19,8 @@ public class TimeService : ITimeService
     double _lastTime = Raylib.GetTime();
     readonly double _startTime = Raylib.GetTime();
 
+    public float DeltaMultiplier { get; set; } = 1f;
+    
     public void UpdateFrameTimes()
     {
         var now = Raylib.GetTime();
@@ -48,12 +50,12 @@ public class TimeService : ITimeService
             _accumulator = 0f;
             HitCatchUpCapThisFrame = true;
         }
-
+        
         if (_accumulator >= FixedDeltaTime && StepsThisFrame < MaxCatchUpCycles)
         {
             _accumulator -= FixedDeltaTime;
             StepsThisFrame++;
-            deltaTime = FixedDeltaTime;
+            deltaTime = FixedDeltaTime * DeltaMultiplier;
             return true;
         }
 

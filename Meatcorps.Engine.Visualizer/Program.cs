@@ -7,7 +7,9 @@ using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
+using Meatcorps.Engine.RayLib.RemixIcons;
 using Meatcorps.Engine.RayLib.Resources;
+using Meatcorps.Engine.Visualizer.Enums;
 using Meatcorps.Engine.Visualizer.Scenes;
 
 LoggingModule.Load();
@@ -19,14 +21,16 @@ GlobalObjectManager.ObjectManager.Register<IUniversalConfig>(settings);
 using var _ = RayLibModule.Setup()
     .SetTitle("Visualizer")
     .SetInitialSize(1920, 1080)
-    //.SetFps(0)
+    .SetFps(120)
     .SetFixedSizeCamera(960, 540)
     .SetupProcessingBloom(0.6f, 0.2f, 0.8f, 4f)
     .SetProcessing(new CrtNewPixiePostProcessor())
     .SetResource(new OneTexture("Assets/CRTSidePanels.png", texture2D => 
         GlobalObjectManager.ObjectManager.Get<CrtNewPixiePostProcessor>()!.SetFrameTexture(texture2D)
     ))
-    .SetResource(TextManager.OnlyOneFont("PressStart2P-Regular.ttf"))
+    .SetResource(new TextManager<FontEnum>()
+        .AddFont("Assets/Fonts/PressStart2P-Regular.ttf", FontEnum.Default)
+        .AddRemixFont(FontEnum.Icons))
     .SetExitKey()
     .Load(new MainScene())
     .Run();

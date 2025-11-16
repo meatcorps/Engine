@@ -69,6 +69,19 @@ public static class rlImGui
     public static SetupUserFontsCallback SetupUserFonts = null;
 
     public static Func<Vector2> GetMouseCursorPosition { get; set; } = () => new Vector2(Raylib.GetMouseX(), Raylib.GetMouseY());
+    
+    public static Func<Vector2> GetScreenSize { get; set; } = () =>
+    {
+        if (Raylib.IsWindowFullscreen())
+        {
+            int monitor = Raylib.GetCurrentMonitor();
+            return new Vector2(Raylib.GetMonitorWidth(monitor), Raylib.GetMonitorHeight(monitor));
+        }
+        else
+        {
+            return new Vector2(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
+        }
+    };
 
     /// <summary>
     /// Sets up ImGui, loads fonts and themes
@@ -285,6 +298,7 @@ public static class rlImGui
 
     public static bool LoadDefaultFont = true;
     public static bool LoadFontAwesome = true;
+    public static bool UseHighDPI = true;
 
     /// <summary>
     /// End Custom initialization. Not needed if you call Setup. Only needed if you want to add custom setup code.
@@ -380,19 +394,11 @@ public static class rlImGui
     {
         ImGuiIOPtr io = ImGui.GetIO();
 
-        if (Raylib.IsWindowFullscreen())
-        {
-            int monitor = Raylib.GetCurrentMonitor();
-            io.DisplaySize = new Vector2(Raylib.GetMonitorWidth(monitor), Raylib.GetMonitorHeight(monitor));
-        }
-        else
-        {
-            io.DisplaySize = new Vector2(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
-        }
+        io.DisplaySize = GetScreenSize();
 
         io.DisplayFramebufferScale = new Vector2(1, 1);
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || Raylib.IsWindowState(ConfigFlags.HighDpiWindow))
+        if (UseHighDPI && (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || Raylib.IsWindowState(ConfigFlags.HighDpiWindow)))
             io.DisplayFramebufferScale = Raylib.GetWindowScaleDPI();
 
         io.DeltaTime = dt >= 0 ? dt : Raylib.GetFrameTime();
@@ -576,6 +582,7 @@ public static class rlImGui
             (int)((io.DisplaySize.Y - (int)(y + height)) * scale.Y),
             (int)(width * scale.X),
             (int)(height * scale.Y));
+        
     }
 
     private static void TriangleVert(ImDrawVertPtr idx_vert)

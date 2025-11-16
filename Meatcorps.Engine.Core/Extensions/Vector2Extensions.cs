@@ -95,19 +95,14 @@ public static class Vector2Extensions
         return Vector2.Distance(offset, direction);
     }
 
-    public static Vector2 DoRotate(this Vector2 self, float angle)
-    {
-        self.Rotate(angle);
-        return self;
-    }
-
-    public static void Rotate(this Vector2 self, float radians)
+    public static Vector2 Rotate(this Vector2 self, float radians)
     {
         var num1 = MathF.Cos(radians);
         var num2 = MathF.Sin(radians);
-        var x = self.X;
-        self.X = (self.X * num1 - self.Y * num2);
-        self.Y = (x * num2 + self.Y * num1);
+        
+        return new Vector2(
+            (self.X * num1 - self.Y * num2), 
+            (self.X * num2 + self.Y * num1));
     }
 
     public static bool IsNaN(this Vector2 self)

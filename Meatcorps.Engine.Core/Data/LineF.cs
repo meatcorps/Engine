@@ -69,9 +69,8 @@ public struct LineF: IEquatable<LineF>
     {
         get
         {
-            var x = DirectionStartNormalized.X;
-            var y = DirectionStartNormalized.Y;
-            return MathF.Sqrt(x * x + y * y);
+            var v = DirectionStartNormalized;
+            return MathF.Atan2(v.Y, v.X);
         }
     }
     
@@ -79,9 +78,8 @@ public struct LineF: IEquatable<LineF>
     {
         get
         {
-            var x = DirectionEndNormalized.X;
-            var y = DirectionEndNormalized.Y;
-            return MathF.Sqrt(x * x + y * y);
+            var v = DirectionEndNormalized;
+            return MathF.Atan2(v.Y, v.X);
         }
     }
 

@@ -7,6 +7,8 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
+using Meatcorps.Engine.RayLib.Enums;
+using Meatcorps.Engine.RayLib.Game.GameTasks;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Renderer;
 using Raylib_cs;
@@ -30,10 +32,16 @@ public sealed class GameHost : IDisposable
     private int _borderLessPosY;
     private bool _disableMouseCursor = false;
     private KeyboardKey _exitKey = KeyboardKey.Escape;
+    private List<IGameLoopTask> _gameLoopTasksForward = new();
+    private List<IGameLoopTask> _gameLoopTasksBackward = new();
+    public FrameTimer UpdateLoopTime;
+    public FrameTimer RenderLoopTime;
     public RenderService RenderService { get; }
+
     
     public GameHost(int width, int height, string title, int targetFps = 60, ICamera? camera = null)
     {
+        
         Width = width;
         Height = height;
         _title = title;
@@ -48,6 +56,12 @@ public sealed class GameHost : IDisposable
         RenderService = new RenderService(GlobalObjectManager.ObjectManager);
         
         GlobalObjectManager.ObjectManager.Register(RenderService);
+        LoadGameLoopTasks();
+    }
+    
+    public void SetMultiplier(float multiplier)
+    {
+        _timeService.DeltaMultiplier = multiplier;
     }
     
     public void ToggleFullscreen()
@@ -79,116 +93,104 @@ public sealed class GameHost : IDisposable
     {
         return new Vector2(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
     }
-    
-    public void SwitchScene(BaseScene scene)
-    {
-        _newSceneToLoad = scene;
-        foreach (var service in GlobalObjectManager.ObjectManager.GetList<ISceneSwitchTracker>()!)
-            service.OnActiveSceneSwitch(_newSceneToLoad);
-    }
 
     public void SetExistKey(KeyboardKey key = KeyboardKey.Null)
     {
         _exitKey = key;
     }
 
+    public void SwitchScene(BaseScene scene)
+    {
+        foreach (var tasks in _gameLoopTasksForward) 
+        {
+            if (tasks is SceneTask sceneTask)
+                sceneTask.SwitchScene(scene);
+        }
+    }
+
+    public void LoadGameLoopTasks()
+    {
+        _gameLoopTasksForward = GlobalObjectManager.ObjectManager.GetList<IGameLoopTask>() ?? new List<IGameLoopTask>();
+        _gameLoopTasksBackward = GlobalObjectManager.ObjectManager.GetList<IGameLoopTask>() ?? new List<IGameLoopTask>();
+        _gameLoopTasksForward.Sort((a, b) => b.Priority.CompareTo(a.Priority));
+        _gameLoopTasksBackward.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+
+        foreach (var task in _gameLoopTasksForward)
+        {
+            if (!task.IsInitialized)
+                task.Initialize(this);
+        }
+        
+    }
+    
     public void Run()
     {
-        _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new BasicConfig();
-
-        if (_config.GetOrDefault("General", "HideMouseCursor", false))
-            Raylib.HideCursor();
-        _disableMouseCursor = _config.GetOrDefault("General", "DisableMouseCursor", true);
+        UpdateLoopTime = new FrameTimer();
+        RenderLoopTime = new FrameTimer();
+        RunGameLoopTask(GameLoopType.PreRaylibInit, true);
         
+        _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new BasicConfig();
         _borderLessPosX = _config.GetOrDefault("Graphics", "BorderlessWindowPositionX", -1);
         _borderLessPosY = _config.GetOrDefault("Graphics", "BorderlessWindowPositionY", -1);
         
         Raylib.InitWindow(Width, Height, _title);
         Raylib.SetExitKey(_exitKey);
         Raylib.SetTargetFPS(_targetFps);
-        var updateLoopTime = new FrameTimer();
-        var renderLoopTime = new FrameTimer();
-
-        if (GlobalObjectManager.ObjectManager.GetList<ILoadAfterRayLibInit>()!.Any(x => x is IAudioInitNeeded))
-        {
-            if (!Raylib.IsAudioDeviceReady())
-                Raylib.InitAudioDevice();
-            _gameHasAudio = true;
-        }
-
+        
         if (_config.GetOrDefault("Graphics", "Borderless", false))
-        {
             ToggleBorderlessWindow();
-        }
+        
         if (_config.GetOrDefault("Graphics", "FullScreen", false))
-        {
             ToggleFullscreen();
-        }
         
-        foreach (var instance in GlobalObjectManager.ObjectManager.GetList<ILoadAfterRayLibInit>()!)
-            instance.Load();
-        
-        _backgroundServices.AddRange(GlobalObjectManager.ObjectManager.GetList<IBackgroundService>() ?? new List<IBackgroundService>());
+        RunGameLoopTask(GameLoopType.PostRaylibInit, true);
         
         while (!Raylib.WindowShouldClose())
         {
-            if (_newSceneToLoad is not null)
-            {
-                _newSceneToLoad.SetGameHost(this);
-                var currentScene = GlobalObjectManager.ObjectManager.Get<BaseScene>();
-                if (currentScene != null)
-                {
-                    currentScene.Dispose();
-                    GlobalObjectManager.ObjectManager.Remove<BaseScene>();
-                }
 
-                GlobalObjectManager.ObjectManager.Register(_newSceneToLoad);
-        
-                _newSceneToLoad.Initialize();
-
-                _newSceneToLoad = null;
-            }
-            
-            var activeScene = GlobalObjectManager.ObjectManager.Get<BaseScene>()!;
-            
-            _timeService.UpdateFrameTimes(); // update deltaTime etc.
+            RunGameLoopTask(GameLoopType.BeforeUpdate, true);
             var totalSteps = 0;
+            
+            _timeService.UpdateFrameTimes();
             while (_timeService.TryDequeueStep(out var fixedDeltaTime))
             {
-                using (updateLoopTime.Scope())
+                using (UpdateLoopTime.Scope())
                 {
-                    foreach (var backgroundService in _backgroundServices)
-                        backgroundService.PreUpdate(fixedDeltaTime * activeScene.UpdateTimeMultiplier);
-                    activeScene.PreUpdate(fixedDeltaTime * activeScene.UpdateTimeMultiplier);
-                    foreach (var backgroundService in _backgroundServices)
-                        backgroundService.Update(fixedDeltaTime * activeScene.UpdateTimeMultiplier);
-                    activeScene.Update(fixedDeltaTime * activeScene.UpdateTimeMultiplier);
-                    activeScene.AlwaysUpdate(fixedDeltaTime * activeScene.UpdateTimeMultiplier);
-                    activeScene.LateUpdate(fixedDeltaTime * activeScene.UpdateTimeMultiplier);
-                    foreach (var backgroundService in _backgroundServices)
-                        backgroundService.LateUpdate(fixedDeltaTime * activeScene.UpdateTimeMultiplier);
-
-                    RenderService.Update(fixedDeltaTime * activeScene.UpdateTimeMultiplier);
+                    RunGameLoopTask(GameLoopType.PreUpdate, true, fixedDeltaTime);
+                    RunGameLoopTask(GameLoopType.Update, true, fixedDeltaTime);
+                    RunGameLoopTask(GameLoopType.LateUpdate, false, fixedDeltaTime);
                 }
-
-                UpdateTimeInMs = updateLoopTime.AvgMs;
+                
+                UpdateTimeInMs = UpdateLoopTime.AvgMs;
                 totalSteps++;
             }
-
             _timeService.FinalizeFrame();
-
-            var scope = renderLoopTime.Scope();
-            activeScene.RegisterForRender();
-            activeScene.Draw();
-            RenderService.Render(scope, !_disableMouseCursor);
             
+            RunGameLoopTask(GameLoopType.AfterUpdate, true);
+            RunGameLoopTask(GameLoopType.PreRender, true);
+            
+            using (RenderLoopTime.Scope())
+            {
+                RunGameLoopTask(GameLoopType.Render, true);
+            }
+            
+            RunGameLoopTask(GameLoopType.PostRender, false);
 #if DEBUG
-            Raylib.SetWindowTitle($"Update time {updateLoopTime:F4}, Render time {renderLoopTime:F4}, FPS {Raylib.GetFPS()}");
+            Raylib.SetWindowTitle($"Steps: {totalSteps}, Update time {UpdateLoopTime:F4}, Render time {RenderLoopTime:F4}, FPS {Raylib.GetFPS()}");
 #endif
         }
-
-        Raylib.CloseWindow();
         
+        Raylib.CloseWindow();
+        RunGameLoopTask(GameLoopType.AfterClosingWindow, true);
+    }
+
+    private void RunGameLoopTask(GameLoopType type, bool forward, float deltaTime = 0f)
+    {
+        foreach (var task in forward ? _gameLoopTasksForward : _gameLoopTasksBackward)
+        {
+            if (task.Enabled)
+                task.Task(type, deltaTime);
+        }
     }
 
     public void Dispose()
