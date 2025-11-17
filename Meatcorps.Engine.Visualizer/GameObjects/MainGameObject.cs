@@ -8,6 +8,7 @@ using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.RemixIcons;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Engine.Visualizer.Enums;
+using Meatcorps.Engine.Visualizer.Scenes;
 using Meatcorps.Engine.Visualizer.Services;
 using Meatcorps.Engine.Visualizer.VisualItems;
 using Raylib_cs;
@@ -16,28 +17,21 @@ namespace Meatcorps.Engine.Visualizer.GameObjects;
 
 public class MainGameObject : BaseGameObject
 {
-    private Vector2 _mousePosition;
     private ICameraFixedWidthAndHeight _camera = null!;
-    private List<IVisualItem> _visualItems = new List<IVisualItem>();
-    private IVisualItem? _selectedVisualItem = null;
-    private VisualType _visualTypeToAdd = VisualType.Node;
-    private EditType _editType;
     private TextManager<FontEnum> _font = null!;
-    private Vector2 _offset;
     private bool _validMove;
-    private FixedTimer _animationTimer = new FixedTimer(1000);
-    private Editor _editor = null!;
-    private CameraControllerGameObject _cameraController;
-    private Toolbox _toolbox;
-    private UIMessageEmitter _uiMessage;
+    private CameraControllerGameObject _cameraController = null!;
+    private Toolbox _toolbox = null!;
+    private UIMessageEmitter _uiMessage = null!;
     private string _mouseText = "";
     private bool _hideUI = false;
-    public DataLoaderService DataLoaderService { get; } = new DataLoaderService();
 
-    public bool EditorIsOpen => _editor.Item != null;
+    public bool EditorIsOpen => _scene.VisualData.EditItem != null;
     public bool ValidMove => _validMove;
     public Font Font => _font.GetFont();
 
+    private MainScene _scene = null!;
+    
     protected override void OnInitialize()
     {
         if (GlobalObjectManager.ObjectManager.Get<ICamera>()! is ICameraFixedWidthAndHeight camera)
@@ -48,124 +42,67 @@ public class MainGameObject : BaseGameObject
         _uiMessage = Scene.GetGameObject<UIMessageEmitter>()!;
 
         _font = GlobalObjectManager.ObjectManager.Get<TextManager<FontEnum>>()!;
-        _editor = Scene.GetGameObject<Editor>()!;
-        _editor.SetDataLoaderService(this);
-
-        _toolbox.Items.Add(new ToolboxItem
-        {
-            Highlight = () => _visualTypeToAdd == VisualType.Node,
-            Icon = RemixIcon.t_box_fill,
-            Action = () => _visualTypeToAdd = VisualType.Node,
-            Name = "Add Node"
-        });
-        _toolbox.Items.Add(new ToolboxItem
-        {
-            Highlight = () => _visualTypeToAdd == VisualType.Line,
-            Icon = RemixIcon.separator,
-            Action = () => _visualTypeToAdd = VisualType.Line,
-            Name = "Add Line"
-        });
-        _toolbox.Items.Add(new ToolboxItem
-        {
-            Icon = null
-        });
-        _toolbox.Items.Add(new ToolboxItem
-        {
-            Icon = RemixIcon.text_snippet,
-            Action = () => _editor.EditName(),
-            Name = "Rename document"
-        });
-        _toolbox.Items.Add(new ToolboxItem
-        {
-            Icon = RemixIcon.upload_2_fill,
-            Action = () => _editor.OpenFile(),
-            Name = "Load document"
-        });
-        _toolbox.Items.Add(new ToolboxItem
-        {
-            Icon = RemixIcon.save_2_fill,
-            Action = SaveData,
-            Name = "Save document"
-        });
-        _toolbox.Items.Add(new ToolboxItem
-        {
-            Icon = null
-        });
-        _toolbox.Items.Add(new ToolboxItem
-        {
-            Icon = RemixIcon.focus_mode,
-            Action = () =>
-            {
-                _cameraController.SetZoom(0);
-                _cameraController.SetPosition(new Vector2(0, 0));
-            },
-            Name = "Reset zoom and position"
-        });
+        _scene = (Scene as MainScene)!;
     }
 
     protected override void OnUpdate(float deltaTime)
     {
         _mouseText = "";
         _validMove = true;
-        _mousePosition =
-            Vector2ToGrid(_camera.ScreenToWorld(Raylib.GetMousePosition() /
-                                                ((float)Scene.GameHost.Width / _camera.TargetWidth)));
 
-        _animationTimer.Update(deltaTime);
+        if (_scene.IsKeyDown(KeyboardKey.F2))
+            _scene.VisualData.VisualType = VisualType.Node;
 
-        if (IsKeyDown(KeyboardKey.F2))
-            _visualTypeToAdd = VisualType.Node;
+        if (_scene.IsKeyDown(KeyboardKey.F3))
+            _scene.VisualData.VisualType = VisualType.Line;
 
-        if (IsKeyDown(KeyboardKey.F3))
-            _visualTypeToAdd = VisualType.Line;
-
-        _hideUI = (IsKeyDown(KeyboardKey.LeftControl) || IsKeyDown(KeyboardKey.LeftSuper)) && IsKeyDown(KeyboardKey.LeftShift);
+        _hideUI = (_scene.IsKeyDown(KeyboardKey.LeftControl) || _scene.IsKeyDown(KeyboardKey.LeftSuper)) && _scene.IsKeyDown(KeyboardKey.LeftShift);
         
         _toolbox.Enabled = !_hideUI;
         
-        if (IsKeyDown(KeyboardKey.F5))
+        if (_scene.IsKeyDown(KeyboardKey.F5))
         {
-            var items = DataLoaderService.LoadFile(_editor.Name);
-            LoadData(items);
+            var items = _scene.DataLoaderService.LoadFile(_scene.VisualData.Name);
+            _scene.LoadData(items);
         }
 
-        if (IsKeyDown(KeyboardKey.LeftControl) && IsKeyDown(KeyboardKey.S))
-            SaveData();
+        if (_scene.IsKeyDown(KeyboardKey.LeftControl) && _scene.IsKeyDown(KeyboardKey.S))
+            _scene.SaveData();
 
-        if (IsMouseDown(MouseButton.Middle))
+        if (_scene.IsMouseDown(MouseButton.Middle))
         {
             var delta = Raylib.GetMouseDelta() * -1;
             _cameraController.SetPosition(_cameraController.Position + delta);
         }
 
-        if (!_editor.BlockTheEditor && Math.Abs(Raylib.GetMouseWheelMove()) > 0.1f)
+        if (!_scene.BlockTheEditor && Math.Abs(Raylib.GetMouseWheelMove()) > 0.1f)
         {
             _cameraController.SetZoom(_cameraController.Zoom + Raylib.GetMouseWheelMove() * 0.1f);
         }
 
-        if (!_editor.BlockTheEditor && _selectedVisualItem is not null)
+        if (!_scene.BlockTheEditor && _scene.VisualData.SelectedItem is not null)
         {
-            if (IsKeyPressed(KeyboardKey.Home))
+            if (_scene.IsKeyPressed(KeyboardKey.Home))
             {
-                _visualItems.Remove(_selectedVisualItem);
-                _visualItems.Add(_selectedVisualItem);
+                _scene.VisualData.Data.Remove(_scene.VisualData.SelectedItem);
+                _scene.VisualData.Data.Add(_scene.VisualData.SelectedItem);
             }
-            if (IsKeyPressed(KeyboardKey.End))
+            if (_scene.IsKeyPressed(KeyboardKey.End))
             {
-                _visualItems.Remove(_selectedVisualItem);
-                _visualItems.Insert(0, _selectedVisualItem);
+                _scene.VisualData.Data.Remove(_scene.VisualData.SelectedItem);
+                _scene.VisualData.Data.Insert(0, _scene.VisualData.SelectedItem);
             }
-            if (IsKeyPressed(KeyboardKey.PageUp))
+            if (_scene.IsKeyPressed(KeyboardKey.PageUp))
             {
-                var index = _visualItems.IndexOf(_selectedVisualItem);
-                _visualItems.Remove(_selectedVisualItem);
-                _visualItems.Insert(Math.Clamp(index + 1, 0, _visualItems.Count), _selectedVisualItem);
+                var index = _scene.VisualData.Data.IndexOf(_scene.VisualData.SelectedItem);
+                _scene.VisualData.Data.Remove(_scene.VisualData.SelectedItem);
+                _scene.VisualData.Data.Insert(Math.Clamp(index + 1, 0, _scene.VisualData.Data.Count), _scene.VisualData.SelectedItem);
             }
-            if (IsKeyPressed(KeyboardKey.PageDown))
+            if (_scene.IsKeyPressed(KeyboardKey.PageDown))
             {
-                var index = _visualItems.IndexOf(_selectedVisualItem);
-                _visualItems.Remove(_selectedVisualItem);
-                _visualItems.Insert(Math.Clamp(index - 1, 0, _visualItems.Count), _selectedVisualItem);
+                var index = _scene.VisualData.Data.IndexOf(_scene.VisualData.SelectedItem);
+                _scene.VisualData.Data.Remove(_scene.VisualData.SelectedItem);
+                _scene.VisualData.Data.Insert(Math.Clamp(index - 1, 0, _scene.VisualData.Data.Count), _scene.VisualData.SelectedItem);
             }
         }
 
@@ -181,69 +118,45 @@ public class MainGameObject : BaseGameObject
         UpdateIfTheEditorIsDone();
     }
 
-    public void LoadData(IEnumerable<IVisualItem>? items)
-    {
-        if (items is not null)
-        {
-            _visualItems.Clear();
-
-            foreach (var item in items)
-                item.OnInitialize(this);
-
-            _visualItems.AddRange(items);
-
-            _cameraController.SetZoom(0);
-            _cameraController.SetPosition(new Vector2(0, 0));
-
-            _uiMessage.Show("Data loaded!");
-        }
-    }
-
-    public void SaveData()
-    {
-        DataLoaderService.SaveFile(_editor.Name, _visualItems);
-        _uiMessage.Show("Data saved!");
-    }
-
     private void UpdateIfTheEditorIsDone()
     {
-        if (IsMouseUp(MouseButton.Left) && _editType != EditType.None && _editType != EditType.DataEnter &&
+        if (_scene.IsMouseUp(MouseButton.Left) && _scene.VisualData.EditType != EditType.None && _scene.VisualData.EditType != EditType.DataEnter &&
             _validMove)
         {
-            _editType = EditType.None;
+            _scene.VisualData.EditType = EditType.None;
         }
     }
 
     private void UpdateOnDelete()
     {
-        if (_selectedVisualItem is not null && IsKeyDown(KeyboardKey.Delete) && _editType != EditType.DataEnter)
+        if (_scene.VisualData.SelectedItem is not null && _scene.IsKeyDown(KeyboardKey.Delete) && _scene.VisualData.EditType != EditType.DataEnter)
         {
-            _visualItems.Remove(_selectedVisualItem);
-            _selectedVisualItem = null;
+            _scene.VisualData.Data.Remove(_scene.VisualData.SelectedItem);
+            _scene.VisualData.SelectedItem = null;
         }
     }
 
     private void UpdateOnDragEnd()
     {
-        if (_selectedVisualItem is not null && IsMouseUp(MouseButton.Left) && _validMove &&
-            _editType != EditType.DataEnter)
+        if (_scene.VisualData.SelectedItem is not null && _scene.IsMouseUp(MouseButton.Left) && _validMove &&
+            _scene.VisualData.EditType != EditType.DataEnter)
         {
-            _selectedVisualItem.OnDragEnd(_mousePosition, _editType);
-            _selectedVisualItem.Selected = false;
-            _selectedVisualItem = null;
-            _editType = EditType.None;
+            _scene.VisualData.SelectedItem.OnDragEnd(_scene.MousePositionGrid, _scene.VisualData.EditType);
+            _scene.VisualData.SelectedItem.Selected = false;
+            _scene.VisualData.SelectedItem = null;
+            _scene.VisualData.EditType = EditType.None;
         }
     }
 
     private void UpdateOnDrag()
     {
-        if (_selectedVisualItem is not null && _editType == EditType.Resize)
-            _selectedVisualItem.OnDrag(_mousePosition, _editType);
+        if (_scene.VisualData.SelectedItem is not null && _scene.VisualData.EditType == EditType.Resize)
+            _scene.VisualData.SelectedItem.OnDrag(_scene.MousePositionGrid, _scene.VisualData.EditType);
 
-        if (_selectedVisualItem is not null && _editType == EditType.Drag)
-            _selectedVisualItem.OnDrag(_mousePosition, _editType);
+        if (_scene.VisualData.SelectedItem is not null && _scene.VisualData.EditType == EditType.Drag)
+            _scene.VisualData.SelectedItem.OnDrag(_scene.MousePositionGrid, _scene.VisualData.EditType);
 
-        if (_selectedVisualItem is not null)
+        if (_scene.VisualData.SelectedItem is not null)
         {
             _mouseText = " DEL: Remove";
         }
@@ -251,32 +164,32 @@ public class MainGameObject : BaseGameObject
 
     private void UpdateCheckIfWeCanAdd()
     {
-        if (_selectedVisualItem is null && _editType == EditType.None && _mouseText == "")
-            _mouseText = "Add: " + _visualTypeToAdd;
+        if (_scene.VisualData.SelectedItem is null && _scene.VisualData.EditType == EditType.None && _mouseText == "")
+            _mouseText = "Add: " + _scene.VisualData.VisualType;
 
-        if (_selectedVisualItem is null && IsMouseDown(MouseButton.Left) && _editType == EditType.None)
+        if (_scene.VisualData.SelectedItem is null && _scene.IsMouseDown(MouseButton.Left) && _scene.VisualData.EditType == EditType.None)
         {
             IVisualItem? item = null;
 
-            if (_visualTypeToAdd == VisualType.Node)
+            if (_scene.VisualData.VisualType == VisualType.Node)
             {
                 item = new TextNode
                 {
                     Id = Guid.NewGuid(),
-                    Bounds = new Rectangle(_mousePosition, new Vector2(10, 10)),
+                    Bounds = new Rectangle(_scene.MousePositionGrid, new Vector2(10, 10)),
                     Name = "Lorem ipsum",
                     Name2 = "Delore set atom",
-                    Order = _visualItems.Count + 1
+                    Order = _scene.VisualData.Data.Count + 1
                 };
             }
-            else if (_visualTypeToAdd == VisualType.Line)
+            else if (_scene.VisualData.VisualType == VisualType.Line)
             {
                 item = new NodeLine()
                 {
                     Id = Guid.NewGuid(),
-                    StartPoint = _mousePosition,
-                    EndPoint = _mousePosition,
-                    Order = _visualItems.Count + 1,
+                    StartPoint = _scene.MousePositionGrid,
+                    EndPoint = _scene.MousePositionGrid,
+                    Order = _scene.VisualData.Data.Count + 1,
                 };
             }
 
@@ -285,100 +198,100 @@ public class MainGameObject : BaseGameObject
 
             item.Selected = true;
 
-            _visualItems.Add(item);
-            _selectedVisualItem = item;
-            _editType = EditType.Resize;
+            _scene.VisualData.Data.Add(item);
+            _scene.VisualData.SelectedItem = item;
+            _scene.VisualData.EditType = EditType.Resize;
 
-            _selectedVisualItem.OnInitialize(this);
-            _selectedVisualItem.OnDragStart(_mousePosition, _editType);
+            _scene.VisualData.SelectedItem.OnInitialize(this);
+            _scene.VisualData.SelectedItem.OnDragStart(_scene.MousePositionGrid, _scene.VisualData.EditType);
         }
     }
 
     private void UpdateOnDragStartLogic()
     {
-        if (!GetItemBasedOn(_mousePosition, out var item))
+        if (!_scene.VisualData.GetItemBasedOn(_scene.MousePositionGrid, out var item))
             return;
         
-        if (_selectedVisualItem is null && _editType == EditType.None)
+        if (_scene.VisualData.SelectedItem is null && _scene.VisualData.EditType == EditType.None)
         {
-            if (IsKeyDown(KeyboardKey.LeftAlt))
+            if (_scene.IsKeyDown(KeyboardKey.LeftAlt))
             {
-                _mouseText = "Copy: " + _visualTypeToAdd;
+                _mouseText = "Copy: " + _scene.VisualData.VisualType;
             }
-            else if (IsKeyDown(KeyboardKey.R))
+            else if (_scene.IsKeyDown(KeyboardKey.R))
             {
-                _mouseText = "Resize: " + _visualTypeToAdd;
+                _mouseText = "Resize: " + _scene.VisualData.VisualType;
             }
             else
             {
-                _mouseText = "Drag: " + _visualTypeToAdd + "\n  LALT: Copy | R: resize";
+                _mouseText = "Drag: " + _scene.VisualData.VisualType + "\n  LALT: Copy | R: resize";
             }
         }
 
 
-        if (_selectedVisualItem is null && IsMouseDown(MouseButton.Left) && _editType == EditType.None)
+        if (_scene.VisualData.SelectedItem is null && _scene.IsMouseDown(MouseButton.Left) && _scene.VisualData.EditType == EditType.None)
         {
-            if (IsKeyDown(KeyboardKey.LeftAlt))
+            if (_scene.IsKeyDown(KeyboardKey.LeftAlt))
             {
-                _selectedVisualItem = item!.Clone();
-                _selectedVisualItem.OnInitialize(this);
-                _selectedVisualItem.Selected = true;
-                _visualItems.Add(_selectedVisualItem);
-                _editType = EditType.Drag;
+                _scene.VisualData.SelectedItem = item!.Clone();
+                _scene.VisualData.SelectedItem.OnInitialize(this);
+                _scene.VisualData.SelectedItem.Selected = true;
+                _scene.VisualData.Data.Add(_scene.VisualData.SelectedItem);
+                _scene.VisualData.EditType = EditType.Drag;
             }
             else
             {
-                _selectedVisualItem = item!;
-                _selectedVisualItem.Selected = true;
-                _editType = IsKeyDown(KeyboardKey.R) ? EditType.Resize : EditType.Drag;
+                _scene.VisualData.SelectedItem = item!;
+                _scene.VisualData.SelectedItem.Selected = true;
+                _scene.VisualData.EditType = _scene.IsKeyDown(KeyboardKey.R) ? EditType.Resize : EditType.Drag;
             }
 
-            _selectedVisualItem.OnDragStart(_mousePosition, _editType);
+            _scene.VisualData.SelectedItem.OnDragStart(_scene.MousePositionGrid, _scene.VisualData.EditType);
         }
     }
 
     private void UpdateCheckIfWeNeedToCloseTheEditor()
     {
-        if (_editor.Item == null && _editType == EditType.DataEnter)
+        if (_scene.VisualData.EditItem == null && _scene.VisualData.EditType == EditType.DataEnter)
         {
-            _selectedVisualItem!.Selected = false;
-            _selectedVisualItem = null;
-            _editType = EditType.None;
+            _scene.VisualData.SelectedItem!.Selected = false;
+            _scene.VisualData.SelectedItem = null;
+            _scene.VisualData.EditType = EditType.None;
         }
     }
 
     private void UpdateCheckIfWeNeedToOpenEditor()
     {
-        if (IsMouseDown(MouseButton.Right) && _editType == EditType.None)
+        if (_scene.IsMouseDown(MouseButton.Right) && _scene.VisualData.EditType == EditType.None)
         {
-            if (GetItemBasedOn(_mousePosition, out var item))
+            if (_scene.VisualData.GetItemBasedOn(_scene.MousePositionGrid, out var item))
             {
-                _editor.Item = item;
-                _selectedVisualItem = item;
-                _selectedVisualItem!.Selected = true;
-                _editType = EditType.DataEnter;
+                _scene.VisualData.EditItem = item;
+                _scene.VisualData.SelectedItem = item;
+                _scene.VisualData.SelectedItem!.Selected = true;
+                _scene.VisualData.EditType = EditType.DataEnter;
             }
         }
     }
 
     private void UpdateCheckIfWeNeedToDeselect()
     {
-        if (IsKeyDown(KeyboardKey.Escape, true) && _selectedVisualItem is not null)
+        if (_scene.IsKeyDown(KeyboardKey.Escape, true) && _scene.VisualData.SelectedItem is not null)
         {
-            _selectedVisualItem.Selected = false;
-            _selectedVisualItem = null;
-            _editor.Item = null;
-            _editType = EditType.None;
+            _scene.VisualData.SelectedItem.Selected = false;
+            _scene.VisualData.SelectedItem = null;
+            _scene.VisualData.EditItem = null;
+            _scene.VisualData.EditType = EditType.None;
         }
     }
 
     private void UpdateValidMove()
     {
-        if (_selectedVisualItem is not null && _selectedVisualItem.Type == VisualType.Node)
+        if (_scene.VisualData.SelectedItem is not null && _scene.VisualData.SelectedItem.Type == VisualType.Node)
         {
-            foreach (var possibleItem in _visualItems)
+            foreach (var possibleItem in _scene.VisualData.Data)
             {
-                if (possibleItem != _selectedVisualItem && _selectedVisualItem.IsColliding(possibleItem))
+                if (possibleItem != _scene.VisualData.SelectedItem && _scene.VisualData.SelectedItem.IsColliding(possibleItem))
                 {
                     _validMove = false;
                     return;
@@ -389,91 +302,33 @@ public class MainGameObject : BaseGameObject
         _validMove = true;
     }
 
-    private bool IsKeyDown(KeyboardKey key, bool ignoreEditor = false)
-    {
-        if ((_editType == EditType.DataEnter || _editor.BlockTheEditor) && !ignoreEditor)
-            return false;
-
-        return Raylib.IsKeyDown(key);
-    }
-    
-    private bool IsKeyPressed(KeyboardKey key, bool ignoreEditor = false)
-    {
-        if ((_editType == EditType.DataEnter || _editor.BlockTheEditor) && !ignoreEditor)
-            return false;
-
-        return Raylib.IsKeyPressed(key);
-    }
-
-    private bool IsMouseDown(MouseButton button)
-    {
-        if (_editType == EditType.DataEnter || _editor.BlockTheEditor || _toolbox.IsMouseOverToolbox)
-            return false;
-
-        return Raylib.IsMouseButtonDown(button);
-    }
-
-    private bool IsMouseUp(MouseButton button)
-    {
-        if (_editType == EditType.DataEnter || _editor.BlockTheEditor)
-            return false;
-
-        return Raylib.IsMouseButtonUp(button);
-    }
-
-    private bool GetItemBasedOn(Vector2 position, out IVisualItem? item)
-    {
-        item = null;
-        for (var i = _visualItems.Count; i > 0; i--)
-        {
-            var possibleItem = _visualItems[i - 1];
-            if (possibleItem is TextNode && _visualTypeToAdd != VisualType.Node)
-                continue;
-            if (possibleItem is NodeLine && _visualTypeToAdd != VisualType.Line)
-                continue;
-
-            if (possibleItem.CheckMouseIsInsideItem(position, possibleItem))
-            {
-                item = possibleItem;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private Vector2 Vector2ToGrid(Vector2 vector)
-    {
-        return new Vector2(MathF.Floor(vector.X / 10f), MathF.Floor(vector.Y / 10f)) * 10;
-    }
-
     protected override void OnDraw()
     {
-        foreach (var item in _visualItems)
+        foreach (var item in _scene.VisualData.Data)
             item.OnDraw();
         
         if (!_hideUI)
-            Raylib.DrawTextEx(_font.GetFont(), "Name: " + _editor.Name, _camera.ScreenToWorld(new Vector2(32, 32)), 8, 1,
+            Raylib.DrawTextEx(_font.GetFont(), "Name: " + _scene.VisualData.Name, _camera.ScreenToWorld(new Vector2(32, 32)), 8, 1,
                 Color.Gray);
 
-        if (!_toolbox.IsMouseOverToolbox && !_editor.BlockTheEditor && !_hideUI)
+        if (!_toolbox.IsMouseOverToolbox && !_scene.BlockTheEditor && !_hideUI)
         {
-            Raylib.DrawTriangleLines(_mousePosition, _mousePosition + new Vector2(5, 30),
-                _mousePosition + new Vector2(30, 15), Color.White);
-            Raylib.DrawTriangleLines(_mousePosition + new Vector2(1, 1), _mousePosition + new Vector2(6, 31),
-                _mousePosition + new Vector2(31, 16), Color.White);
-            Raylib.DrawLineEx(new Vector2((int)_mousePosition.X, (int)_mousePosition.Y - _camera.TargetHeight),
-                new Vector2((int)_mousePosition.X, _camera.TargetHeight), 2, new Color(255, 255, 255, 50));
-            Raylib.DrawLineEx(new Vector2((int)_mousePosition.X - _camera.TargetWidth, (int)_mousePosition.Y),
-                new Vector2(_camera.TargetWidth, (int)_mousePosition.Y), 2, new Color(255, 255, 255, 50));
+            Raylib.DrawTriangleLines(_scene.MousePositionGrid, _scene.MousePositionGrid + new Vector2(5, 30),
+                _scene.MousePositionGrid + new Vector2(30, 15), Color.White);
+            Raylib.DrawTriangleLines(_scene.MousePositionGrid + new Vector2(1, 1), _scene.MousePositionGrid + new Vector2(6, 31),
+                _scene.MousePositionGrid + new Vector2(31, 16), Color.White);
+            Raylib.DrawLineEx(new Vector2((int)_scene.MousePositionGrid.X, (int)_scene.MousePositionGrid.Y - _camera.TargetHeight),
+                new Vector2((int)_scene.MousePositionGrid.X, _camera.TargetHeight), 2, new Color(255, 255, 255, 50));
+            Raylib.DrawLineEx(new Vector2((int)_scene.MousePositionGrid.X - _camera.TargetWidth, (int)_scene.MousePositionGrid.Y),
+                new Vector2(_camera.TargetWidth, (int)_scene.MousePositionGrid.Y), 2, new Color(255, 255, 255, 50));
 
-            if (_selectedVisualItem is not null)
-                Raylib.DrawTextEx(_font.GetFont(), _selectedVisualItem.ToString() + " | " + _mouseText, _mousePosition + new Vector2(16, 0),
+            if (_scene.VisualData.SelectedItem is not null)
+                Raylib.DrawTextEx(_font.GetFont(), _scene.VisualData.SelectedItem.ToString() + " | " + _mouseText, _scene.MousePositionGrid + new Vector2(16, 0),
                     8,
                     1, Color.Gray);
             else
-                Raylib.DrawTextEx(_font.GetFont(), _mousePosition.ToString() + " | " + _mouseText,
-                    _mousePosition + new Vector2(16, 0), 8,
+                Raylib.DrawTextEx(_font.GetFont(), _scene.MousePositionGrid.ToString() + " | " + _mouseText,
+                    _scene.MousePositionGrid + new Vector2(16, 0), 8,
                     1, Color.Gray);
         }
         

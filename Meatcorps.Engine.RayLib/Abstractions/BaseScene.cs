@@ -63,9 +63,10 @@ public abstract class BaseScene: IDisposable
         return SceneObjectManager.GetSet<BaseScene>()!.FirstOrDefault(x => x is T) as T;
     }
 
-    public void AddGameObject<T>(T gameObject) where T : BaseGameObject
+    public T AddGameObject<T>(T gameObject) where T : BaseGameObject
     {
         _gameObjectsToAdd.Add(gameObject);
+        return gameObject;
     }
 
     public T? GetGameObject<T>() where T : BaseGameObject
