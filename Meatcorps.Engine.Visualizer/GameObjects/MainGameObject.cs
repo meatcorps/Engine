@@ -18,17 +18,12 @@ namespace Meatcorps.Engine.Visualizer.GameObjects;
 public class MainGameObject : BaseGameObject
 {
     private ICameraFixedWidthAndHeight _camera = null!;
-    private TextManager<FontEnum> _font = null!;
     private bool _validMove;
     private CameraControllerGameObject _cameraController = null!;
     private Toolbox _toolbox = null!;
     private UIMessageEmitter _uiMessage = null!;
-    private string _mouseText = "";
-    private bool _hideUI = false;
-
-    public bool EditorIsOpen => _scene.VisualData.EditItem != null;
+    
     public bool ValidMove => _validMove;
-    public Font Font => _font.GetFont();
 
     private MainScene _scene = null!;
     
@@ -41,13 +36,11 @@ public class MainGameObject : BaseGameObject
         _cameraController = Scene.GetGameObject<CameraControllerGameObject>()!;
         _uiMessage = Scene.GetGameObject<UIMessageEmitter>()!;
 
-        _font = GlobalObjectManager.ObjectManager.Get<TextManager<FontEnum>>()!;
         _scene = (Scene as MainScene)!;
     }
 
     protected override void OnUpdate(float deltaTime)
     {
-        _mouseText = "";
         _validMove = true;
 
         if (_scene.IsKeyDown(KeyboardKey.F2))
@@ -56,9 +49,9 @@ public class MainGameObject : BaseGameObject
         if (_scene.IsKeyDown(KeyboardKey.F3))
             _scene.VisualData.VisualType = VisualType.Line;
 
-        _hideUI = (_scene.IsKeyDown(KeyboardKey.LeftControl) || _scene.IsKeyDown(KeyboardKey.LeftSuper)) && _scene.IsKeyDown(KeyboardKey.LeftShift);
+        _scene.HideUI = (_scene.IsKeyDown(KeyboardKey.LeftControl) || _scene.IsKeyDown(KeyboardKey.LeftSuper)) && _scene.IsKeyDown(KeyboardKey.LeftShift);
         
-        _toolbox.Enabled = !_hideUI;
+        _toolbox.Enabled = !_scene.HideUI;
         
         if (_scene.IsKeyDown(KeyboardKey.F5))
         {
@@ -158,14 +151,14 @@ public class MainGameObject : BaseGameObject
 
         if (_scene.VisualData.SelectedItem is not null)
         {
-            _mouseText = " DEL: Remove";
+            _scene.MouseText = " DEL: Remove";
         }
     }
 
     private void UpdateCheckIfWeCanAdd()
     {
-        if (_scene.VisualData.SelectedItem is null && _scene.VisualData.EditType == EditType.None && _mouseText == "")
-            _mouseText = "Add: " + _scene.VisualData.VisualType;
+        if (_scene.VisualData.SelectedItem is null && _scene.VisualData.EditType == EditType.None && _scene.MouseText == "")
+            _scene.MouseText = "Add: " + _scene.VisualData.VisualType;
 
         if (_scene.VisualData.SelectedItem is null && _scene.IsMouseDown(MouseButton.Left) && _scene.VisualData.EditType == EditType.None)
         {
@@ -202,7 +195,7 @@ public class MainGameObject : BaseGameObject
             _scene.VisualData.SelectedItem = item;
             _scene.VisualData.EditType = EditType.Resize;
 
-            _scene.VisualData.SelectedItem.OnInitialize(this);
+            _scene.VisualData.SelectedItem.OnInitialize(_scene);
             _scene.VisualData.SelectedItem.OnDragStart(_scene.MousePositionGrid, _scene.VisualData.EditType);
         }
     }
@@ -216,15 +209,15 @@ public class MainGameObject : BaseGameObject
         {
             if (_scene.IsKeyDown(KeyboardKey.LeftAlt))
             {
-                _mouseText = "Copy: " + _scene.VisualData.VisualType;
+                _scene.MouseText = "Copy: " + _scene.VisualData.VisualType;
             }
             else if (_scene.IsKeyDown(KeyboardKey.R))
             {
-                _mouseText = "Resize: " + _scene.VisualData.VisualType;
+                _scene.MouseText = "Resize: " + _scene.VisualData.VisualType;
             }
             else
             {
-                _mouseText = "Drag: " + _scene.VisualData.VisualType + "\n  LALT: Copy | R: resize";
+                _scene.MouseText = "Drag: " + _scene.VisualData.VisualType + "\n  LALT: Copy | R: resize";
             }
         }
 
@@ -234,7 +227,7 @@ public class MainGameObject : BaseGameObject
             if (_scene.IsKeyDown(KeyboardKey.LeftAlt))
             {
                 _scene.VisualData.SelectedItem = item!.Clone();
-                _scene.VisualData.SelectedItem.OnInitialize(this);
+                _scene.VisualData.SelectedItem.OnInitialize(_scene);
                 _scene.VisualData.SelectedItem.Selected = true;
                 _scene.VisualData.Data.Add(_scene.VisualData.SelectedItem);
                 _scene.VisualData.EditType = EditType.Drag;
@@ -307,27 +300,32 @@ public class MainGameObject : BaseGameObject
         foreach (var item in _scene.VisualData.Data)
             item.OnDraw();
         
-        if (!_hideUI)
-            Raylib.DrawTextEx(_font.GetFont(), "Name: " + _scene.VisualData.Name, _camera.ScreenToWorld(new Vector2(32, 32)), 8, 1,
+        if (!_scene.HideUI)
+            Raylib.DrawTextEx(_scene.Font, "Name: " + _scene.VisualData.Name, _camera.ScreenToWorld(new Vector2(32, 32)), 8, 1,
                 Color.Gray);
 
-        if (!_toolbox.IsMouseOverToolbox && !_scene.BlockTheEditor && !_hideUI)
+        if (!_toolbox.IsMouseOverToolbox && !_scene.BlockTheEditor && !_scene.HideUI)
         {
             Raylib.DrawTriangleLines(_scene.MousePositionGrid, _scene.MousePositionGrid + new Vector2(5, 30),
                 _scene.MousePositionGrid + new Vector2(30, 15), Color.White);
             Raylib.DrawTriangleLines(_scene.MousePositionGrid + new Vector2(1, 1), _scene.MousePositionGrid + new Vector2(6, 31),
                 _scene.MousePositionGrid + new Vector2(31, 16), Color.White);
-            Raylib.DrawLineEx(new Vector2((int)_scene.MousePositionGrid.X, (int)_scene.MousePositionGrid.Y - _camera.TargetHeight),
-                new Vector2((int)_scene.MousePositionGrid.X, _camera.TargetHeight), 2, new Color(255, 255, 255, 50));
-            Raylib.DrawLineEx(new Vector2((int)_scene.MousePositionGrid.X - _camera.TargetWidth, (int)_scene.MousePositionGrid.Y),
-                new Vector2(_camera.TargetWidth, (int)_scene.MousePositionGrid.Y), 2, new Color(255, 255, 255, 50));
-
+            
+            var topLeftCorner = _camera.ScreenToWorld(Vector2.Zero);
+            var bottomRightCorner = _camera.ScreenToWorld(new Vector2(Scene.GameHost.Height, Scene.GameHost.Width));
+            Raylib.DrawLineEx(
+                new Vector2((int)_scene.MousePositionGrid.X, topLeftCorner.Y),
+                new Vector2((int)_scene.MousePositionGrid.X, bottomRightCorner.Y), 2, new Color(255, 255, 255, 50));
+            Raylib.DrawLineEx(
+                new Vector2(topLeftCorner.X, (int)_scene.MousePositionGrid.Y),
+                new Vector2(bottomRightCorner.X, (int)_scene.MousePositionGrid.Y), 2, new Color(255, 255, 255, 50));
+            
             if (_scene.VisualData.SelectedItem is not null)
-                Raylib.DrawTextEx(_font.GetFont(), _scene.VisualData.SelectedItem.ToString() + " | " + _mouseText, _scene.MousePositionGrid + new Vector2(16, 0),
+                Raylib.DrawTextEx(_scene.Font, _scene.VisualData.SelectedItem.ToString() + " | " + _scene.MouseText, _scene.MousePositionGrid + new Vector2(16, 0),
                     8,
                     1, Color.Gray);
             else
-                Raylib.DrawTextEx(_font.GetFont(), _scene.MousePositionGrid.ToString() + " | " + _mouseText,
+                Raylib.DrawTextEx(_scene.Font, _scene.MousePositionGrid.ToString() + " | " + _scene.MouseText,
                     _scene.MousePositionGrid + new Vector2(16, 0), 8,
                     1, Color.Gray);
         }

@@ -1,9 +1,12 @@
 ﻿using System.Numerics;
 using ImGuiNET;
 using Meatcorps.Engine.Core.Data;
+using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.Extensions;
+using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.Visualizer.GameObjects;
+using Meatcorps.Engine.Visualizer.Scenes;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.Visualizer.VisualItems;
@@ -13,7 +16,7 @@ public class NodeLine: IVisualItem
     public Guid Id { get; set; }
     public bool Selected { get; set; }
     public int Order { get; set; }
-    private MainGameObject _mainGameObject = null!;
+    private MainScene _scene = null!;
     public Vector2 StartPoint = Vector2.Zero;
     public Vector2 EndPoint = Vector2.Zero;
     public bool StartArrow { get; set; }
@@ -30,12 +33,17 @@ public class NodeLine: IVisualItem
     public string Text { get; set; } = "";
     public int TextSize { get; set; } = 8;
     public Color ColorText { get; set; } = new Color(255,255, 255);
+
+    public float AnimationSpeedMs { get; set; } = 1000;
+    public bool AnimationEnabled { get; set; }
+    public bool StartEndAnimation { get; set; } = true;
+    private FixedTimer _animationTimer { get; set; } = new FixedTimer(1000);
     
     private bool EditStartPoint;
     
-    public void OnInitialize(MainGameObject mainGameObject)
+    public void OnInitialize(MainScene scene)
     {
-        _mainGameObject = mainGameObject;
+        _scene = scene;
     }
 
     public bool IsColliding(IVisualItem other)
@@ -50,21 +58,92 @@ public class NodeLine: IVisualItem
 
     public void OnDraw()
     {
-        if (_mainGameObject is null)
+        if (_scene is null)
             return;
+        
+        var timerNormalized = 1f;
+        
+        if (AnimationEnabled)
+        {
+            timerNormalized = _animationTimer.NormalizedElapsed;
+            timerNormalized = Tween.ApplyEasing(timerNormalized, EaseType.EaseInOut);
+        }
         
         var color = new Color(0, 255, 255);
 
-        if (Selected && _mainGameObject.EditorIsOpen)
+        if (Selected && _scene.EditorIsOpen)
         {
             Raylib.DrawLineEx(StartPoint, EndPoint, Thickness + 4, Color.Yellow);
         } else if (Selected)
-            color = _mainGameObject.ValidMove ? Color.Yellow : Color.Red;
+            color = _scene.ValidMove ? Color.Yellow : Color.Red;
         else
             color = Color;
 
         var line = new LineF(StartPoint, EndPoint);
 
+        var startPoint = StartPoint;
+        var endPoint = EndPoint;
+                
+        if (!StartArrow)
+            startPoint = startPoint - line.DirectionStartNormalized * Thickness / 2;
+        if (!EndArrow)
+            endPoint = endPoint - line.DirectionEndNormalized * Thickness / 2;
+        
+        switch (LineStyle)
+        {
+            case LineStyleEnum.Solid:
+                if (AnimationEnabled)
+                    Raylib.DrawLineEx(startPoint, endPoint, Thickness, Raylib.ColorAlpha(color, 0.3f));
+                else 
+                    Raylib.DrawLineEx(startPoint, endPoint, Thickness, color);
+                
+                break;
+            case LineStyleEnum.Dashed: 
+            case LineStyleEnum.Dotted:
+                var strokeLength = LineStyle == LineStyleEnum.Dotted ? Thickness * 2 : Thickness * DashedSize;
+                var length = line.Length;
+                var dash = length / strokeLength;
+                var start = line.Start;
+                var currentLength = 0f;
+                for (var i = 0; i < dash; i++)
+                {
+                    var direction = line.DirectionStartNormalized * Math.Min(length, strokeLength / 2f);
+                    
+                    if (AnimationEnabled)
+                        Raylib.DrawLineEx(start, start + direction, Thickness, Raylib.ColorAlpha(color, 0.3f));
+                    else 
+                        Raylib.DrawLineEx(start, start + direction, Thickness, color);
+                    
+                    start += direction * 2;
+                    length -= strokeLength;
+                }
+                break;
+        }
+        
+        if (AnimationEnabled)
+        {
+            var realStartPoint = startPoint;
+            var realEndPoint = endPoint;
+            var startPointWithOffset = StartPoint - line.DirectionStartNormalized * Thickness * 10;
+            var endPointWithOffset = EndPoint + line.DirectionStartNormalized * Thickness * 10;
+            
+            var currentPosition = StartEndAnimation 
+                ? startPointWithOffset.Lerp(endPointWithOffset, timerNormalized) 
+                : endPointWithOffset.Lerp(startPointWithOffset, timerNormalized);
+            
+            for (var i = 10; i > 4; i--)
+            {
+                var normal = 1 - Math.Clamp((i - 4) / 6f, 0, 1);
+                        
+                startPoint = currentPosition - line.DirectionStartNormalized * Thickness * i;
+                endPoint = currentPosition + line.DirectionStartNormalized * Thickness * i;
+                startPoint = startPoint.ClampSafe(realStartPoint, realEndPoint);
+                endPoint = endPoint.ClampSafe(realStartPoint, realEndPoint);
+                    
+                Raylib.DrawLineEx(startPoint, endPoint, Thickness, Raylib.ColorLerp(Raylib.ColorAlpha(color, 0f), color, normal));
+            }
+        }
+        
         if (StartArrow)
         {
             var offset1 = line.DirectionStartNormalized.Rotate(-MathHelper.ToRadians(ArrowDegrees));
@@ -80,44 +159,14 @@ public class NodeLine: IVisualItem
             Raylib.DrawLineEx(EndPoint - offset1 * (Thickness / 2), EndPoint + offset1 * ArrowSize, Thickness, color);
             Raylib.DrawLineEx(EndPoint - offset2 * (Thickness / 2), EndPoint + offset2 * ArrowSize, Thickness, color);
         }
-
-        switch (LineStyle)
-        {
-            case LineStyleEnum.Solid:
-                var startPoint = StartPoint;
-                var endPoint = EndPoint;
-                
-                if (!StartArrow)
-                    startPoint = startPoint - line.DirectionStartNormalized * Thickness / 2;
-                if (!EndArrow)
-                    endPoint = endPoint - line.DirectionEndNormalized * Thickness / 2;
-                
-                Raylib.DrawLineEx(startPoint, endPoint, Thickness, color);
-                break;
-            case LineStyleEnum.Dashed: 
-            case LineStyleEnum.Dotted:
-                var strokeLength = LineStyle == LineStyleEnum.Dotted ? Thickness * 2 : Thickness * DashedSize;
-                var length = line.Length;
-                var dash = length / strokeLength;
-                var start = line.Start;
-                var currentLength = 0f;
-                for (var i = 0; i < dash; i++)
-                {
-                    var direction = line.DirectionStartNormalized * Math.Min(length, strokeLength / 2f);
-                    Raylib.DrawLineEx(start, start + direction, Thickness, color);
-                    start += direction * 2;
-                    length -= strokeLength;
-                }
-                break;
-        }
         
         if (Text.Length > 0)
         {
-            var textSize = Raylib.MeasureTextEx(_mainGameObject.Font, Text, TextSize, 1);
+            var textSize = Raylib.MeasureTextEx(_scene.Font, Text, TextSize, 1);
             var textPosition = (StartPoint + EndPoint) / 2;
             var rotation = MathHelper.ToDegrees(line.Start.X < line.End.X ? line.RadiusStart : line.RadiusEnd);
             var offsetDirection = line.DirectionStartNormalized;
-            Raylib.DrawTextPro(_mainGameObject.Font, Text, textPosition + offsetDirection.PerpendicularCounterClockwise() * (TextSize + 2), textSize / 2, rotation, TextSize, 1, ColorText);
+            Raylib.DrawTextPro(_scene.Font, Text, textPosition + offsetDirection.PerpendicularCounterClockwise() * (TextSize + 2), textSize / 2, rotation, TextSize, 1, ColorText);
         }
     }
 
@@ -136,6 +185,9 @@ public class NodeLine: IVisualItem
         var text = Text;
         var textSize = TextSize;
         var textColor = new Vector4(ColorText.R / 255f, ColorText.G / 255f, ColorText.B / 255f, ColorText.A / 255f);
+        var animationEnabled = AnimationEnabled;
+        var startEndAnimation = StartEndAnimation;
+        var animationSpeedMs = AnimationSpeedMs;
         
         ImGui.ColorEdit4("Color", ref color);
         ImGui.SliderInt("Thickness", ref thickness, 1, 100);
@@ -150,6 +202,10 @@ public class NodeLine: IVisualItem
         ImGui.InputText("Text", ref text, 128);
         ImGui.SliderInt("TextSize", ref textSize, 6, 100);
         ImGui.ColorEdit4("ColorText", ref textColor);
+        ImGui.Separator();
+        ImGui.Checkbox("Animation", ref animationEnabled);
+        ImGui.Checkbox("startEndAnimation", ref startEndAnimation);
+        ImGui.InputFloat("AnimationSpeedMs", ref animationSpeedMs);
         
         Color = new Color(color.X, color.Y, color.Z, color.W);
         Thickness = thickness;
@@ -162,6 +218,9 @@ public class NodeLine: IVisualItem
         Text = text;
         TextSize = textSize;
         ColorText = new Color(textColor.X, textColor.Y, textColor.Z, textColor.W);
+        AnimationEnabled = animationEnabled;
+        AnimationSpeedMs = Math.Abs(animationSpeedMs);
+        StartEndAnimation = startEndAnimation;
     }
 
     public VisualType Type => VisualType.Node;
@@ -188,7 +247,7 @@ public class NodeLine: IVisualItem
 
     public void Update(float deltaTime)
     {
-        // 
+        _animationTimer.Update(deltaTime); 
     }
 
     public void OnDragStart(Vector2 position, EditType type)

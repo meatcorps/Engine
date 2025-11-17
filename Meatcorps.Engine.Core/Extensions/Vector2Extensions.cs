@@ -18,6 +18,17 @@ public static class Vector2Extensions
             MathF.Max(min.Y, MathF.Min(max.Y, value.Y))
         );
 
+    public static Vector2 ClampSafe(this Vector2 value, Vector2 min, Vector2 max)
+    {
+        var minCopy = new Vector2(MathF.Min(min.X, max.X), MathF.Min(min.Y, max.Y));
+        var maxCopy = new Vector2(MathF.Max(min.X, max.X), MathF.Max(min.Y, max.Y));
+        
+        return new Vector2(
+            MathF.Max(minCopy.X, MathF.Min(maxCopy.X, value.X)),
+            MathF.Max(minCopy.Y, MathF.Min(maxCopy.Y, value.Y))
+        );
+    }
+
     public static Vector2 Abs(this Vector2 value) =>
         new Vector2(MathF.Abs(value.X), MathF.Abs(value.Y));
 

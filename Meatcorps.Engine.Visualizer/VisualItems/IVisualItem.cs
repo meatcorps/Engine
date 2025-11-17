@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using Meatcorps.Engine.Visualizer.GameObjects;
+using Meatcorps.Engine.Visualizer.Scenes;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.Visualizer.VisualItems;
@@ -9,7 +10,7 @@ public interface IVisualItem
     Guid Id { get; }
     bool Selected { get; set; }
     int Order { get; set; }
-    void OnInitialize(MainGameObject mainGameObject);
+    void OnInitialize(MainScene scene);
     bool IsColliding(IVisualItem other);
     bool CheckMouseIsInsideItem(Vector2 position, IVisualItem other);
     void OnDraw();

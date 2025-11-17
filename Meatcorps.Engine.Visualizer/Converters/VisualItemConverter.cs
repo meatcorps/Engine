@@ -7,7 +7,7 @@ namespace Meatcorps.Engine.Visualizer.Converters;
 
 public class VisualItemConverter: JsonConverter<IVisualItem>
 {
-    private Dictionary<string, Type> _types = new Dictionary<string, Type>();
+    private readonly Dictionary<string, Type> _types = new Dictionary<string, Type>();
     
     public VisualItemConverter()
     {
@@ -24,6 +24,9 @@ public class VisualItemConverter: JsonConverter<IVisualItem>
     
     public override void WriteJson(JsonWriter writer, IVisualItem? value, JsonSerializer serializer)
     {
+        if (value is null)
+            return;
+        
         var obj = JObject.FromObject(value);
         obj.AddFirst(new JProperty("type", value.GetType().Name));
         obj.WriteTo(writer);
@@ -34,7 +37,7 @@ public class VisualItemConverter: JsonConverter<IVisualItem>
     {
         var obj = JObject.Load(reader);
 
-        var typeName = (string)obj["type"];
+        var typeName = (string)obj["type"]!;
 
         if (!_types.TryGetValue(typeName, out var type))
         {

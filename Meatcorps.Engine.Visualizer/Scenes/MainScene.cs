@@ -5,8 +5,10 @@ using Meatcorps.Engine.RayLib.Camera;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.RemixIcons;
+using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Engine.RayLib.Text;
 using Meatcorps.Engine.Visualizer.Data;
+using Meatcorps.Engine.Visualizer.Enums;
 using Meatcorps.Engine.Visualizer.GameObjects;
 using Meatcorps.Engine.Visualizer.Services;
 using Meatcorps.Engine.Visualizer.VisualItems;
@@ -16,6 +18,8 @@ namespace Meatcorps.Engine.Visualizer.Scenes;
 
 public class MainScene: BaseScene
 {
+    public Font Font => _font.GetFont();
+    public Font IconFont => _font.GetFont(FontEnum.Icons);
     public VisualData VisualData { get; set; } = new();
     public bool BlockTheEditor => _editor.BlockTheEditor;
     private Vector2 _mousePosition;
@@ -24,8 +28,12 @@ public class MainScene: BaseScene
     private Toolbox _toolbox;
     private CameraControllerGameObject _cameraController = null!;
     private UIMessageEmitter _uiMessage = null!;
+    public bool EditorIsOpen => VisualData.EditItem != null;
     public DataLoaderService DataLoaderService { get; } = new DataLoaderService();
-    public string MouseText = "";
+    public string MouseText { get; set; } = "";
+    public bool HideUI = false;
+    private TextManager<FontEnum> _font;
+    public bool ValidMove => true;
     
     public Vector2 MousePosition
     {
@@ -48,6 +56,7 @@ public class MainScene: BaseScene
             TextKitStyles.HudDefault(GlobalObjectManager.ObjectManager.Get<IDefaultFont>()!.GetFont())));
         _toolbox = AddGameObject(new Toolbox());
         _editor = AddGameObject(new Editor());
+        _font = GlobalObjectManager.ObjectManager.Get<TextManager<FontEnum>>()!;
         AddGameObject(new MainGameObject());
         SetupToolBox();
     }
@@ -108,12 +117,18 @@ public class MainScene: BaseScene
 
     protected override void OnPreUpdate(float deltaTime)
     {
+        MouseText = "";
         MousePosition = _camera.ScreenToWorld(Raylib.GetMousePosition() /
                               ((float)GameHost.Width / _camera.TargetWidth));
     }
     
     protected override void OnUpdate(float deltaTime)
     {
+        foreach (var item in VisualData.Data)
+            item.Update(deltaTime);
+        
+        
+        _toolbox.Enabled = !HideUI;
     }
     
     
@@ -161,7 +176,7 @@ public class MainScene: BaseScene
             VisualData.Data.Clear();
 
             foreach (var item in items)
-                item.OnInitialize(GetGameObject<MainGameObject>()!);
+                item.OnInitialize(this);
 
             VisualData.Data.AddRange(items);
 

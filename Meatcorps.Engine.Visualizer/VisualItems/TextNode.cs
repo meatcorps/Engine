@@ -1,8 +1,12 @@
 ﻿using System.Numerics;
 using ImGuiNET;
 using Meatcorps.Engine.Core.Data;
+using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.Extensions;
+using Meatcorps.Engine.Core.Tween;
+using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.Visualizer.GameObjects;
+using Meatcorps.Engine.Visualizer.Scenes;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.Visualizer.VisualItems;
@@ -22,13 +26,18 @@ public class TextNode: IVisualItem
     public Color Color2 { get; set; } = new Color(255, 255, 255);
     public Color BackgroundColor { get; set; } = new Color(255, 255, 255, 0);
     
-    private MainGameObject _mainGameObject = null!;
+    private MainScene _scene = null!;
 
     private Vector2 _offset = Vector2.Zero;
     
-    public void OnInitialize(MainGameObject mainGameObject)
+    public float AnimationSpeedMs { get; set; } = 1000;
+    public bool AnimationEnabled { get; set; }
+    private FixedTimer _animationTimer { get; set; } = new FixedTimer(1000);
+
+    public void OnInitialize(MainScene scene)
     {
-        _mainGameObject = mainGameObject;
+        _scene = scene;
+        _animationTimer = new FixedTimer(AnimationSpeedMs);
     }
 
     public bool IsColliding(IVisualItem other)
@@ -47,16 +56,24 @@ public class TextNode: IVisualItem
 
     public void OnDraw()
     {
-        if (_mainGameObject is null)
+        var timerNormalized = 1f;
+        
+        if (AnimationEnabled)
+        {
+            timerNormalized = _animationTimer.NormalizedElapsed;
+            timerNormalized = Tween.ApplyEasing(Tween.NormalToUpDown(timerNormalized), EaseType.EaseOut);
+        }
+
+        if (_scene is null)
             return;
         
         var rect = new RectF(Bounds.X, Bounds.Y, Bounds.Width, Bounds.Height);
         
         var color = Color;
-        if (Selected && !_mainGameObject.EditorIsOpen)
-            color = _mainGameObject.ValidMove ? Color.Yellow : Color.Red;
+        if (Selected && !_scene.EditorIsOpen)
+            color = _scene.ValidMove ? Color.Yellow : Color.Red;
 
-        if (Selected && _mainGameObject.EditorIsOpen)
+        if (Selected && _scene.EditorIsOpen)
         {
             var rectLarger = rect;
             rectLarger.Inflate(3, 3);
@@ -70,23 +87,29 @@ public class TextNode: IVisualItem
             color2 = Raylib.ColorAlpha(color2, Tween.ApplyEasing(Tween.NormalToUpDown(_animationTimer.NormalizedElapsed), EaseType.EaseInOut));
         }*/
 
+
+        color = Raylib.ColorLerp(new Color(0, 0, 0, 0), color, timerNormalized);
+        color2 = Raylib.ColorLerp(new Color(0, 0, 0, 0), color2, timerNormalized);
+        var backgroundColor = Raylib.ColorLerp(new Color(0, 0, 0, 0), BackgroundColor, timerNormalized); 
+        Console.WriteLine(timerNormalized);
+        
         if (BackgroundColor.A > 0)
-            Raylib.DrawRectangleRec(Bounds, BackgroundColor);
+            Raylib.DrawRectangleRec(Bounds, backgroundColor);
         
         if (color.A > 0)
             Raylib.DrawRectangleLinesEx(Bounds, 4, color);
         
-        var textSize = Raylib.MeasureTextEx(_mainGameObject.Font, Name, Size1, 1);
-        var textSize2 = Raylib.MeasureTextEx(_mainGameObject.Font, Name2, Size2, 1);
+        var textSize = Raylib.MeasureTextEx(_scene.Font, Name, Size1, 1);
+        var textSize2 = Raylib.MeasureTextEx(_scene.Font, Name2, Size2, 1);
         var totalTextSize = new Vector2(Math.Max(textSize.X, textSize2.X), textSize.Y + textSize2.Y + 1);
             
         var textPosition = rect.Center - totalTextSize / 2;
         
         if (color.A > 0)
-            Raylib.DrawTextEx(_mainGameObject.Font, Name, textPosition, Size1, 1, color);
+            Raylib.DrawTextEx(_scene.Font, Name, textPosition, Size1, 1, color);
         
         if (color2.A > 0)
-            Raylib.DrawTextEx(_mainGameObject.Font, Name2, new Vector2(rect.Center.X - (textSize2.X / 2), textPosition.Y + textSize.Y + 1), Size2, 1, color2);
+            Raylib.DrawTextEx(_scene.Font, Name2, new Vector2(rect.Center.X - (textSize2.X / 2), textPosition.Y + textSize.Y + 1), Size2, 1, color2);
     }
 
     public void OnEditorDraw()
@@ -98,6 +121,8 @@ public class TextNode: IVisualItem
         var color = new Vector4(Color.R / 255f, Color.G / 255f, Color.B / 255f, Color.A / 255f);
         var color2 = new Vector4(Color2.R / 255f, Color2.G / 255f, Color2.B / 255f, Color.A / 255f);
         var backgroundColor = new Vector4(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, BackgroundColor.A / 255f);
+        var animationEnabled = AnimationEnabled;
+        var animationSpeedMs = AnimationSpeedMs;
         ImGui.ColorEdit4("BackgroundColor", ref backgroundColor);
         ImGui.Separator();
         ImGui.InputText("Name", ref name, 128);
@@ -108,6 +133,8 @@ public class TextNode: IVisualItem
         ImGui.ColorEdit4("Color2", ref color2);
         ImGui.SliderInt("Size2", ref size2, 6, 100);
         ImGui.Separator();
+        ImGui.Checkbox("Animation", ref animationEnabled);
+        ImGui.InputFloat("AnimationSpeedMs", ref animationSpeedMs);
         Color = new Color(color.X, color.Y, color.Z, color.W);
         Color2 = new Color(color2.X, color2.Y, color2.Z, color.W);
         BackgroundColor = new Color(backgroundColor.X, backgroundColor.Y, backgroundColor.Z, backgroundColor.W);
@@ -115,6 +142,9 @@ public class TextNode: IVisualItem
         Name2 = name2;
         Size1 = size1;
         Size2 = size2;
+        AnimationEnabled = animationEnabled;
+        AnimationSpeedMs = Math.Abs(animationSpeedMs);
+        _animationTimer.ChangeSpeed(AnimationSpeedMs);
     }
 
     public VisualType Type => VisualType.Node;
@@ -139,7 +169,7 @@ public class TextNode: IVisualItem
 
     public void Update(float deltaTime)
     {
-        // 
+        _animationTimer.Update(deltaTime);
     }
 
     public void OnDragStart(Vector2 position, EditType type)
