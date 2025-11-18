@@ -1,4 +1,5 @@
 using Meatcorps.Engine.Core.Interfaces.Services;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
 
@@ -30,7 +31,7 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
             var pool = new List<Sound>(_poolSizePerSfx);
             for (var i = 0; i < _poolSizePerSfx; i++)
             {
-                var s = Raylib.LoadSound(_soundLocations[key]);
+                var s = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key]);
                 if (!Raylib.IsSoundValid(s))
                     throw new Exception($"Failed to load sound {filePath}");
                 
@@ -107,7 +108,7 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
             _reserved.Add(sound.Stream.Buffer);
         }
         else
-            sound = Raylib.LoadSound(_soundLocations[key]);
+            sound = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key]);
         
         var manager = new OneSoundManager(this, sound, fromSoundPool, volume);
         _soundManagers.Add(manager);

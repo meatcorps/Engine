@@ -1,3 +1,5 @@
+using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.PostProcessing.Abstractions;
 using Raylib_cs;
 
@@ -12,7 +14,7 @@ public class ColorGradingPostProcessor : BaseFinalPostProcessor
     public ColorGradingPostProcessor(string lutPath) 
         : base("Assets/Shaders/colorgrading.fx", new[] { "lutTexture" })
     {
-        _lut = Raylib.LoadTexture(lutPath);
+        _lut = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(lutPath);
     }
 
     protected override void ApplyValues(Shader shader, Texture2D target)

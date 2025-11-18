@@ -1,4 +1,5 @@
 using Meatcorps.Engine.Core.Interfaces.Services;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
@@ -37,7 +38,7 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, ID
     {
         if (!_tracks.ContainsKey(key))
         {
-            var m = Raylib.LoadMusicStream(filePath);
+            var m = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadMusic(filePath);
             _tracks[key] = m;
         }
 

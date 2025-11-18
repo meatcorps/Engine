@@ -56,11 +56,12 @@ public class SoundFxResource<T> : ILoadAfterRayLibInit, IAudioInitNeeded where T
 
     public void Load()
     {
+        var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         var nonExisting = new List<string>();
         var manager = new SoundFxManager<T>(_poolSize, _name);
         foreach (var sound in _sound)
         {
-            if (File.Exists(sound.Value))
+            if (resource.Exists(sound.Value))
                 manager.Load(sound.Key, sound.Value);
             else
                 nonExisting.Add($"{sound.Key} -> {sound.Value} does not map to a file");

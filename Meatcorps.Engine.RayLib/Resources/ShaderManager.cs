@@ -1,3 +1,6 @@
+using Meatcorps.Engine.Core.Interfaces.Resource;
+using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Resource;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
 
@@ -24,6 +27,7 @@ public sealed class ShaderManager<T> : ILoadAfterRayLibInit, IDisposable where T
     
     public void Load()
     {
+        var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         if (_isLoaded)
             return;
         _isLoaded = true;
@@ -31,13 +35,13 @@ public sealed class ShaderManager<T> : ILoadAfterRayLibInit, IDisposable where T
         {
 
             if (shader.Item1 is not null) 
-                if (!File.Exists(shader.Item1)) 
+                if (!resource.Exists(shader.Item1)) 
                     throw new FileNotFoundException($"Shader file VS {shader.Item1} not found"); 
             
-            if (!File.Exists(shader.Item2)) 
+            if (!resource.Exists(shader.Item2)) 
                 throw new FileNotFoundException($"Shader file FX {shader.Item2} not found"); 
             
-            var shaderToAdd = Raylib.LoadShader(shader.Item1, shader.Item2);
+            var shaderToAdd = resource.LoadShader(shader.Item1, shader.Item2);
             
             if (!Raylib.IsShaderValid(shaderToAdd) && shaderToAdd.Id == 0)
                 throw new Exception($"Failed to load shader {shader.Item3} VS:{shader.Item1} FX:{shader.Item2}");

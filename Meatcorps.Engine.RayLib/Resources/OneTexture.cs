@@ -1,3 +1,4 @@
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
 
@@ -27,7 +28,7 @@ public class OneTexture: ILoadAfterRayLibInit, IDisposable
 
     public void Load()
     {
-        Texture = Raylib.LoadTexture(_path);
+        Texture = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_path);
         Raylib.SetTextureFilter(Texture, _filter);
         Raylib.SetTextureWrap(Texture, _wrap);
         _onLoaded(Texture);

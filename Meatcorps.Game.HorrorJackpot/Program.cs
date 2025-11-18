@@ -65,6 +65,11 @@ using var _ = RayLibModule.Setup()
        .SetResource(GameSpriteFactory.Load())
     .SetResource(AudioEnumBinder.BindAllMusic(
         MusicResource<GameMusic>.Create().UsePlaceHoldersForMissingFiles().SetMasterVolume(0), "Assets/Music/"))
+    .SetupProcessingBloom(0.6f, 0.2f, 0.8f, 4f)
+    .SetProcessing(new CrtNewPixiePostProcessor())
+    .SetResource(new OneTexture("Assets/CRTSidePanels.png", texture2D => 
+        GlobalObjectManager.ObjectManager.Get<CrtNewPixiePostProcessor>()!.SetFrameTexture(texture2D)
+    ))
     .SetResource(new ShaderManager<GameShaders>()
         .AddShader(
             Path.Combine("Assets", "Shaders", "Drum", "drum.vs"), 

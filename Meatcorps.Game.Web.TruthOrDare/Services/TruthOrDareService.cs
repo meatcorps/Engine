@@ -1,4 +1,7 @@
 using Meatcorps.Engine.Core.Extensions;
+using Meatcorps.Engine.Core.Interfaces.Resource;
+using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Resource;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Game.Web.TruthOrDare.Data;
 
@@ -31,8 +34,9 @@ public class TruthOrDareService
     
     private void ParseData()
     {
+        var resource = GlobalObjectManager.ObjectManager.Get<IResource>() ?? new FallbackResource();
         var file = FileUtilities.GetFullPath("Assets", "truth_or_dare_full.txt");
-        var lines = File.ReadLines(file).ToList();
+        var lines = resource.LoadText(file).Replace("\r", "").Split("\n").ToList();
 
         foreach (var line in lines)
         {

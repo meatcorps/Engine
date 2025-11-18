@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Meatcorps.Engine.Core.Data;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
 
@@ -36,15 +37,10 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         
         _isLoaded = true;
         
-        _shader = Raylib.LoadShader(null, _fxFilename);
+        _shader = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadShader(null, _fxFilename);
         
         foreach (var shaderLocation in ShaderLocations)
             ShaderLocations[shaderLocation.Key] = Raylib.GetShaderLocation(_shader, shaderLocation.Key);
-
-        // Optional: quick log
-        foreach (var kv in ShaderLocations)
-            System.Console.WriteLine($"[ShaderLoc] {System.IO.Path.GetFileName(_fxFilename)} {kv.Key} = {kv.Value}");
-
         
         OnLoad();
     }

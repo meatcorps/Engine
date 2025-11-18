@@ -1,4 +1,5 @@
 using Meatcorps.Engine.Core.Interfaces.Config;
+using Meatcorps.Engine.Core.Interfaces.Resource;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
@@ -11,6 +12,7 @@ using Meatcorps.Engine.RayLib.Game;
 using Meatcorps.Engine.RayLib.Game.GameTasks;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Renderer;
+using Meatcorps.Engine.RayLib.Resources;
 using Microsoft.Extensions.Logging;
 using Raylib_cs;
 
@@ -27,11 +29,17 @@ public class RayLibModule
     private IUniversalConfig _config;
     private KeyboardKey _exitKey = KeyboardKey.Escape;
     
-    public static RayLibModule Setup()
+    public static RayLibModule Setup(IRaylibResource? raylibResource = null)
     {
         GlobalObjectManager.ObjectManager.RegisterList<ILoadAfterRayLibInit>();
         GlobalObjectManager.ObjectManager.RegisterList<IPostProcessor>();
         GlobalObjectManager.ObjectManager.RegisterList<IGameLoopTask>();
+        
+        // TODO: Make this switchable based on debug or release build
+        if (raylibResource is null)
+            raylibResource = new FileResourceLoader();
+        GlobalObjectManager.ObjectManager.Register<IRaylibResource>(raylibResource);
+        GlobalObjectManager.ObjectManager.Register<IResource>(raylibResource);
         return new RayLibModule();
     }
 

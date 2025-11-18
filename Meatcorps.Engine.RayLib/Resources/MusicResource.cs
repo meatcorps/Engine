@@ -43,11 +43,12 @@ public class MusicResource<T>: ILoadAfterRayLibInit, IAudioInitNeeded where T : 
     
     public void Load()
     {
+        var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         var nonExisting = new List<string>();
         var manager = new MusicManager<T>();
         foreach (var (k, v) in _music)
         {
-            if (File.Exists(v.path))
+            if (resource.Exists(v.path))
                 manager.Load(k, v.path).SetMasterVolume(v.volume);
             else
                 nonExisting.Add($"{k} -> {v.path} does not map to a file");

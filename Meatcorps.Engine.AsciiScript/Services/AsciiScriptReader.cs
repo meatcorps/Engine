@@ -1,6 +1,9 @@
 using System.Text;
 using Meatcorps.Engine.AsciiScript.Data;
 using Meatcorps.Engine.AsciiScript.Enums;
+using Meatcorps.Engine.Core.Interfaces.Resource;
+using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Resource;
 
 namespace Meatcorps.Engine.AsciiScript.Services;
 
@@ -12,21 +15,23 @@ public class AsciiScriptReader
     private StringBuilder _data = new StringBuilder();
     private List<AsciiScriptItem> _items = new();
     private int _lineNumber;
+    private IResource _resource;
     
     public AsciiScriptReader(string[] blocks, string[] commands, string[] variables)
     {
         _blocks = blocks;
         _commands = commands;
         _variables = variables;
+        _resource = GlobalObjectManager.ObjectManager.Get<IResource>() ?? new FallbackResource();
     }
 
     public void LoadFromFileAndParse(string path)
     {
-        if (!File.Exists(path))
+        if (!_resource.Exists(path))
             throw new FileNotFoundException();
         _items.Clear();
         Reset();
-        Read(File.ReadAllText(path));
+        Read(_resource.LoadText(path));
     }
     
     public void LoadFromStringAndParse(string data)

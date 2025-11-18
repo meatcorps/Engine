@@ -1,4 +1,6 @@
 using System.Text;
+using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.RayLib.Interfaces;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
@@ -10,8 +12,11 @@ public static class AudioEnumBinder
     public static SoundFxResource<T> BindAllSounds<T>(SoundFxResource<T> res, string baseDir, bool strict = false)
         where T : struct, System.Enum
     {
-        var files = Directory.Exists(baseDir)
-            ? Directory.GetFiles(baseDir, "*.*", SearchOption.TopDirectoryOnly)
+        
+        var resourceLoader = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
+        
+        var files = resourceLoader.DirectoryExists(baseDir)
+            ? resourceLoader.GetFiles(baseDir, "*.*", SearchOption.TopDirectoryOnly)
             : System.Array.Empty<string>();
 
         var map = files.ToLookup(f => Path.GetFileName(f)!.ToLowerInvariant());
@@ -29,7 +34,7 @@ public static class AudioEnumBinder
                 var full = files.First(f =>
                     Path.GetFileName(f)!.Equals(match, System.StringComparison.OrdinalIgnoreCase));
 
-                if (File.Exists(full) == false)
+                if (resourceLoader.Exists(full) == false)
                 {
                     if (strict)
                         nonExistent.Add($"{value} -> {full} does not map to a file");
@@ -48,8 +53,10 @@ public static class AudioEnumBinder
 
     public static MusicResource<T> BindAllMusic<T>(MusicResource<T> res, string baseDir, bool strict = false) where T : struct, System.Enum
     {
-        var files = Directory.Exists(baseDir)
-            ? Directory.GetFiles(baseDir, "*.*", SearchOption.TopDirectoryOnly)
+        var resourceLoader = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
+        
+        var files = resourceLoader.DirectoryExists(baseDir)
+            ? resourceLoader.GetFiles(baseDir, "*.*", SearchOption.TopDirectoryOnly)
             : System.Array.Empty<string>();
 
         var map = files.ToLookup(f => Path.GetFileName(f)!.ToLowerInvariant());
@@ -66,7 +73,7 @@ public static class AudioEnumBinder
                 var full = files.First(f =>
                     Path.GetFileName(f)!.Equals(match, System.StringComparison.OrdinalIgnoreCase));
                 
-                if (File.Exists(full) == false)
+                if (resourceLoader.Exists(full) == false)
                 {
                     if (strict)
                         nonExistent.Add($"{value} -> {full} does not map to a file");

@@ -1,5 +1,6 @@
 using System.Drawing;
 using Meatcorps.Engine.Core.Data;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
 using Rectangle = Raylib_cs.Rectangle;
@@ -31,7 +32,7 @@ public sealed class Texture2DItem<T>: ILoadAfterRayLibInit, IDisposable where T 
             return;
         _isLoaded = true;
         Name = Path.GetFileNameWithoutExtension(_path);
-        Texture = Raylib.LoadTexture(_path);
+        Texture = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_path);
         Raylib.SetTextureFilter(Texture, _filter);
         TextureRect = new Rectangle(0, 0, Texture.Width, Texture.Height);
     }
