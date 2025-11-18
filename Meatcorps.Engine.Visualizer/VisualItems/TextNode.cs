@@ -48,10 +48,16 @@ public class TextNode: IVisualItem
         return Raylib.CheckCollisionRecs(Bounds, node.Bounds);
     }
 
-    public bool CheckMouseIsInsideItem(Vector2 position, IVisualItem other)
+    public bool CheckMouseIsInsideItem(Vector2 position)
     {
         var rect = new RectF(Bounds.X, Bounds.Y, Bounds.Width, Bounds.Height);
         return rect.Contains(position) && Type == VisualType.Node;
+    }
+
+    public bool CheckMouseIsInsideItem(RectF rect)
+    {
+        var rectSelf = new RectF(Bounds.X, Bounds.Y, Bounds.Width, Bounds.Height);
+        return rectSelf.Intersects(rect);
     }
 
     public void OnDraw()

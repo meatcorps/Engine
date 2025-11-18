@@ -39,7 +39,9 @@ public class NodeLine: IVisualItem
     public bool StartEndAnimation { get; set; } = true;
     private FixedTimer _animationTimer { get; set; } = new FixedTimer(1000);
     
-    private bool EditStartPoint;
+    private bool _editStartPoint;
+    private bool _editBoth;
+    private Vector2 _offset = Vector2.Zero;
     
     public void OnInitialize(MainScene scene)
     {
@@ -51,9 +53,14 @@ public class NodeLine: IVisualItem
         return false;
     }
 
-    public bool CheckMouseIsInsideItem(Vector2 position, IVisualItem other)
+    public bool CheckMouseIsInsideItem(Vector2 position)
     {
         return position.IsEqualsSafe(StartPoint) || position.IsEqualsSafe(EndPoint);
+    }
+
+    public bool CheckMouseIsInsideItem(RectF rect)
+    {
+        return rect.Contains(StartPoint) || rect.Contains(EndPoint);
     }
 
     public void OnDraw()
@@ -248,26 +255,51 @@ public class NodeLine: IVisualItem
     public void Update(float deltaTime)
     {
         _animationTimer.Update(deltaTime); 
+        
+        if (StartPoint.IsEqualsSafe(EndPoint) && _scene.VisualData.EditType == EditType.None)
+            EndPoint += new Vector2(10, 0);
     }
 
     public void OnDragStart(Vector2 position, EditType type)
     {
-        EditStartPoint = StartPoint.IsEqualsSafe(position);
+        _editStartPoint = StartPoint.IsEqualsSafe(position);
+        if (_editStartPoint)
+            _offset = StartPoint - position;
+        else
+            _offset = EndPoint - position;
     }
 
     public void OnDrag(Vector2 position, EditType type)
     {
+        if (type == EditType.Resize && _scene.VisualData.MultiSelect)
+            return;
+        
         if (type is EditType.Drag or EditType.Resize)
         {
-            if (EditStartPoint)
+            
+            position += _offset;
+            _editBoth = type == EditType.Drag;
+            if (_editStartPoint)
+            {
+                if (_editBoth) 
+                    EndPoint += position - StartPoint;
+                
                 StartPoint = position;
+            }
             else
+            {
+                if (_editBoth) 
+                    StartPoint += position - EndPoint;
+                
                 EndPoint = position;
+            }
         }
     }
 
     public void OnDragEnd(Vector2 position, EditType type)
     {
+        if (StartPoint.IsEqualsSafe(EndPoint))
+            EndPoint += new Vector2(10, 0);
         //
     }
 

@@ -106,7 +106,7 @@ public class Editor: BaseImGuiGameObject
         {
            ImGui.Begin("Editor", ImGuiWindowFlags.AlwaysAutoResize);
            _scene.VisualData.EditItem.OnEditorDraw();
-           var done = ImGui.Button("Done");
+           var done = ImGui.Button("Done") || Raylib.IsKeyPressed(KeyboardKey.Enter);
            ImGui.End();
            
            if (done)

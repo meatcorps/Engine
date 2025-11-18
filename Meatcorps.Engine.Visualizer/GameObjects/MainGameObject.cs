@@ -1,4 +1,5 @@
 using System.Numerics;
+using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
@@ -22,10 +23,12 @@ public class MainGameObject : BaseGameObject
     private CameraControllerGameObject _cameraController = null!;
     private Toolbox _toolbox = null!;
     private UIMessageEmitter _uiMessage = null!;
-    
+    private RectF _selectionRect = new(0, 0, 0, 0);
     public bool ValidMove => _validMove;
 
     private MainScene _scene = null!;
+
+    private bool _selectionStarted;
     
     protected override void OnInitialize()
     {
@@ -100,19 +103,60 @@ public class MainGameObject : BaseGameObject
         }
 
         //UpdateValidMove();
+
+        
+        
         UpdateCheckIfWeNeedToDeselect();
         UpdateCheckIfWeNeedToOpenEditor();
         UpdateCheckIfWeNeedToCloseTheEditor();
-        UpdateOnDragStartLogic();
-        UpdateCheckIfWeCanAdd();
-        UpdateOnDrag();
-        UpdateOnDragEnd();
-        UpdateOnDelete();
+        if (!_selectionStarted && !_scene.IsKeyDown(KeyboardKey.LeftShift))
+        {
+            UpdateOnDragStartLogic();
+            UpdateCheckIfWeCanAdd();
+            UpdateOnDrag();
+            UpdateOnDragEnd();
+            UpdateOnDelete();
+        }
+        
+        if (_scene.VisualData.MultiSelect && !_scene.BlockTheEditor && _scene.IsKeyDown(KeyboardKey.LeftShift))
+        {
+            if (_scene.IsMouseDown(MouseButton.Left))
+            {
+                if (!_selectionStarted)
+                {
+                    _selectionRect.Position = _scene.MousePositionGrid;
+
+                    if (_scene.VisualData.GetItemBasedOn(_scene.MousePositionGrid, false, out var item))
+                        item!.Selected = !item.Selected;
+                }
+
+                _selectionStarted = true;
+                _selectionRect.Width = Math.Abs(_scene.MousePositionGrid.X - _selectionRect.Position.X);
+                _selectionRect.Height = Math.Abs(_scene.MousePositionGrid.Y - _selectionRect.Position.Y);
+            }
+            else if (_scene.IsMouseUp(MouseButton.Left) && _selectionStarted)
+            {
+                if (_selectionRect.Width > 1 && _selectionRect.Height > 1)
+                {
+
+                    foreach (var itemP in _scene.VisualData.Data)
+                        itemP.Selected = false;
+
+                    foreach (var item in _scene.VisualData.GetItemBasedOn(_selectionRect))
+                        item.Selected = true;
+                }
+                
+                _selectionStarted = false;
+            }
+        }
+
         UpdateIfTheEditorIsDone();
     }
 
     private void UpdateIfTheEditorIsDone()
     {
+        if (_scene.VisualData.MultiSelect)
+            return;
         if (_scene.IsMouseUp(MouseButton.Left) && _scene.VisualData.EditType != EditType.None && _scene.VisualData.EditType != EditType.DataEnter &&
             _validMove)
         {
@@ -124,7 +168,11 @@ public class MainGameObject : BaseGameObject
     {
         if (_scene.VisualData.SelectedItem is not null && _scene.IsKeyDown(KeyboardKey.Delete) && _scene.VisualData.EditType != EditType.DataEnter)
         {
-            _scene.VisualData.Data.Remove(_scene.VisualData.SelectedItem);
+            foreach (var item in _scene.VisualData.Data.ToArray())
+            {
+                if (item.Selected)
+                    _scene.VisualData.Data.Remove(item);
+            }
             _scene.VisualData.SelectedItem = null;
         }
     }
@@ -134,29 +182,41 @@ public class MainGameObject : BaseGameObject
         if (_scene.VisualData.SelectedItem is not null && _scene.IsMouseUp(MouseButton.Left) && _validMove &&
             _scene.VisualData.EditType != EditType.DataEnter)
         {
-            _scene.VisualData.SelectedItem.OnDragEnd(_scene.MousePositionGrid, _scene.VisualData.EditType);
-            _scene.VisualData.SelectedItem.Selected = false;
-            _scene.VisualData.SelectedItem = null;
-            _scene.VisualData.EditType = EditType.None;
+            foreach (var item in _scene.VisualData.Data)
+            {
+                if (!item.Selected)
+                    continue;
+                
+                item.OnDragEnd(_scene.MousePositionGrid, _scene.VisualData.EditType);
+                _scene.VisualData.EditType = EditType.None;
+
+                if (!_scene.VisualData.MultiSelect)
+                {
+                    item.Selected = false;
+                    _scene.VisualData.SelectedItem = null;
+                }
+            }
         }
     }
 
     private void UpdateOnDrag()
     {
-        if (_scene.VisualData.SelectedItem is not null && _scene.VisualData.EditType == EditType.Resize)
-            _scene.VisualData.SelectedItem.OnDrag(_scene.MousePositionGrid, _scene.VisualData.EditType);
+        if (_scene.VisualData.EditType != EditType.Resize && _scene.VisualData.EditType != EditType.Drag) 
+            return;
 
-        if (_scene.VisualData.SelectedItem is not null && _scene.VisualData.EditType == EditType.Drag)
-            _scene.VisualData.SelectedItem.OnDrag(_scene.MousePositionGrid, _scene.VisualData.EditType);
-
+        foreach (var item in _scene.VisualData.Data)
+            if (item.Selected)
+                item.OnDrag(_scene.MousePositionGrid, _scene.VisualData.EditType);
+        
         if (_scene.VisualData.SelectedItem is not null)
-        {
             _scene.MouseText = " DEL: Remove";
-        }
     }
 
     private void UpdateCheckIfWeCanAdd()
     {
+        if (_scene.VisualData.MultiSelect)
+            return;
+        
         if (_scene.VisualData.SelectedItem is null && _scene.VisualData.EditType == EditType.None && _scene.MouseText == "")
             _scene.MouseText = "Add: " + _scene.VisualData.VisualType;
 
@@ -202,10 +262,25 @@ public class MainGameObject : BaseGameObject
 
     private void UpdateOnDragStartLogic()
     {
-        if (!_scene.VisualData.GetItemBasedOn(_scene.MousePositionGrid, out var item))
+        if (!_scene.VisualData.GetItemBasedOn(_scene.MousePositionGrid, !_scene.VisualData.MultiSelect, out var item))
             return;
         
-        if (_scene.VisualData.SelectedItem is null && _scene.VisualData.EditType == EditType.None)
+        IVisualItem[] items = [];
+        var canStart = true;
+
+        if (!_scene.VisualData.MultiSelect)
+        {
+            items = new[] { item! };
+            canStart = _scene.VisualData.SelectedItem is null;
+        }
+        else
+        {
+            if (_scene.IsMouseDown(MouseButton.Left) && _scene.VisualData.EditType == EditType.None)
+                items = _scene.VisualData.Data.Where(x => x.Selected).ToArray();
+            canStart = items.Length > 0;
+        }
+
+        if (canStart && _scene.VisualData.EditType == EditType.None)
         {
             if (_scene.IsKeyDown(KeyboardKey.LeftAlt))
             {
@@ -222,24 +297,28 @@ public class MainGameObject : BaseGameObject
         }
 
 
-        if (_scene.VisualData.SelectedItem is null && _scene.IsMouseDown(MouseButton.Left) && _scene.VisualData.EditType == EditType.None)
+        if (canStart && _scene.IsMouseDown(MouseButton.Left) && _scene.VisualData.EditType == EditType.None)
         {
-            if (_scene.IsKeyDown(KeyboardKey.LeftAlt))
+            foreach (var visualItem in items)
             {
-                _scene.VisualData.SelectedItem = item!.Clone();
-                _scene.VisualData.SelectedItem.OnInitialize(_scene);
-                _scene.VisualData.SelectedItem.Selected = true;
-                _scene.VisualData.Data.Add(_scene.VisualData.SelectedItem);
-                _scene.VisualData.EditType = EditType.Drag;
-            }
-            else
-            {
-                _scene.VisualData.SelectedItem = item!;
-                _scene.VisualData.SelectedItem.Selected = true;
-                _scene.VisualData.EditType = _scene.IsKeyDown(KeyboardKey.R) ? EditType.Resize : EditType.Drag;
-            }
+                if (_scene.IsKeyDown(KeyboardKey.LeftAlt))
+                {
+                    _scene.VisualData.SelectedItem = visualItem.Clone();
+                    visualItem.Selected = false;
+                    _scene.VisualData.SelectedItem.OnInitialize(_scene);
+                    _scene.VisualData.SelectedItem.Selected = true;
+                    _scene.VisualData.Data.Add(_scene.VisualData.SelectedItem);
+                    _scene.VisualData.EditType = EditType.Drag;
+                }
+                else
+                {
+                    _scene.VisualData.SelectedItem = visualItem;
+                    _scene.VisualData.SelectedItem.Selected = true;
+                    _scene.VisualData.EditType = _scene.IsKeyDown(KeyboardKey.R) ? EditType.Resize : EditType.Drag;
+                }
 
-            _scene.VisualData.SelectedItem.OnDragStart(_scene.MousePositionGrid, _scene.VisualData.EditType);
+                _scene.VisualData.SelectedItem.OnDragStart(_scene.MousePositionGrid, _scene.VisualData.EditType);
+            }
         }
     }
 
@@ -255,9 +334,12 @@ public class MainGameObject : BaseGameObject
 
     private void UpdateCheckIfWeNeedToOpenEditor()
     {
+        if (_scene.VisualData.MultiSelect)
+            return;
+        
         if (_scene.IsMouseDown(MouseButton.Right) && _scene.VisualData.EditType == EditType.None)
         {
-            if (_scene.VisualData.GetItemBasedOn(_scene.MousePositionGrid, out var item))
+            if (_scene.VisualData.GetItemBasedOn(_scene.MousePositionGrid, true, out var item))
             {
                 _scene.VisualData.EditItem = item;
                 _scene.VisualData.SelectedItem = item;
@@ -269,12 +351,16 @@ public class MainGameObject : BaseGameObject
 
     private void UpdateCheckIfWeNeedToDeselect()
     {
-        if (_scene.IsKeyDown(KeyboardKey.Escape, true) && _scene.VisualData.SelectedItem is not null)
+        if (_scene.IsKeyDown(KeyboardKey.Escape, true))
         {
-            _scene.VisualData.SelectedItem.Selected = false;
+            if (_scene.VisualData.SelectedItem != null)
+                _scene.VisualData.SelectedItem.Selected = false;
+            
             _scene.VisualData.SelectedItem = null;
             _scene.VisualData.EditItem = null;
             _scene.VisualData.EditType = EditType.None;
+            foreach (var item in _scene.VisualData.Data) 
+                item.Selected = false;
         }
     }
 
@@ -312,7 +398,7 @@ public class MainGameObject : BaseGameObject
                 _scene.MousePositionGrid + new Vector2(31, 16), Color.White);
             
             var topLeftCorner = _camera.ScreenToWorld(Vector2.Zero);
-            var bottomRightCorner = _camera.ScreenToWorld(new Vector2(Scene.GameHost.Height, Scene.GameHost.Width));
+            var bottomRightCorner = _camera.ScreenToWorld(new Vector2(Scene.GameHost.Width, Scene.GameHost.Height));
             Raylib.DrawLineEx(
                 new Vector2((int)_scene.MousePositionGrid.X, topLeftCorner.Y),
                 new Vector2((int)_scene.MousePositionGrid.X, bottomRightCorner.Y), 2, new Color(255, 255, 255, 50));
@@ -328,6 +414,9 @@ public class MainGameObject : BaseGameObject
                 Raylib.DrawTextEx(_scene.Font, _scene.MousePositionGrid.ToString() + " | " + _scene.MouseText,
                     _scene.MousePositionGrid + new Vector2(16, 0), 8,
                     1, Color.Gray);
+            
+            if (_selectionStarted)
+                Raylib.DrawRectangleLinesEx(new Rectangle(_selectionRect.Position, _selectionRect.Width, _selectionRect.Height), 2, Color.White);
         }
         
         base.OnDraw();

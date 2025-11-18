@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Visualizer.GameObjects;
 using Meatcorps.Engine.Visualizer.Scenes;
 using Raylib_cs;
@@ -12,7 +13,8 @@ public interface IVisualItem
     int Order { get; set; }
     void OnInitialize(MainScene scene);
     bool IsColliding(IVisualItem other);
-    bool CheckMouseIsInsideItem(Vector2 position, IVisualItem other);
+    bool CheckMouseIsInsideItem(Vector2 position);
+    bool CheckMouseIsInsideItem(RectF rect);
     void OnDraw();
     void OnEditorDraw();
     VisualType Type { get; }

@@ -83,6 +83,17 @@ public class MainScene: BaseScene
         });
         _toolbox.Items.Add(new ToolboxItem
         {
+            Highlight = () => VisualData.MultiSelect,
+            Icon = RemixIcon.drag_drop_line,
+            Action = () => VisualData.MultiSelect = !VisualData.MultiSelect,
+            Name = "Multi select"
+        });
+        _toolbox.Items.Add(new ToolboxItem
+        {
+            Icon = null
+        });
+        _toolbox.Items.Add(new ToolboxItem
+        {
             Icon = RemixIcon.text_snippet,
             Action = () => _editor.EditName(),
             Name = "Rename document"
