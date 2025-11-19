@@ -1,11 +1,14 @@
 ﻿using Meatcorps.Engine.Arcade.Data;
 using Meatcorps.Engine.Arcade.Modules;
 using Meatcorps.Engine.Arcade.RayLib.Modules;
+using Meatcorps.Engine.Assets.Manager;
+using Meatcorps.Engine.Assets.Sinks;
 using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.Modules;
 using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.MQTT.Modules;
+using Meatcorps.Engine.RayLib.Assets;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
@@ -62,6 +65,7 @@ Raylib.SetTraceLogLevel(TraceLogLevel.Warning);
 
 GlobalObjectManager.ObjectManager.Register(GameTileRules.Create());
 
+//new PackageResourceLoader(new AssetPackageManager("Assets.bin", new DirectResourceSink()))
 using var _ = RayLibModule.Setup()
     .SetTitle("Meatcorps " + GlobalObjectManager.ObjectManager.Get<ArcadeGame>()!.Name)
     .SetInitialSize(1920, 1080)

@@ -16,6 +16,7 @@
         <ProjectReference Include="..\Meatcorps.Engine.Collision\Meatcorps.Engine.Collision.csproj" />
         <ProjectReference Include="..\Meatcorps.Engine.Hardware.ArduinoController\Meatcorps.Engine.Hardware.ArduinoController.csproj"/>
         <ProjectReference Include="..\Meatcorps.Engine.Pathfinding\Meatcorps.Engine.Pathfinding.csproj" />
+        <ProjectReference Include="..\Meatcorps.Engine.RayLib.Assets\Meatcorps.Engine.RayLib.Assets.csproj" />
         <ProjectReference Include="..\Meatcorps.Engine.RayLib.Pathfinding\Meatcorps.Engine.RayLib.Pathfinding.csproj" />
         <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj"/>
         <ProjectReference Include="..\Meatcorps.Engine.SDL\Meatcorps.Engine.SDL.csproj" />
