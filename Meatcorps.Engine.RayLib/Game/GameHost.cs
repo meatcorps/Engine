@@ -147,7 +147,6 @@ public sealed class GameHost : IDisposable
         
         while (!Raylib.WindowShouldClose())
         {
-
             RunGameLoopTask(GameLoopType.BeforeUpdate, true);
             var totalSteps = 0;
             

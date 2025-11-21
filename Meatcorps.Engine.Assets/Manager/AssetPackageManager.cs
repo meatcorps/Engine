@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using Meatcorps.Engine.Assets.Data;
 using Meatcorps.Engine.Assets.Interfaces;
 using Newtonsoft.Json;
@@ -10,7 +11,8 @@ public class AssetPackageManager
     private readonly string _path;
     private readonly IEncryptDecryptSink _sink;
     private AssetMapData _map;
-
+    private const int FIRST_CHUCK_SIZE = 256;
+    
     public AssetPackageManager(string path, IEncryptDecryptSink sink)
     {
         _path = path;
@@ -19,17 +21,25 @@ public class AssetPackageManager
 
     public void Load()
     {
-        if (!int.TryParse(LoadText(0, 16), out var jsonMapSize)) 
+        var data = LoadBytes(0, FIRST_CHUCK_SIZE, 0, rawData =>
+        {
+            var lengthByteData = rawData.ToList();
+            while (lengthByteData.Count > 0 && lengthByteData[0] == 0)
+                lengthByteData.RemoveAt(0);
+            return lengthByteData.ToArray();
+        });
+        
+        if (!int.TryParse(Encoding.UTF8.GetString(data), out var jsonMapSize)) 
             return;
         
-        var jsonMap = LoadText(16, jsonMapSize);
+        var jsonMap = LoadText(FIRST_CHUCK_SIZE, jsonMapSize);
         var map = JsonConvert.DeserializeObject<AssetMapData>(jsonMap);
         if (map == null)
             return;
 
         foreach (var item in map.Items)
         {
-            item.Position += 16;
+            item.Position += FIRST_CHUCK_SIZE;
             item.Position += jsonMapSize;
         }
         
@@ -59,6 +69,8 @@ public class AssetPackageManager
 
     public bool Data(out byte[] data, string path)
     {
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
         path = FixPath(path);
         var item = _map.Items.FirstOrDefault(x => x.Path == path); 
         if (item is null)
@@ -67,17 +79,30 @@ public class AssetPackageManager
             return false;
         }
         
-        data = LoadBytes((int)item.Position, (int)item.Length);
+        data = LoadBytes((int)item.Position, (int)item.Length, (int)item.PlainLength);
+        stopwatch.Stop();
+        Console.WriteLine("Loaded " + path + " in " + stopwatch.ElapsedMilliseconds + " ms");
         return true;
     }
     
-    private byte[] LoadBytes(int startPosition, int length)
+    private byte[] LoadBytes(int startPosition, int length, int plainLength = 0, Func<byte[], byte[]>? middleStuff = null)
     {
-        var data = File.Open(_path, FileMode.Open);
+        using var data = File.Open(_path, FileMode.Open);
         data.Seek(startPosition, SeekOrigin.Begin);
         var buffer = new byte[length];
         _ = data.Read(buffer, 0, length);
         data.Close();
+        
+        if (middleStuff != null)
+            buffer = middleStuff(buffer);
+
+        if (plainLength > 0)
+        {
+            var returnBuffer = new byte[plainLength];
+            _sink.Decrypt(buffer, returnBuffer);
+            return returnBuffer;
+        }
+        
         return _sink.Decrypt(buffer);
     }
 

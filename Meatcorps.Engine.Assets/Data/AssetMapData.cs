@@ -9,5 +9,6 @@ public class AssetMapItemData
 {
     public string Path { get; set; }
     public long Length { get; set; }
+    public long PlainLength { get; set; }
     public long Position { get; set; }
 }

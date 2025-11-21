@@ -65,8 +65,8 @@ Raylib.SetTraceLogLevel(TraceLogLevel.Warning);
 
 GlobalObjectManager.ObjectManager.Register(GameTileRules.Create());
 
-//new PackageResourceLoader(new AssetPackageManager("Assets.bin", new DirectResourceSink()))
-using var _ = RayLibModule.Setup()
+//
+using var _ = RayLibModule.Setup(new PackageResourceLoader(new AssetPackageManager("Assets.bin", new AesResourceSink("HELLO_EVERYBODY"))))
     .SetTitle("Meatcorps " + GlobalObjectManager.ObjectManager.Get<ArcadeGame>()!.Name)
     .SetInitialSize(1920, 1080)
     .SetFixedSizeCamera(640, 360)

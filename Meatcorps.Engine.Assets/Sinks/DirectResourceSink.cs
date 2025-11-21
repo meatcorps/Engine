@@ -13,4 +13,10 @@ public class DirectResourceSink: IEncryptDecryptSink
     {
         return data;
     }
+
+    public int Decrypt(byte[] data, byte[] to)
+    {
+        Buffer.BlockCopy(data, 0, to, 0, data.Length);
+        return data.Length;
+    }
 }

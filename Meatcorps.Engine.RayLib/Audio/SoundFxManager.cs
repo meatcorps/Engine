@@ -31,7 +31,10 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
             var pool = new List<Sound>(_poolSizePerSfx);
             for (var i = 0; i < _poolSizePerSfx; i++)
             {
-                var s = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key]);
+                var s = i == 0 
+                    ? GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key])
+                    : Raylib.LoadSoundAlias(pool[0]); 
+                
                 if (!Raylib.IsSoundValid(s))
                     throw new Exception($"Failed to load sound {filePath}");
                 
@@ -108,8 +111,12 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
             _reserved.Add(sound.Stream.Buffer);
         }
         else
-            sound = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key]);
-        
+        {
+            GetSound(key, out var soundOriginal);
+            sound = Raylib.LoadSoundAlias(soundOriginal);
+            //   sound = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key]);
+        }
+
         var manager = new OneSoundManager(this, sound, fromSoundPool, volume);
         _soundManagers.Add(manager);
         return manager;
@@ -199,11 +206,17 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
 
         foreach (var pool in _soundPools.Values)
         {
+            var count = 0;
             foreach (var s in pool)
             {
                 // Stop before unload just in case
                 Raylib.StopSound(s);
-                Raylib.UnloadSound(s);
+                if (count == 0)
+                    Raylib.UnloadSound(s);
+                else
+                    Raylib.UnloadSoundAlias(s);
+                    
+                count++;
             }
         }
         _soundManagers.Clear();
