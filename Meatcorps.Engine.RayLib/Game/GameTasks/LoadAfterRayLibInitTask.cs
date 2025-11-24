@@ -38,6 +38,7 @@ public class LoadAfterRayLibInitTask: IGameLoopTask
                 if (task is not LoadAfterRayLibInitTask)
                     task.Enabled = false;
             }
+            
             _ = System.Threading.Tasks.Task.Run(async () =>
             {
                 foreach (var instance in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)

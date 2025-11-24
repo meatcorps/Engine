@@ -12,12 +12,22 @@ namespace Meatcorps.Engine.RayLib.Assets;
 public class PackageResourceLoader: IRaylibResource
 {
     private readonly AssetPackageManager _packageManager;
-    private ResourceManager _resourceManager;
+    private ResourceManager _resourceManager = null!;
+    private bool _isResourceManagerLoaded = false;
     
     public PackageResourceLoader(AssetPackageManager packageManager)
     {
         _packageManager = packageManager;
         _packageManager.Load();
+    }
+
+    private void LoadResourceManager()
+    {
+        if (_isResourceManagerLoaded)
+            return;
+
+        _isResourceManagerLoaded = true;
+        
         _resourceManager = GlobalObjectManager.ObjectManager.Get<ResourceManager>()!;
     }
     
@@ -57,6 +67,7 @@ public class PackageResourceLoader: IRaylibResource
 
     public async Task<Image> LoadImage(string path)
     {
+        LoadResourceManager();
         var byteData = LoadBytes(path);
         Image image = default;
         await _resourceManager.AddTaskToMainThread(() => image = Raylib.LoadImageFromMemory(Path.GetExtension(path), byteData));
@@ -65,6 +76,7 @@ public class PackageResourceLoader: IRaylibResource
 
     public async Task<Texture2D> LoadTexture(string path)
     {
+        LoadResourceManager();
         var image = await LoadImage(path);
         Texture2D texture2D = default;
         await _resourceManager.AddTaskToMainThread(() =>
@@ -77,6 +89,7 @@ public class PackageResourceLoader: IRaylibResource
 
     public async Task<Font> LoadFontEx(string fileName, int fontSize, int[]? codepoints, int codepointCount)
     {
+        LoadResourceManager();
         var byteData = LoadBytes(fileName);
         Font font = default;
         await _resourceManager.AddTaskToMainThread(() => font = Raylib.LoadFontFromMemory(Path.GetExtension(fileName),  byteData, fontSize, codepoints, codepointCount));
@@ -85,6 +98,7 @@ public class PackageResourceLoader: IRaylibResource
 
     public async Task<Wave> LoadWave(string path)
     {
+        LoadResourceManager();
         var byteData = LoadBytes(path);
         Wave wave = default;
         await _resourceManager.AddTaskToMainThread(() => wave = Raylib.LoadWaveFromMemory(Path.GetExtension(path), byteData));
@@ -93,6 +107,7 @@ public class PackageResourceLoader: IRaylibResource
 
     public async Task<Sound> LoadSound(string path)
     {
+        LoadResourceManager();
         var wave = await LoadWave(path);
         Sound sound = default;
         
@@ -107,6 +122,7 @@ public class PackageResourceLoader: IRaylibResource
 
     public async Task<Music> LoadMusic(string path)
     {
+        LoadResourceManager();
         var byteData = LoadBytes(path);
         GCHandle.Alloc(byteData, GCHandleType.Pinned);
         
@@ -126,6 +142,7 @@ public class PackageResourceLoader: IRaylibResource
 
     public async Task<Shader> LoadShader(string? vertexPath, string? fragmentPath)
     {
+        LoadResourceManager();
         string? vertexData = null;
         string? fragmentData = null;
 
