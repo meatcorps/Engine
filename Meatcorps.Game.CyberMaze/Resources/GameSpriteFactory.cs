@@ -137,6 +137,7 @@ public static class GameSpriteFactory
             .WithSpriteFromGrid(GameSprites.Drone2, new PointInt(5, 12))
             .WithSpriteFromGrid(GameSprites.SmokeSmall, new PointInt(0, 15))
             .WithSpriteFromGrid(GameSprites.CityBackground, new Rect(0, 19, 40, 47))
+            .WithSpriteFromGrid(GameSprites.ShoutOut, new Rect(0, 16, 14, 2))
             .WithSprite(GameSprites.SmokeLarge, new Rectangle(0, 1072, 640, 360))
 
             // Animations

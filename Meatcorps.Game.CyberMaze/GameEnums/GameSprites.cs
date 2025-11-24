@@ -145,5 +145,6 @@ public enum GameSprites
     GhostScaredAnimation,
     DroneAnimation,
     CollectibleCheese,
-    DutchFlag
+    DutchFlag,
+    ShoutOut
 }
