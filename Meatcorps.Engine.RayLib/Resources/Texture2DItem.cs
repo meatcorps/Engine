@@ -7,7 +7,7 @@ using Rectangle = Raylib_cs.Rectangle;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public sealed class Texture2DItem<T>: ILoadAfterRayLibInit, IDisposable where T : Enum
+public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T : Enum
 {
     public string Name { get; private set; }
     private bool _isDisposed;

@@ -64,7 +64,13 @@ public class AssetPackageManager
         path = FixPath(path);
         return _map.Items
             .Where(x => x.Path.StartsWith(path))
-            .Select(x => x.Path);
+            .Select(x =>
+            {
+                if (OperatingSystem.IsWindows())
+                    return x.Path;
+                
+                return x.Path.Replace('\\', '/');
+            });
     }
 
     public bool Data(out byte[] data, string path)

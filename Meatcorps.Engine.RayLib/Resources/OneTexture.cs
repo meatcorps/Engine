@@ -4,7 +4,7 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public class OneTexture: ILoadAfterRayLibInit, IDisposable
+public class OneTexture: IResourceLoadOnInit, IDisposable
 {
     private readonly string _path;
     private readonly TextureFilter _filter;

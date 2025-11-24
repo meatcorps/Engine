@@ -1,6 +1,6 @@
 namespace Meatcorps.Engine.RayLib.Interfaces;
 
-public interface ILoadAfterRayLibInit
+public interface IResourceLoadOnInit
 {
     void Load();
 }

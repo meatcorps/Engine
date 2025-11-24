@@ -31,7 +31,7 @@ public class RayLibModule
     
     public static RayLibModule Setup(IRaylibResource? raylibResource = null)
     {
-        GlobalObjectManager.ObjectManager.RegisterList<ILoadAfterRayLibInit>();
+        GlobalObjectManager.ObjectManager.RegisterList<IResourceLoadOnInit>();
         GlobalObjectManager.ObjectManager.RegisterList<IPostProcessor>();
         GlobalObjectManager.ObjectManager.RegisterList<IGameLoopTask>();
         
@@ -91,13 +91,13 @@ public class RayLibModule
         return this;
     }
 
-    public RayLibModule SetResource<T>(T instance, string tag = "default") where T : class, ILoadAfterRayLibInit
+    public RayLibModule SetResource<T>(T instance, string tag = "default") where T : class, IResourceLoadOnInit
     {
 #if DEBUG
         if (!_config.GetOrDefault("Debug", "SetResource_" + instance.GetType().Name, true))
             return this;
 #endif
-        GlobalObjectManager.ObjectManager.Add<ILoadAfterRayLibInit>(instance);
+        GlobalObjectManager.ObjectManager.Add<IResourceLoadOnInit>(instance);
         GlobalObjectManager.ObjectManager.Register(instance, tag);
         return this;
     }

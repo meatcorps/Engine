@@ -28,7 +28,7 @@ foreach (var file in files)
     fileTempWriter.Write(data);
     map.Items.Add(new AssetMapItemData()
     {
-        Path = file,
+        Path = file.Replace("/", "\\"),
         Length = data.Length,
         PlainLength = dataOriginal.Length,
         Position = currentPosition

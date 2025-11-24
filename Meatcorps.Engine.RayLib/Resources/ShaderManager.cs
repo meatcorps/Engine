@@ -6,7 +6,7 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public sealed class ShaderManager<T> : ILoadAfterRayLibInit, IDisposable where T: Enum
+public sealed class ShaderManager<T> : IResourceLoadOnInit, IDisposable where T: Enum
 {
     private Dictionary<T, Shader> _shaders = new();
     private List<(string?, string, T)> _shaderPaths = new();

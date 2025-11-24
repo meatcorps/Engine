@@ -8,7 +8,7 @@ using Meatcorps.Engine.RayLib.Interfaces;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public class SoundFxResource<T> : ILoadAfterRayLibInit, IAudioInitNeeded where T : struct, Enum
+public class SoundFxResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T : struct, Enum
 {
     private readonly int _poolSize;
     private string _name;

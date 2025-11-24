@@ -5,7 +5,7 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public sealed class TextManager<T> : ILoadAfterRayLibInit, IDisposable, IDefaultFont where T: Enum
+public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultFont where T: Enum
 {
     private Dictionary<T, Font> _fonts = new();
     private List<(string, T, int, TextureFilter, int[]? codePoints)> _fontPaths = new();

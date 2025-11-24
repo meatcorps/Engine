@@ -7,7 +7,7 @@ using Meatcorps.Engine.RayLib.Interfaces;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public class MusicResource<T>: ILoadAfterRayLibInit, IAudioInitNeeded where T : struct, Enum
+public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : struct, Enum
 {
     private float _masterVolume;
     private readonly Dictionary<T, (string path, float volume)> _music = new();
