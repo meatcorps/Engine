@@ -2,7 +2,9 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Meatcorps.Engine.Assets.Manager;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Interfaces;
+using Meatcorps.Engine.RayLib.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Assets;
@@ -10,11 +12,13 @@ namespace Meatcorps.Engine.RayLib.Assets;
 public class PackageResourceLoader: IRaylibResource
 {
     private readonly AssetPackageManager _packageManager;
-
+    private ResourceManager _resourceManager;
+    
     public PackageResourceLoader(AssetPackageManager packageManager)
     {
         _packageManager = packageManager;
         _packageManager.Load();
+        _resourceManager = GlobalObjectManager.ObjectManager.Get<ResourceManager>()!;
     }
     
     public bool Exists(string path)
@@ -51,53 +55,76 @@ public class PackageResourceLoader: IRaylibResource
         return data;
     }
 
-    public Image LoadImage(string path)
+    public async Task<Image> LoadImage(string path)
     {
         var byteData = LoadBytes(path);
-        return Raylib.LoadImageFromMemory(Path.GetExtension(path), byteData);
+        Image image = default;
+        await _resourceManager.AddTaskToMainThread(() => image = Raylib.LoadImageFromMemory(Path.GetExtension(path), byteData));
+        return image;
     }
 
-    public Texture2D LoadTexture(string path)
+    public async Task<Texture2D> LoadTexture(string path)
     {
-        var image = LoadImage(path);
-        var texture2D = Raylib.LoadTextureFromImage(image);
-        Raylib.UnloadImage(image);
+        var image = await LoadImage(path);
+        Texture2D texture2D = default;
+        await _resourceManager.AddTaskToMainThread(() =>
+        {
+            texture2D = Raylib.LoadTextureFromImage(image);
+            Raylib.UnloadImage(image);
+        });
         return texture2D;
     }
 
-    public Font LoadFontEx(string fileName, int fontSize, int[]? codepoints, int codepointCount)
+    public async Task<Font> LoadFontEx(string fileName, int fontSize, int[]? codepoints, int codepointCount)
     {
         var byteData = LoadBytes(fileName);
-        return Raylib.LoadFontFromMemory(Path.GetExtension(fileName),  byteData, fontSize, codepoints, codepointCount);
+        Font font = default;
+        await _resourceManager.AddTaskToMainThread(() => font = Raylib.LoadFontFromMemory(Path.GetExtension(fileName),  byteData, fontSize, codepoints, codepointCount));
+        return font; 
     }
 
-    public Wave LoadWave(string path)
+    public async Task<Wave> LoadWave(string path)
     {
         var byteData = LoadBytes(path);
-        return Raylib.LoadWaveFromMemory(Path.GetExtension(path), byteData);
+        Wave wave = default;
+        await _resourceManager.AddTaskToMainThread(() => wave = Raylib.LoadWaveFromMemory(Path.GetExtension(path), byteData));
+        return wave;
     }
 
-    public Sound LoadSound(string path)
+    public async Task<Sound> LoadSound(string path)
     {
-        var wave = LoadWave(path);
-        var sound = Raylib.LoadSoundFromWave(wave);
-        Raylib.UnloadWave(wave);
+        var wave = await LoadWave(path);
+        Sound sound = default;
+        
+        await _resourceManager.AddTaskToMainThread(() =>
+        {
+            sound = Raylib.LoadSoundFromWave(wave);
+            Raylib.UnloadWave(wave);
+        });
+        
         return sound;
     }
 
-    public Music LoadMusic(string path)
+    public async Task<Music> LoadMusic(string path)
     {
         var byteData = LoadBytes(path);
         GCHandle.Alloc(byteData, GCHandleType.Pinned);
-        return Raylib.LoadMusicStreamFromMemory(Path.GetExtension(path), byteData);
+        
+        Music music = default;
+        await _resourceManager.AddTaskToMainThread(() =>
+        {
+            music = Raylib.LoadMusicStreamFromMemory(Path.GetExtension(path), byteData);
+        });
+        
+        return music;
     }
 
-    public Model LoadModel(string path)
+    public Task<Model> LoadModel(string path)
     {
         throw new NotImplementedException();
     }
 
-    public Shader LoadShader(string? vertexPath, string? fragmentPath)
+    public async Task<Shader> LoadShader(string? vertexPath, string? fragmentPath)
     {
         string? vertexData = null;
         string? fragmentData = null;
@@ -113,8 +140,13 @@ public class PackageResourceLoader: IRaylibResource
             var byteData = LoadBytes(fragmentPath);
             fragmentData = Encoding.UTF8.GetString(byteData);
         }
-            
-        return Raylib.LoadShaderFromMemory(vertexData, fragmentData);
+
+        Shader shader = default; 
+        await _resourceManager.AddTaskToMainThread(() =>
+        {
+            shader = Raylib.LoadShaderFromMemory(vertexData, fragmentData);
+        });
+        return shader;
     }
     
     

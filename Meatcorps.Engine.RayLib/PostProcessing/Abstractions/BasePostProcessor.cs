@@ -30,24 +30,24 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
     
     private bool _isDisposed;
     
-    public void Load()
+    public async Task Load()
     {
         if (_isLoaded) 
             return;
         
         _isLoaded = true;
         
-        _shader = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadShader(null, _fxFilename);
+        _shader = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadShader(null, _fxFilename);
         
         foreach (var shaderLocation in ShaderLocations)
             ShaderLocations[shaderLocation.Key] = Raylib.GetShaderLocation(_shader, shaderLocation.Key);
         
-        OnLoad();
+        await OnLoad();
     }
 
-    protected virtual void OnLoad()
+    protected virtual Task OnLoad()
     {
-        
+        return Task.CompletedTask;
     }
 
     public void Apply(Texture2D source, RenderTexture2D target)

@@ -40,6 +40,7 @@ public class RayLibModule
             raylibResource = new FileResourceLoader();
         GlobalObjectManager.ObjectManager.Register<IRaylibResource>(raylibResource);
         GlobalObjectManager.ObjectManager.Register<IResource>(raylibResource);
+        GlobalObjectManager.ObjectManager.Register<ResourceManager>(new ResourceManager());
         return new RayLibModule();
     }
 
@@ -109,6 +110,7 @@ public class RayLibModule
             return this;
 #endif
         GlobalObjectManager.ObjectManager.Add<IPostProcessor>(postProcessor);
+        GlobalObjectManager.ObjectManager.Add<IResourceLoadOnInit>(postProcessor);
         GlobalObjectManager.ObjectManager.Register<T>(postProcessor);
         return this;
     }

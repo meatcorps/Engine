@@ -41,7 +41,7 @@ public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : s
         return this;
     }
     
-    public void Load()
+    public async Task Load()
     {
         var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         var nonExisting = new List<string>();
@@ -49,7 +49,10 @@ public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : s
         foreach (var (k, v) in _music)
         {
             if (resource.Exists(v.path))
-                manager.Load(k, v.path).SetMasterVolume(v.volume);
+            {
+                await manager.Load(k, v.path);
+                manager.SetMasterVolume(v.volume);
+            }
             else
                 nonExisting.Add($"{k} -> {v.path} does not map to a file");
         }

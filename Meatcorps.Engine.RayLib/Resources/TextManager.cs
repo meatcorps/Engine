@@ -27,13 +27,13 @@ public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultF
         return this;
     }
     
-    public void Load()
+    public async Task Load()
     {
         if (_isLoaded)
             return;
         foreach (var fontToBeLoaded in _fontPaths)
         {
-            var font = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadFontEx(fontToBeLoaded.Item1, fontToBeLoaded.Item3, fontToBeLoaded.codePoints, fontToBeLoaded.codePoints?.Length ?? 0);
+            var font = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadFontEx(fontToBeLoaded.Item1, fontToBeLoaded.Item3, fontToBeLoaded.codePoints, fontToBeLoaded.codePoints?.Length ?? 0);
             Raylib.SetTextureFilter(font.Texture, fontToBeLoaded.Item4);
             _fonts.Add(fontToBeLoaded.Item2, font);
         }

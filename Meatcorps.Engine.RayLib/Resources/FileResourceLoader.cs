@@ -21,47 +21,58 @@ public class FileResourceLoader: IRaylibResource
         return Directory.GetFiles(path, searchPattern, searchOption);
     }
 
-    public Image LoadImage(string path)
+    public Task<Image> LoadImage(string path)
     {
-        return Raylib.LoadImage(path);
+        throw new NotImplementedException();
+        //return Raylib.LoadImage(path);
     }
 
-    public Texture2D LoadTexture(string path)
+    public Task<Texture2D> LoadTexture(string path)
     {
-        return Raylib.LoadTexture(path);
+        throw new NotImplementedException();
+        //return Raylib.LoadTexture(path);
     }
 
-    public Font LoadFontEx(string fileName, int fontSize, int[]? codepoints, int codepointCount)
+    public Task<Font> LoadFontEx(string fileName, int fontSize, int[]? codepoints, int codepointCount)
     {
-        return Raylib.LoadFontEx(fileName, fontSize, codepoints, codepointCount);;
+        throw new NotImplementedException();
+        //return Raylib.LoadFontEx(fileName, fontSize, codepoints, codepointCount);;
     }
 
-    public Wave LoadWave(string path)
+    public Task<Wave> LoadWave(string path)
     {
-        return Raylib.LoadWave(path);
+        
+        throw new NotImplementedException();
+        //return Raylib.LoadWave(path);
     }
 
-    public Sound LoadSound(string path)
+    public Task<Sound> LoadSound(string path)
     {
-        return Raylib.LoadSound(path);
+        throw new NotImplementedException();
+        //return Raylib.LoadSound(path);
     }
 
-    public Music LoadMusic(string path)
+    public Task<Music> LoadMusic(string path)
     {
-        return Raylib.LoadMusicStream(path);
+        
+        throw new NotImplementedException();
+        //return Raylib.LoadMusicStream(path);
     }
 
-    public Model LoadModel(string path)
+    public Task<Model> LoadModel(string path)
     {
-        return Raylib.LoadModel(path);
+        throw new NotImplementedException();
+        //return Raylib.LoadModel(path);
     }
 
-    public Shader LoadShader(string? vertexPath, string? fragmentPath)
+    public Task<Shader> LoadShader(string? vertexPath, string? fragmentPath)
     {
-        return Raylib.LoadShader(
+        throw new NotImplementedException();
+        
+        /*return Raylib.LoadShader(
             string.IsNullOrWhiteSpace(vertexPath) ? null : vertexPath,
             string.IsNullOrWhiteSpace(fragmentPath) ? null : fragmentPath
-        );
+        );*/
     }
 
     public string LoadText(string path)

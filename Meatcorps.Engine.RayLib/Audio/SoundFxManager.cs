@@ -23,7 +23,7 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
         _poolSizePerSfx = Math.Max(1, poolSizePerSfx);
     }
 
-    public SoundFxManager<TSfx> Load(TSfx key, string filePath)
+    public async Task Load(TSfx key, string filePath)
     {
         _soundLocations.Add(key, filePath);
         if (!_soundPools.ContainsKey(key))
@@ -32,7 +32,7 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
             for (var i = 0; i < _poolSizePerSfx; i++)
             {
                 var s = i == 0 
-                    ? GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key])
+                    ? await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key])
                     : Raylib.LoadSoundAlias(pool[0]); 
                 
                 if (!Raylib.IsSoundValid(s))
@@ -43,8 +43,6 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
 
             _soundPools[key] = pool;
         }
-
-        return this;
     }
 
     public SoundFxManager<TSfx> Unload(TSfx key)

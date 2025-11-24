@@ -54,7 +54,7 @@ public class SoundFxResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T 
         return this;
     }
 
-    public void Load()
+    public async Task Load()
     {
         var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         var nonExisting = new List<string>();
@@ -62,7 +62,7 @@ public class SoundFxResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T 
         foreach (var sound in _sound)
         {
             if (resource.Exists(sound.Value))
-                manager.Load(sound.Key, sound.Value);
+                await manager.Load(sound.Key, sound.Value);
             else
                 nonExisting.Add($"{sound.Key} -> {sound.Value} does not map to a file");
         }
