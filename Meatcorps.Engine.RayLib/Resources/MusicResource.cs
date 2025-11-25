@@ -12,6 +12,9 @@ public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : s
     private float _masterVolume;
     private readonly Dictionary<T, (string path, float volume)> _music = new();
 
+    public int TotalResources => _music.Count;
+    public int ResourcesLoaded { get; private set; }
+
     public MusicResource()
     {
         var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new BasicConfig();
@@ -40,7 +43,7 @@ public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : s
 
         return this;
     }
-    
+
     public async Task Load()
     {
         var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
@@ -51,6 +54,7 @@ public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : s
             if (resource.Exists(v.path))
             {
                 await manager.Load(k, v.path);
+                ResourcesLoaded++;
                 manager.SetMasterVolume(v.volume);
             }
             else

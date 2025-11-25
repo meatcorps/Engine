@@ -30,7 +30,10 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
     
     private bool _isDisposed;
     private bool _shaderLocationsLoaded = false;
-    
+
+    public int TotalResources { get; protected set; } = 1;
+    public int ResourcesLoaded { get; protected set; }
+
     public async Task Load()
     {
         if (_isLoaded) 
@@ -39,7 +42,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         _isLoaded = true;
         
         _shader = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadShader(null, _fxFilename);
-        
+        ResourcesLoaded++;
         await OnLoad();
     }
 

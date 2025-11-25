@@ -26,6 +26,9 @@ public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T :
         _path = path;
     }
 
+    public int TotalResources => 1;
+    public int ResourcesLoaded { get; private set; }
+
     public async Task Load()
     {
         if (_isLoaded)
@@ -37,6 +40,7 @@ public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T :
         {
             Raylib.SetTextureFilter(Texture, _filter);
         });
+        ResourcesLoaded = 1;
         TextureRect = new Rectangle(0, 0, Texture.Width, Texture.Height);
     }
     

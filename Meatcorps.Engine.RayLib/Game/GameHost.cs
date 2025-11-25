@@ -22,7 +22,7 @@ public sealed class GameHost : IDisposable
     public double UpdateTimeInMs { get; private set; }
     public double RenderTimeInMs { get; private set;}
     private readonly string _title;
-    private readonly int _targetFps;
+    private int _targetFps;
     private readonly TimeService _timeService = new();
     private BaseScene? _newSceneToLoad = null;
     private readonly List<IBackgroundService> _backgroundServices = new();
@@ -37,7 +37,6 @@ public sealed class GameHost : IDisposable
     public FrameTimer UpdateLoopTime;
     public FrameTimer RenderLoopTime;
     public RenderService RenderService { get; }
-
     
     public GameHost(int width, int height, string title, int targetFps = 60, ICamera? camera = null)
     {
@@ -58,6 +57,15 @@ public sealed class GameHost : IDisposable
         GlobalObjectManager.ObjectManager.Register(RenderService);
         LoadGameLoopTasks();
     }
+
+    public void SetFps(int? fps)
+    {
+        if (fps is not null) 
+            _targetFps = fps.Value;
+        
+        Raylib.SetTargetFPS(_targetFps);
+    }
+    
     
     public void SetMultiplier(float multiplier)
     {

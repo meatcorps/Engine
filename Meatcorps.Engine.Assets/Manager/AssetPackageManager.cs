@@ -21,6 +21,12 @@ public class AssetPackageManager
 
     public void Load()
     {
+        if (!File.Exists(_path))
+        {
+            Console.WriteLine($"File {_path} doesn't exist");
+            return;
+        }
+
         var data = LoadBytes(0, FIRST_CHUCK_SIZE, 0, rawData =>
         {
             var lengthByteData = rawData.ToList();

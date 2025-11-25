@@ -24,7 +24,10 @@ public sealed class ShaderManager<T> : IResourceLoadOnInit, IDisposable where T:
         _shaderPaths.Add((shaderPathVs, shaderPathFs, shader));
         return this;
     }
-    
+
+    public int TotalResources => _shaderPaths.Count;
+    public int ResourcesLoaded => _shaders.Count;
+
     public async Task Load()
     {
         var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;

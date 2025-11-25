@@ -29,15 +29,21 @@ public class RayLibModule
     private IUniversalConfig _config;
     private KeyboardKey _exitKey = KeyboardKey.Escape;
     
-    public static RayLibModule Setup(IRaylibResource? raylibResource = null)
+    public static RayLibModule Setup()
     {
         GlobalObjectManager.ObjectManager.RegisterList<IResourceLoadOnInit>();
         GlobalObjectManager.ObjectManager.RegisterList<IPostProcessor>();
         GlobalObjectManager.ObjectManager.RegisterList<IGameLoopTask>();
+        var raylibResource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>();
         
-        // TODO: Make this switchable based on debug or release build
         if (raylibResource is null)
             raylibResource = new FileResourceLoader();
+        else
+        {
+#if DEBUG
+            raylibResource = new FileResourceLoader();
+#endif
+        }
         GlobalObjectManager.ObjectManager.Register<IRaylibResource>(raylibResource);
         GlobalObjectManager.ObjectManager.Register<IResource>(raylibResource);
         GlobalObjectManager.ObjectManager.Register<ResourceManager>(new ResourceManager());

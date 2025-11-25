@@ -16,11 +16,13 @@ public class ColorGradingPostProcessor : BaseFinalPostProcessor
         : base("Assets/Shaders/colorgrading.fx", new[] { "lutTexture" })
     {
         _lutPath = lutPath;
+        TotalResources++;
     }
 
     protected override async Task OnLoad()
     {
         _lut = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_lutPath);
+        ResourcesLoaded++;
     }
 
     protected override void ApplyValues(Shader shader, Texture2D target)

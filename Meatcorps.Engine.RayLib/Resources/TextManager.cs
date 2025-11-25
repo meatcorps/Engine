@@ -26,7 +26,10 @@ public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultF
         _fontPaths.Add((fontPath, type, size, filter, codePoints));
         return this;
     }
-    
+
+    public int TotalResources => _fontPaths.Count;
+    public int ResourcesLoaded => _fonts.Count;
+
     public async Task Load()
     {
         if (_isLoaded)

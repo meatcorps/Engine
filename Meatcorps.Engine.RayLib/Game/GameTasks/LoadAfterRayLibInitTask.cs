@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Numerics;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Interfaces;
@@ -13,6 +15,7 @@ public class LoadAfterRayLibInitTask: IGameLoopTask
     public bool IsInitialized { get; private set; }
 
     private bool _isLoadingInitialized;
+    private GameHost _host;
 
     public LoadAfterRayLibInitTask(int priority = 1)
     {
@@ -21,6 +24,7 @@ public class LoadAfterRayLibInitTask: IGameLoopTask
     
     public void Initialize(GameHost host)
     {
+        _host = host;
         IsInitialized = true;
     }
 
@@ -37,11 +41,16 @@ public class LoadAfterRayLibInitTask: IGameLoopTask
             }
 
             var taskDone = false;
+
+            var tasks = new ConcurrentBag<Task>();
+            
+            foreach (var instance in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
+                tasks.Add(instance.Load());
+            
             _ = System.Threading.Tasks.Task.Run(async () =>
             {
-                foreach (var instance in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
-                    await instance.Load();
-
+                await System.Threading.Tasks.Task.WhenAll(tasks);
+                
                 foreach (var task in GlobalObjectManager.ObjectManager.GetList<IGameLoopTask>()!)
                 {
                     if (task is not LoadAfterRayLibInitTask)
@@ -50,15 +59,28 @@ public class LoadAfterRayLibInitTask: IGameLoopTask
                 
                 taskDone = true;
             });
+
+            var total = 0;
+            foreach (var loadTask in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
+                total += loadTask.TotalResources;
             
+            Raylib.SetTargetFPS(0);
             while (!taskDone && !Raylib.WindowShouldClose())
             {
+                var done = 0;
+                foreach (var loadTask in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
+                    done += loadTask.ResourcesLoaded;
+                
+                var normal = (float)done / total;
                 GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.RunTasks();
                 Raylib.BeginDrawing();
                 Raylib.ClearBackground(Color.Black);
-                Raylib.DrawText("Loading...", 16, 16, 32, Color.White);
+                Raylib.DrawText($"Loading... [{done}/{total}]", 16, 16, 32, Color.White);
+                Raylib.DrawRectangleLinesEx(new Rectangle(new Vector2(16, (_host.Height / 2) - 16), new Vector2(_host.Width - 32, 32)), 2, Color.White);
+                Raylib.DrawRectangleRec(new Rectangle(new Vector2(20, (_host.Height / 2) - 12), new Vector2((_host.Width - 40) * normal, 24)), Color.White);
                 Raylib.EndDrawing();
             }
+            _host.SetFps(null);
         }
     }
 }

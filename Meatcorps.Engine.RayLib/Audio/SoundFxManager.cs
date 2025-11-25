@@ -1,6 +1,7 @@
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Interfaces;
+using Meatcorps.Engine.RayLib.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Audio;
@@ -16,6 +17,7 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
     private float _masterVolume = 1f;
     private bool _isDisposed;
     private readonly HashSet<nint> _reserved = new();
+    private object _lock;
     
     public SoundFxManager(int poolSizePerSfx = 4, string name = "SoundEffects")
     {
@@ -23,7 +25,7 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
         _poolSizePerSfx = Math.Max(1, poolSizePerSfx);
     }
 
-    public async Task Load(TSfx key, string filePath)
+    public async Task Load(TSfx key, string filePath, Action? afterLoad = null)
     {
         _soundLocations.Add(key, filePath);
         if (!_soundPools.ContainsKey(key))
@@ -31,9 +33,15 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
             var pool = new List<Sound>(_poolSizePerSfx);
             for (var i = 0; i < _poolSizePerSfx; i++)
             {
-                var s = i == 0 
-                    ? await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key])
-                    : Raylib.LoadSoundAlias(pool[0]); 
+                Sound s = default;
+
+                if (i == 0)
+                    s = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key]);
+                else
+                {
+                    await GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.AddTaskToMainThread(() =>
+                        s = Raylib.LoadSoundAlias(pool[0]));
+                }
                 
                 if (!Raylib.IsSoundValid(s))
                     throw new Exception($"Failed to load sound {filePath}");
@@ -41,6 +49,8 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
                 pool.Add(s);
             }
 
+            afterLoad?.Invoke();
+            
             _soundPools[key] = pool;
         }
     }

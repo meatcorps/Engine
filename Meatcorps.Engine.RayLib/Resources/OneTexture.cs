@@ -26,6 +26,9 @@ public class OneTexture: IResourceLoadOnInit, IDisposable
         _onLoaded = onLoaded;
     }
 
+    public int TotalResources => 1;
+    public int ResourcesLoaded { get; private set; }
+
     public async Task Load()
     {
         Texture = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_path);
@@ -34,6 +37,7 @@ public class OneTexture: IResourceLoadOnInit, IDisposable
             Raylib.SetTextureFilter(Texture, _filter);
             Raylib.SetTextureWrap(Texture, _wrap);
         });
+        ResourcesLoaded = 1;
         _onLoaded(Texture);
     }
 

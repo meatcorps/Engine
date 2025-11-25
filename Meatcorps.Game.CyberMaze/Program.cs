@@ -9,10 +9,12 @@ using Meatcorps.Engine.Hardware.ArduinoController.Modules;
 using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.MQTT.Modules;
 using Meatcorps.Engine.RayLib.Assets;
+using Meatcorps.Engine.RayLib.Assets.Modules;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
 using Meatcorps.Engine.RayLib.Resources;
+using Meatcorps.Game.CyberMaze;
 using Meatcorps.Game.CyberMaze.Data;
 using Meatcorps.Game.CyberMaze.GameEnums;
 using Meatcorps.Game.CyberMaze.Input;
@@ -65,8 +67,9 @@ Raylib.SetTraceLogLevel(TraceLogLevel.Warning);
 
 GlobalObjectManager.ObjectManager.Register(GameTileRules.Create());
 
-//
-using var _ = RayLibModule.Setup(new PackageResourceLoader(new AssetPackageManager("Assets.bin", new AesResourceSink("HELLO_EVERYBODY"))))
+RaylibAssetsModule.Load(new AssetConfig());
+
+using var _ = RayLibModule.Setup()
     .SetTitle("Meatcorps " + GlobalObjectManager.ObjectManager.Get<ArcadeGame>()!.Name)
     .SetInitialSize(1920, 1080)
     .SetFixedSizeCamera(640, 360)
