@@ -29,8 +29,11 @@ public class OneTexture: IResourceLoadOnInit, IDisposable
     public async Task Load()
     {
         Texture = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_path);
-        Raylib.SetTextureFilter(Texture, _filter);
-        Raylib.SetTextureWrap(Texture, _wrap);
+        await GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.AddTaskToMainThread(() =>
+        {
+            Raylib.SetTextureFilter(Texture, _filter);
+            Raylib.SetTextureWrap(Texture, _wrap);
+        });
         _onLoaded(Texture);
     }
 

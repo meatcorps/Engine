@@ -10,6 +10,7 @@ public class ResourceManager
     
     public async Task AddTaskToMainThread(Action task)
     {
+        Console.WriteLine("ADDING TASK: " + _mainTaskRunner.Count);
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _mainTaskRunner.Enqueue(Tuple.Create(task, tcs));
         await tcs.Task;
@@ -21,6 +22,7 @@ public class ResourceManager
         {
             task.Item1();
             task.Item2.SetResult();
+            Console.WriteLine("Task done: " + _mainTaskRunner.Count);
         }
     }
 }

@@ -29,6 +29,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
     public bool IncludeUI { get; set; }
     
     private bool _isDisposed;
+    private bool _shaderLocationsLoaded = false;
     
     public async Task Load()
     {
@@ -38,9 +39,6 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         _isLoaded = true;
         
         _shader = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadShader(null, _fxFilename);
-        
-        foreach (var shaderLocation in ShaderLocations)
-            ShaderLocations[shaderLocation.Key] = Raylib.GetShaderLocation(_shader, shaderLocation.Key);
         
         await OnLoad();
     }
@@ -52,6 +50,14 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
 
     public void Apply(Texture2D source, RenderTexture2D target)
     {
+        if (!_shaderLocationsLoaded)
+        {
+            foreach (var shaderLocation in ShaderLocations)
+                ShaderLocations[shaderLocation.Key] = Raylib.GetShaderLocation(_shader, shaderLocation.Key);
+            
+            _shaderLocationsLoaded = true;
+        }
+
         Raylib.BeginTextureMode(target);
         Raylib.BeginShaderMode(_shader);
         ApplyValues(_shader, source);

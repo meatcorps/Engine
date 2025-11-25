@@ -29,16 +29,14 @@ public class LoadAfterRayLibInitTask: IGameLoopTask
         if (type == GameLoopType.PostRaylibInit && !_isLoadingInitialized)
         {
             _isLoadingInitialized = true;
-            
-            //foreach (var instance in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
-            //    instance.Load();
 
             foreach (var task in GlobalObjectManager.ObjectManager.GetList<IGameLoopTask>()!)
             {
                 if (task is not LoadAfterRayLibInitTask)
                     task.Enabled = false;
             }
-            
+
+            var taskDone = false;
             _ = System.Threading.Tasks.Task.Run(async () =>
             {
                 foreach (var instance in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
@@ -49,21 +47,18 @@ public class LoadAfterRayLibInitTask: IGameLoopTask
                     if (task is not LoadAfterRayLibInitTask)
                         task.Enabled = true;
                 }
+                
+                taskDone = true;
             });
             
-        }
-
-        if (type == GameLoopType.Update)
-        {
-            GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.RunTasks();
-        }
-
-        if (type == GameLoopType.Render)
-        {
-            Raylib.BeginDrawing();
-            Raylib.ClearBackground(Color.Black);
-            Raylib.DrawText("Loading...", 16, 16, 32, Color.White);
-            Raylib.EndDrawing();
+            while (!taskDone && !Raylib.WindowShouldClose())
+            {
+                GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.RunTasks();
+                Raylib.BeginDrawing();
+                Raylib.ClearBackground(Color.Black);
+                Raylib.DrawText("Loading...", 16, 16, 32, Color.White);
+                Raylib.EndDrawing();
+            }
         }
     }
 }

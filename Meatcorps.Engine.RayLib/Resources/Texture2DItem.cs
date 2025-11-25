@@ -33,7 +33,10 @@ public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T :
         _isLoaded = true;
         Name = Path.GetFileNameWithoutExtension(_path);
         Texture = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_path);
-        Raylib.SetTextureFilter(Texture, _filter);
+        await GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.AddTaskToMainThread(() =>
+        {
+            Raylib.SetTextureFilter(Texture, _filter);
+        });
         TextureRect = new Rectangle(0, 0, Texture.Width, Texture.Height);
     }
     
