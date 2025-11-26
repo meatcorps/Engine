@@ -149,8 +149,7 @@ public class IntroUI : ResourceGameObject, IIntroSlide
         Raylib.DrawRectangleGradientV(0, _renderer.RenderHeight - 64, _renderer.RenderWidth, 80,
             Raylib.ColorAlpha(Color.Black, 0f), Color.Black);
         
-        
-        Sprites.Draw(GameSprites.ShoutOut, new Vector2(32, 32), Color.White);
+        //Sprites.Draw(GameSprites.ShoutOut, new Vector2(32, 32), Color.White);
     }
 
     protected override void OnDispose()
