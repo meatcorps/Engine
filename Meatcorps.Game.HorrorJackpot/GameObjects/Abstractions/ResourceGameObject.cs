@@ -16,7 +16,7 @@ public abstract class ResourceGameObject : BaseGameObject
     protected Texture2DItem<GameSprites> Sprites { get; private set; }
     protected TextManager<GameFonts> Fonts { get; private set; }
     protected LevelData LevelData { get; private set; }
-    protected SoundFxManager<GameSounds> Sounds { get; private set; }
+    public SoundFxManager<GameSounds> Sounds { get; private set; }
     public MusicManager<GameMusic> Music { get; private set; }
     public IArcadePointsMutator PointMutator { get; private set; }
 

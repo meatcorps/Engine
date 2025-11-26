@@ -1,4 +1,5 @@
 using System.Numerics;
+using Meatcorps.Engine.Core.Interfaces.Components;
 using Meatcorps.Engine.RayLib.Enums;
 
 namespace Meatcorps.Engine.RayLib.Abstractions;
@@ -12,6 +13,11 @@ public abstract class BaseGameObject: IDisposable
     public int Layer { get; set; } = 0;
     public CameraLayer Camera { get; set; } = CameraLayer.World;
     public BaseScene Scene { get; private set; }
+    
+    private List<IGameComponent> _components { get; } = new();
+    private Queue<IGameComponent> _toComponentAdd { get; } = new();
+    private Queue<IGameComponent> _toComponentRemove { get; } = new();
+
     public bool Enabled
     {
         get => _enabled;
@@ -52,6 +58,27 @@ public abstract class BaseGameObject: IDisposable
     {
         OnInitialize();
     }
+    
+    public void AddComponent(IGameComponent component)
+    {
+        _toComponentAdd.Enqueue(component);
+    }
+    
+    public bool TryGetComponent<T>(out T? component) where T : IGameComponent
+    {
+        component = (T?)_components.FirstOrDefault(x => x is T);
+        return component != null;
+    }
+
+    public IEnumerable<T> GetComponents<T>() where T : IGameComponent
+    {
+        return _components.Where(x => x is T).Cast<T>();
+    }
+    
+    public void RemoveComponent(IGameComponent component)
+    {
+        _toComponentRemove.Enqueue(component);
+    }
 
     public void PreUpdate(float deltaTime)
     {
@@ -59,6 +86,15 @@ public abstract class BaseGameObject: IDisposable
             return;
         
         OnPreUpdate(deltaTime);
+        
+        while (_toComponentAdd.TryDequeue(out var component))
+            _components.Add(component);
+        
+        while (_toComponentRemove.TryDequeue(out var component))
+            _components.Remove(component);
+        
+        foreach (var component in _components)
+            component.PreUpdate(deltaTime);
     }
 
     public void Update(float deltaTime)
@@ -67,6 +103,9 @@ public abstract class BaseGameObject: IDisposable
             return;
         
         OnUpdate(deltaTime);
+        
+        foreach (var component in _components)
+            component.Update(deltaTime);
     }
 
     public void AlwaysUpdate(float deltaTime)
@@ -78,6 +117,9 @@ public abstract class BaseGameObject: IDisposable
     {
         if (Enabled) 
             OnLateUpdate(deltaTime);
+        
+        foreach (var component in _components)
+            component.LateUpdate(deltaTime);
     }
 
     public void Draw()
@@ -130,14 +172,26 @@ public abstract class BaseGameObject: IDisposable
 
     protected virtual void OnDraw()
     {
-        
+        foreach (var component in _components)
+            component.Draw();
     }
     
     protected abstract void OnDispose();
 
     public void Dispose()
     {
-        if (IsDisposed) return;
+        if (IsDisposed) 
+            return;
+
+
+        foreach (var component in _components)
+        {
+            if (component is IDisposable disposable)
+                disposable.Dispose();
+        } 
+        _toComponentAdd.Clear();
+        _toComponentRemove.Clear();
+        _components.Clear();
         OnDispose();
         IsDisposed = true;
     }
