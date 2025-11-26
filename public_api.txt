@@ -89,7 +89,16 @@ public static class Tween
     public static float ApplyEasing(float t, EaseType ease)
     public static float StepTo(float current, float target, float speed, float deltaTime)
     public static Vector2 StepTo(Vector2 current, Vector2 target, float speed, float deltaTime)
+    public static float PingPong(float time, float period = 1f, float phase = 0f)
     public static float FloatBasedOnVelocity(
+    public static float ExpDecay(float value, float dt, float halfLife)
+    public static float DecayToZero(float value, float dt, float halfLife, float min = 1e-3f)
+    public static float Decelerate(float speed, float decelPerSec, float dt)
+    public static float AdvanceWrap01(float rotation01, float speedWrapsPerSec, float dt)
+    public static float SnapToCellCenter01(float rotation01, int cellCount)
+    public static void ReelUpdateExp(ref float rotation01, ref float speed, float halfLife, float minSpeed, float dt)
+    public static void ReelUpdateLinear(ref float rotation01, ref float speed, float decelPerSec, float dt, float minSpeed = 1e-3f)
+    public static void ReelUpdateExpSnap(ref float rotation01, ref float speed, float halfLife, float minSpeed, float dt, int cellCount)
 ==== ./Meatcorps.Engine.Core/Tween/PathMover.cs ====
 public class PathMover
     public Vector2 Position { get; private set; }
@@ -99,25 +108,11 @@ public class PathMover
     public float DistanceRemaining { get; private set; }
     public void Start(Vector2 start, IEnumerable<Vector2> path, float speed, bool loop = false)
     public void Update(float deltaTime)
-==== ./Meatcorps.Engine.Core/Input/GenericAxisInput.cs ====
-public class GenericAxisInput<T> where T : Enum
-    public GenericAxisInput(GenericMapper<T> mapper, int player, T left, T right, T top, T bottom)
-    public Vector2 GetAxis()
-==== ./Meatcorps.Engine.Core/Input/GenericMapper.cs ====
-public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enum
-    public IReadOnlyDictionary<T, GenericInput> GetInputs(int player)
-    public GenericMapper<T> AddInput(int player, T input, GenericInput inputState)
-    public GenericMapper<T> AddInput(int player, T input, string label, Func<float> pressedFunc)
-    public GenericMapper<T> AddInput(int player, T input, string label, Func<bool> pressedFunc)
-    public GenericMapper<T> AddAxis(int player, int axis, T left, T right, T top, T bottom)
-    public IInput GetState(int player, T input)
-    public Vector2 GetAxis(int player, int axis = 1)
-    public void PreUpdate(float deltaTime)
-    public void Update(float deltaTime)
-    public void LateUpdate(float deltaTime)
-==== ./Meatcorps.Engine.Core/Input/InputRouter.cs ====
-public class PlayerInputRouter<T> : IInputMapper<T> where T : Enum
+==== ./Meatcorps.Engine.Core/Input/PlayerInputRouter.cs ====
+public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T : Enum
+    public bool AutoAssign { get; set; } = false;
     public void AssignMapper(int player, IInputMapper<T> mapper)
+    public void AddMapper(IInputMapper<T> mapper)
     public bool HasMapper(int player)
     public bool TryGetMapper(int player, out IInputMapper<T> mapper)
     public bool IsMapperType<TMapper>(int player) where TMapper : class, IInputMapper<T>
@@ -125,9 +120,39 @@ public class PlayerInputRouter<T> : IInputMapper<T> where T : Enum
     public bool TryGetManager<TManager>(int player, out TManager manager)
     public IInput GetState(int player, T input)
     public Vector2 GetAxis(int player, int axis = 1)
-==== ./Meatcorps.Engine.Core/Input/GenericInput.cs ====
-public class GenericInput: IInput
-    public string Label { get; }
+    public void Rumble(int player, float left, float right, float duration)
+    public void AssignProfile(int profileId, int player)
+    public void UnassignProfile(int player)
+    public bool IsAssigned(int player)
+    public bool IsConnected(int player)
+    public bool AnyInputPressed(out int profileId, out int player)
+    public PlayerInputType InputType(int player)
+    public IReadOnlyList<int> GetAvailableProfiles()
+    public void PreUpdate(float deltaTime)
+    public void Update(float deltaTime)
+    public void LateUpdate(float deltaTime)
+==== ./Meatcorps.Engine.Core/Input/GenericAxisInput.cs ====
+public class GenericAxisInput<T> where T : Enum
+    public GenericAxisInput(GenericMapper<T> mapper, T left, T right, T top, T bottom)
+    public Vector2 GetAxis(int player)
+==== ./Meatcorps.Engine.Core/Input/InputManager.cs ====
+public class InputManager<T> : IBackgroundService where T : Enum
+    public int TotalPlayers
+    public IEnumerable<PlayerInputStatus> CurrentInputStatus
+    public bool Ready { get; private set; }
+    public InputManager(PlayerInputRouter<T>? router = null)
+    public void AssignPlayers(int totalPlayers)
+    public void PreUpdate(float deltaTime)
+    public void Update(float deltaTime)
+    public void LateUpdate(float deltaTime)
+public struct PlayerInputStatus
+    public int Id { get; init; }
+    public bool Assigned { get; init; }
+    public bool Online { get; init; }
+    public PlayerInputType Type { get; init; }
+==== ./Meatcorps.Engine.Core/Input/BaseInput.cs ====
+public abstract class BaseInput : IInput
+    public virtual string Label { get; }
     public bool Enable { get; set; } = true;
     public bool Down { get; private set; }
     public bool Up { get; private set; }
@@ -136,27 +161,51 @@ public class GenericInput: IInput
     public IButtonAnimation? Animation { get; set; }
     public bool EnableLightWhenPressed { get; set; }
     public bool EnableLightWhenUnpressed { get; set; }
-    public GenericInput(Func<float> pressedFunc, string label)
+    public BaseInput(string label)
     public void Update()
+==== ./Meatcorps.Engine.Core/Input/GenericMapper.cs ====
+public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enum
+    public IReadOnlyDictionary<T, GenericInput> GetInputs(int player)
+    public GenericMapper<T> AddInput(int profileId, T input, GenericInput inputState)
+    public GenericMapper<T> AddInput(int profileId, T input, string label, Func<float> pressedFunc)
+    public GenericMapper<T> AddInput(int profileId, T input, string label, Func<bool> pressedFunc)
+    public GenericMapper<T> AddAxis(int profileId, int axis, T left, T right, T up, T down)
+    public IInput GetState(int player, T input)
+    public Vector2 GetAxis(int player, int axis = 1)
+    public void Rumble(int player, float left, float right, float duration)
+    public void AssignProfile(int profileId, int player)
+    public void UnassignProfile(int player)
+    public bool IsAssigned(int player)
+    public bool IsConnected(int player)
+    public bool AnyInputPressed(out int profileId, out int playerid)
+    public PlayerInputType InputType(int _)
+    public IReadOnlyList<int> GetAvailableProfiles()
+    public void PreUpdate(float deltaTime)
+    public void Update(float deltaTime)
+    public void LateUpdate(float deltaTime)
+==== ./Meatcorps.Engine.Core/Input/GenericInput.cs ====
+public class GenericInput: BaseInput
+    public GenericInput(Func<float> pressedFunc, string label): base(label)
 ==== ./Meatcorps.Engine.Core/Enums/EaseType.cs ====
 public enum EaseType
 ==== ./Meatcorps.Engine.Core/Enums/ConfigValueType.cs ====
 public enum ConfigValueType
+==== ./Meatcorps.Engine.Core/Enums/PlayerInputType.cs ====
+public enum PlayerInputType
 ==== ./Meatcorps.Engine.Core/GridSystem/SpatialEntityGrid.cs ====
 public class SpatialEntityGrid : ISpatialEntityGrid
     public float CellSize { get; }
     public SpatialEntityGrid(float cellSize)
     public void Add(IGridItem collider)
     public void Remove(IGridItem collider)
-    public void Move(IGridItem collider, Vector2 newPosition)
+    public void Update(IGridItem collider)
     public HashSet<IGridItem> Query(RectF queryAABB)
     public HashSet<IGridItem> Query(Vector2 position)
 ==== ./Meatcorps.Engine.Core/GridSystem/BasicGridItem.cs ====
 public class BasicGridItem : IGridItem
     public BasicGridItem(object owner, Vector2 position, SpatialEntityGrid grid)
-    public RectF BoundingBox { get; private set; }
-    public void Move(in Vector2 newPosition)
-    public object Parent { get; }
+    public RectF BoundingBox { get; set; }
+    public object Owner { get; }
 ==== ./Meatcorps.Engine.Core/GridSystem/GridAnalyzerYX.cs ====
 public class GridAnalyzerYX<T>
     public GridAnalyzerYX(List<List<T>> grid)
@@ -183,6 +232,16 @@ public class SingleEntityGrid<T>
     public T? Get(PointInt cell, bool stayInGrid = false)
     public IReadOnlyDictionary<PointInt, T> Entities => _entities;
     public T? this[PointInt point] => Get(point);
+==== ./Meatcorps.Engine.Core/Server/ServerApplication.cs ====
+public class ServerApplication
+    public bool Running;
+    public CancellationToken Active;
+    public ServerApplication()
+    public async Task Run()
+==== ./Meatcorps.Engine.Core/Server/SimpleGameLoop.cs ====
+public class SimpleGameLoop: IDisposable
+    public SimpleGameLoop Start()
+    public void Dispose()
 ==== ./Meatcorps.Engine.Core/Storage/Module/StorageModule.cs ====
 public static class StorageModule
     public static void Load(ObjectManager.ObjectManager manager)
@@ -202,6 +261,9 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
     public IEnumerable<(string key, string value, ConfigValueType type)> GetKeys(string group)
     public void Save()
     public void Dispose()
+==== ./Meatcorps.Engine.Core/Storage/Data/BasicConfig.cs ====
+public class BasicConfig: BaseConfig<BasicConfig>
+    public static void Load()
 ==== ./Meatcorps.Engine.Core/Storage/Services/FallbackConfig.cs ====
 public class FallbackConfig : IUniversalConfig
     public string GetOrDefault(string group, string key, string defaultValue)
@@ -243,6 +305,12 @@ public class DataCollectionService : IKeyValueDatabaseCollection<StorageType, st
 ==== ./Meatcorps.Engine.Core/Storage/Services/MemoryDatabaseService.cs ====
 public class MemoryDatabaseService : Dictionary<string, object>, IKeyValueDatabase<string>
     public bool Dirty { get => false; set => _ = value; }
+==== ./Meatcorps.Engine.Core/Extensions/EnumExtensions.cs ====
+public static class EnumExtensions
+    public static bool HasFlagFast<T>(this T value, T flag) where T : struct, Enum
+==== ./Meatcorps.Engine.Core/Extensions/StringExtensions.cs ====
+public static class StringExtensions
+    public static string ToCapitalize(this string s) 
 ==== ./Meatcorps.Engine.Core/Extensions/Matrix3x2Extensions.cs ====
 public static class Matrix3x2Extensions
     public static Vector2 Transform(this Matrix3x2 matrix, Vector2 v)
@@ -253,6 +321,7 @@ public static class RectangleFExtensions
     public static bool Intersects(this RectangleF first, RectangleF second)
     public static Vector2 ClampPoint(this RectF rect, Vector2 p)
     public static Vector2 WrapPoint(this RectF rect, Vector2 p)
+    public static RectF ToRectF(this Rect rect)
 ==== ./Meatcorps.Engine.Core/Extensions/IntExtensions.cs ====
 public static class IntExtensions
     public static int Wrap(this int value, int size)
@@ -274,6 +343,7 @@ public static class Vector2Extensions
     public static Vector2 Min(this Vector2 a, Vector2 b) =>
     public static Vector2 Max(this Vector2 a, Vector2 b) =>
     public static Vector2 Clamp(this Vector2 value, Vector2 min, Vector2 max) =>
+    public static Vector2 ClampSafe(this Vector2 value, Vector2 min, Vector2 max)
     public static Vector2 Abs(this Vector2 value) =>
     public static Vector2 Lerp(this Vector2 start, Vector2 end, float amount) =>
     public static Vector2 LerpClamped(this Vector2 start, Vector2 end, float amount) =>
@@ -287,8 +357,7 @@ public static class Vector2Extensions
     public static Vector2 FromAngle(float angle, float length = 1f)
     public static float ToDistance(this Vector2 direction)
     public static float ToDistance(this Vector2 direction, Vector2 offset)
-    public static Vector2 DoRotate(this Vector2 self, float angle)
-    public static void Rotate(this Vector2 self, float radians)
+    public static Vector2 Rotate(this Vector2 self, float radians)
     public static bool IsNaN(this Vector2 self)
     public static int GetLineInVectors(this Vector2 startPoint, Vector2 endPoint, Span<Vector2> buffer)
     public static bool IsEqualsSafe(this Vector2 vec1, Vector2 other)
@@ -314,6 +383,14 @@ public class FixedTimer
     public FixedTimer(float durationInMs)
     public void ChangeSpeed(float newDurationInMs)
     public void Update(float deltaTime)
+==== ./Meatcorps.Engine.Core/Utilities/RandomEnum.cs ====
+public class RandomEnum<T> where T : Enum
+    public RandomEnum()
+    public RandomEnum<T> Add(T target, int weight)
+    public RandomEnum<T> AddGroup()
+    public T Get()
+        public List<(T, int)> Values { get; } = new();
+        public int Total { get; set; } = 0;
 ==== ./Meatcorps.Engine.Core/Utilities/ResetValue.cs ====
 public class ResetValue<T> : IResetValue
     public T Value { get; set; }
@@ -331,6 +408,9 @@ public static class MathHelper
     public static Vector2 RandomUnitVector(System.Random rng)
     public static Vector2 RandomInsideUnitCircle(System.Random rng)
     public static Vector2 MoveTowards(Vector2 current, Vector2 target, float maxDistanceDelta)
+==== ./Meatcorps.Engine.Core/Utilities/FileUtilities.cs ====
+public static class FileUtilities
+    public static string GetFullPath(params string[] fileName)
 ==== ./Meatcorps.Engine.Core/Utilities/TimerOff.cs ====
 public class TimerOff
     public float Elapsed => _elapsed;
@@ -341,11 +421,16 @@ public class TimerOff
     public void Update(bool input, float deltaTime)
     public void Reset()
 ==== ./Meatcorps.Engine.Core/Utilities/ThreadSafeList.cs ====
-public class ThreadSafeList<T>
-    public int Count
-    public void Add(T item)
-    public bool Remove(T item)
-    public T[] ToArray()
+public sealed class ThreadSafeList<T>
+    public int Count { get { lock (_lock) return _list.Count; } }
+    public void Add(T item) { lock (_lock) _list.Add(item); }
+    public bool Remove(T item) { lock (_lock) return _list.Remove(item); }
+    public struct LockedEnumerator : IEnumerator<T>
+        public T Current => _inner.Current;
+        public bool MoveNext() => _inner.MoveNext();
+        public void Reset() => ((IEnumerator)_inner).Reset();
+        public void Dispose()
+    public LockedEnumerator GetEnumerator() => new(_lock, _list);
 ==== ./Meatcorps.Engine.Core/Utilities/TimerOn.cs ====
 public class TimerOn
     public float Elapsed => _elapsed;
@@ -363,6 +448,7 @@ public class SmoothValue
     public SmoothValue(float initialValue = 0f, float speed = 1f, bool fixedTime = true)
     public bool IsAtRealValue => DisplayValue.EqualsSafe(RealValue);
     public void Update(float deltaTime)
+    public void SetSpeed(float speed)
     public void SnapToReal()
 ==== ./Meatcorps.Engine.Core/Utilities/TimerPulse.cs ====
 public class PulseTimer
@@ -383,12 +469,49 @@ public class EdgeDetector
     public bool IsFallingEdge { get; private set; }
     public void Update(bool current)
     public void Reset()
+==== ./Meatcorps.Engine.Core/Utilities/BufferedDirection.cs ====
+public class BufferedDirection
+    public Vector2 Direction { get; private set; }
+    public bool IsGoingTowards => !Direction.IsEqualsSafe(Vector2.Zero);
+    public BufferedDirection(float bufferTime)
+    public void Update(Vector2 raw, float deltaTime)
+    public bool IsDirectionChangedAndIsNotZero(Vector2 velocity, float speed, out Vector2 directionWithSpeed)
+    public bool IsDirectionChanged(Vector2 velocity, float speed, out Vector2 directionWithSpeed)
+==== ./Meatcorps.Engine.Core/Utilities/FrameTimer.cs ====
+public sealed class FrameTimer
+    public double AvgUs { get; private set; }
+    public double P95Us { get; private set; }
+    public double P99Us { get; private set; }
+    public double AvgMs => AvgUs / 1000.0;
+    public double P95Ms => P95Us / 1000.0;
+    public double P99Ms => P99Us / 1000.0;
+    public double AvgFps => AvgUs > 0 ? 1_000_000.0 / AvgUs : 0;
+    public double P95Fps => P95Us > 0 ? 1_000_000.0 / P95Us : 0;
+    public double P99Fps => P99Us > 0 ? 1_000_000.0 / P99Us : 0;
+    public FrameTimer(int capacity = 600) 
+    public ScopedScope Scope()
+    public override string ToString()
+    public string ToCompactString()
+    public readonly struct ScopedScope : IDisposable
+        public ScopedScope(Action<long> onEnd, long start) { _onEnd = onEnd; _start = start; }
+        public void Dispose()
+==== ./Meatcorps.Engine.Core/Resource/FallbackResource.cs ====
+public class FallbackResource: IResource
+    public bool Exists(string path)
+    public bool DirectoryExists(string path)
+    public string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
+    public string LoadText(string path)
+    public byte[] LoadBytes(string path)
 ==== ./Meatcorps.Engine.Core/Modules/CoreModule.cs ====
 public static class CoreModule
     public static void Load()
-==== ./Meatcorps.Engine.Core/Modules/GenericInputModule.cs ====
-public class GenericInputModule
-    public static GenericInputModule Create<T>(GenericMapper<T> mapper, int maxPlayers) where T : Enum
+==== ./Meatcorps.Engine.Core/Modules/InputModule.cs ====
+public class InputModule<T> where T : Enum
+    public static void CreateOnlyKeyboardMouseMapper(GenericMapper<T> mapper, int maxPlayers) 
+    public static InputModule<T> Create(ObjectManager.ObjectManager? objectManager = null)
+    public InputModule<T> AddInputMapper<TInputMapper>(TInputMapper mapper) where TInputMapper : class, IInputMapper<T>
+    public InputModule<T> WithAutoAssign()
+    public void Setup()
 ==== ./Meatcorps.Engine.Core/Data/Rect.cs ====
 public struct Rect : IEquatable<Rect>
     [DataMember] public int X;
@@ -490,6 +613,7 @@ public struct SizeF : IEquatable<SizeF>
     public float Width { get; set; }
     public float Height { get; set; }
     public SizeF(float width, float height)
+    public Vector2 ToVector2() => new(Width, Height);
     public bool Equals(SizeF other)
     public override bool Equals(object? obj)
     public override int GetHashCode()
@@ -517,6 +641,7 @@ public struct RectF : IEquatable<RectF>
     public RectF(Vector2 position, SizeF size)
     public static void CreateFrom(Vector2 minimum, Vector2 maximum, out RectF result)
     public static RectF CreateFrom(Vector2 minimum, Vector2 maximum)
+    public RectF Translated(Vector2 position)
     public static void Union(ref RectF first, ref RectF second, out RectF result)
     public static RectF Union(RectF first, RectF second)
     public RectF Union(RectF rectangle)
@@ -573,7 +698,7 @@ public interface ISerialPort : IDisposable
     public void Reconnect();
     public bool IsOpen { get; }
     public void Write(byte[] data);
-    public string[] Read();
+    public IEnumerable<int> Read();
 ==== ./Meatcorps.Engine.Core/Interfaces/Config/UniversalConfig.cs ====
 public interface IUniversalConfig
     public string GetOrDefault(string group, string key, string defaultValue);
@@ -598,6 +723,8 @@ public interface IButtonAnimation
 public interface IInputMapper<in T> where T : Enum
 ==== ./Meatcorps.Engine.Core/Interfaces/Trackers/ISceneSwitchTracker.cs ====
 public interface ISceneSwitchTracker
+==== ./Meatcorps.Engine.Core/Interfaces/Trackers/IValueTracker.cs ====
+public interface IValueTracker<TGroup> where TGroup : Enum
 ==== ./Meatcorps.Engine.Core/Interfaces/Storage/IKeyValueDatabase.cs ====
 public interface IKeyValueDatabase<T> : IDictionary<T, object>
 ==== ./Meatcorps.Engine.Core/Interfaces/Storage/IKeyValueSaver.cs ====
@@ -606,140 +733,17 @@ public interface IKeyValueSaver<T>
 public interface IKeyValueLoader<T>
 ==== ./Meatcorps.Engine.Core/Interfaces/Storage/IKeyValueDatabaseCollection.cs ====
 public interface IKeyValueDatabaseCollection<in TEnum, TCollectionEnum>
+==== ./Meatcorps.Engine.Core/Interfaces/Resource/IResource.cs ====
+public interface IResource
 ==== ./Meatcorps.Engine.Core/Interfaces/Services/IBackgroundService.cs ====
 public interface IBackgroundService
 ==== ./Meatcorps.Engine.Core/Interfaces/Grid/IGridItem.cs ====
 public interface IGridItem
 ==== ./Meatcorps.Engine.Core/Interfaces/Grid/ISpatialEntityGrid.cs ====
 public interface ISpatialEntityGrid
-==== ./Meatcorps.Game.Pacman/obj/Debug/net8.0/Meatcorps.Game.Pacman.GlobalUsings.g.cs ====
-==== ./Meatcorps.Game.Pacman/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
-==== ./Meatcorps.Game.Pacman/obj/Debug/net8.0/Meatcorps.Game.Pacman.AssemblyInfo.cs ====
-==== ./Meatcorps.Game.Pacman/Scenes/LevelScene.cs ====
-public class LevelScene : BaseScene
-    public int TotalPlayers => DemoMode ? 2 : _sessionService.CurrentSession.TotalPlayers;
-    public bool DemoMode { get; }
-    public LevelScene(string levelPath = "Assets/Level1.txt", bool demoMode = false)
-    public void Died(BasePlayer? playerObject)
-    public void EndGame()
-==== ./Meatcorps.Game.Pacman/Scenes/EndScene.cs ====
-public class EndScene : BaseScene
-    public int TimeLeft => (int)(_timer.TimeRemaining / 1000);
-==== ./Meatcorps.Game.Pacman/Scenes/IntroScene.cs ====
-public class IntroScene : BaseScene
-    public int TotalPlayersReady { get; set; } = 0;
-==== ./Meatcorps.Game.Pacman/Input/InputMapper.cs ====
-public static class InputMapper
-    public static IInputMapper<GameInput> ArduinoInput()
-==== ./Meatcorps.Game.Pacman/Resources/GameSpriteFactory.cs ====
-public static class GameSpriteFactory
-    public static Texture2DItem<GameSprites> Load()
-==== ./Meatcorps.Game.Pacman/Resources/GameFallbackInput.cs ====
-public static class GameFallbackInput
-    public static void Load()
-==== ./Meatcorps.Game.Pacman/Particles/ScoreParticle.cs ====
-public static class ScoreParticle
-    public static ParticleSystemBuilder GenerateParticleSystem(Color color, Font font)
-==== ./Meatcorps.Game.Pacman/Particles/BloodParticle.cs ====
-public static class BloodParticle
-    public static ParticleSystemBuilder GenerateParticleSystem()
-==== ./Meatcorps.Game.Pacman/Particles/ExplosionParticle.cs ====
-public static class ExplosionParticle
-    public static ParticleSystemBuilder GenerateParticleSystem(Texture2DItem<GameSprites> sprites)
-==== ./Meatcorps.Game.Pacman/GameObjects/UI/EndGameGameObject.cs ====
-public class EndGameGameObject : ResourceGameObject
-==== ./Meatcorps.Game.Pacman/GameObjects/UI/Leaderboard.cs ====
-public class Leaderboard : ResourceGameObject, IIntroSlide
-==== ./Meatcorps.Game.Pacman/GameObjects/UI/IntroUI.cs ====
-public class IntroUI : ResourceGameObject, IIntroSlide
-==== ./Meatcorps.Game.Pacman/GameObjects/UI/FinalScoreCalculator.cs ====
-public class FinalScoreCalculator : ResourceGameObject
-    public FinalScoreCalculator(Rect bounds, int playerId)
-==== ./Meatcorps.Game.Pacman/GameObjects/UI/PlayerUI.cs ====
-public class PlayerUI : ResourceGameObject
-    public PlayerUI(Player player)
-==== ./Meatcorps.Game.Pacman/GameObjects/UI/IIntroSlide.cs ====
-public interface IIntroSlide
-==== ./Meatcorps.Game.Pacman/GameObjects/UI/GuidePage.cs ====
-public class GuidePage : ResourceGameObject, IIntroSlide
-    public bool Active { get; set; }
-==== ./Meatcorps.Game.Pacman/GameObjects/Background.cs ====
-public class Background : ResourceGameObject
-==== ./Meatcorps.Game.Pacman/GameObjects/Map.cs ====
-public class Map: ResourceGameObject
-==== ./Meatcorps.Game.Pacman/GameObjects/Abstractions/BasePlayer.cs ====
-public abstract class BasePlayer : ResourceGameObject
-    public Player Player { get; }
-    public BasePlayer(Player _player)
-==== ./Meatcorps.Game.Pacman/GameObjects/Abstractions/ResourceGameObject.cs ====
-public abstract class ResourceGameObject : BaseGameObject
-    public MusicManager<GameMusic> Music { get; private set; }
-    public IArcadePointsMutator PointMutator { get; private set; }
-==== ./Meatcorps.Game.Pacman/AI/DistanceMapLogic.cs ====
-public class DistanceMapLogic: BaseGridDistanceResource
-    public override Rect Bounds { get; }
-    public DistanceMapLogic(LevelData level)
-==== ./Meatcorps.Game.Pacman/Data/MapItem.cs ====
-public readonly record struct MapItem
-    public PointInt Position { get; init; }
-    public required PointInt[] Directions { get; init; }
-    public bool Walkable { get; init; }
-    public bool OneWay { get; init; }
-    public bool GhostHome { get; init; }
-==== ./Meatcorps.Game.Pacman/Data/Player.cs ====
-public class Player
-    public required SessionDataBag<GamePlayerData> SessionDataBag { get; init; }
-    public bool IsDead { get; set; }
-    public int Score
-    public int StartScore { get; private set; }
-    public int PlayerId { get; init; }
-    public float WorldSpeed { get; set; }
-    public Color Color { get; init; }
-    public Player()
-    public void Initialize()
-    public void PreUpdate()
-    public void PostUpdate()
-    public void AddValue(GamePlayerData item, int amount = 1)
-    public void MaxValue(GamePlayerData item, int amount)
-==== ./Meatcorps.Game.Pacman/Data/LevelData.cs ====
-public class LevelData
-    public int LevelWidth { get; }
-    public int LevelHeight { get; }
-    public int GridSize { get; }
-    public SingleEntityGrid<MapItem> Map { get; } = new();
-    public LevelData(int levelWidth = 37, int levelHeight = 19, int gridSize = 16)
-    public Vector2 ToWorldPosition(in PointInt position, bool center = false)
-    public Rect ToWorldRectangle(in PointInt position)
-    public PointInt WorldToCell(in Vector2 world)
-==== ./Meatcorps.Game.Pacman/Data/GameConfig.cs ====
-public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum
-    public string GetOrDefault(T key, string? defaultValue)
-    public void Set(T key, string value)
-    public int GetOrDefault(T key, int? defaultValue)
-    public void Set(T key, int value)
-    public float GetOrDefault(T key, float? defaultValue)
-    public void Set(T key, float value)
-    public bool GetOrDefault(T key, bool? defaultValue)
-    public void Set(T key, bool value)
-    public static GameConfig<T> Create()
-==== ./Meatcorps.Game.Pacman/GameEnums/GameSettings.cs ====
-public enum GameSettings
-==== ./Meatcorps.Game.Pacman/GameEnums/GameSession.cs ====
-public static class GameSession
-    public static void Load()
-==== ./Meatcorps.Game.Pacman/GameEnums/GameMusic.cs ====
-public enum GameMusic
-==== ./Meatcorps.Game.Pacman/GameEnums/GameInput.cs ====
-public enum GameInput
-==== ./Meatcorps.Game.Pacman/GameEnums/GameSprites.cs ====
-public enum GameSprites
-==== ./Meatcorps.Game.Pacman/GameEnums/GamePlayerData.cs ====
-public enum GamePlayerData
-==== ./Meatcorps.Game.Pacman/GameEnums/GameSessionData.cs ====
-public enum GameSessionData
-==== ./Meatcorps.Game.Pacman/GameEnums/GameSounds.cs ====
-public enum GameSounds
-==== ./Meatcorps.Game.Pacman/Program.cs ====
+==== ./Meatcorps.Engine.Boids/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Boids/obj/Release/net8.0/Meatcorps.Engine.Boids.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Boids/obj/Release/net8.0/Meatcorps.Engine.Boids.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.Boids/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Engine.Boids/obj/Debug/net8.0/Meatcorps.Engine.Boids.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.Boids/obj/Debug/net8.0/Meatcorps.Engine.Boids.AssemblyInfo.cs ====
@@ -790,6 +794,60 @@ public class FlockController
 public interface ITargetSelector
 ==== ./Meatcorps.Engine.Boids/Interfaces/IBoidAgent.cs ====
 public interface IBoidAgent
+==== ./Meatcorps.Engine.QuestionTest/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.QuestionTest/obj/Debug/net8.0/Meatcorps.Engine.QuestionTest.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.QuestionTest/obj/Debug/net8.0/Meatcorps.Engine.QuestionTest.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.QuestionTest/GameSettings.cs ====
+public enum GameSettings
+==== ./Meatcorps.Engine.QuestionTest/SimplePlayerCheckin.cs ====
+public class SimplePlayerCheckin: IPlayerCheckin
+    public ArcadeGame Game => new ArcadeGame
+    public bool IsPlayerCheckedIn(int player, out string name)
+    public string GetPlayerName(int player)
+    public void SignPlayerOut(int player)
+    public void SetTotalPlayerSessions(int total)
+    public int TotalPlayers => 1;
+==== ./Meatcorps.Engine.QuestionTest/Program.cs ====
+==== ./Meatcorps.Engine.QuestionTest/GameConfig.cs ====
+public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum
+    public string GetOrDefault(T key, string? defaultValue)
+    public void Set(T key, string value)
+    public int GetOrDefault(T key, int? defaultValue)
+    public void Set(T key, int value)
+    public float GetOrDefault(T key, float? defaultValue)
+    public void Set(T key, float value)
+    public bool GetOrDefault(T key, bool? defaultValue)
+    public void Set(T key, bool value)
+    public static GameConfig<T> Create()
+==== ./Meatcorps.Engine.Raylib.Examples/obj/Debug/net8.0/Meatcorps.Engine.Examples.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Raylib.Examples/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Raylib.Examples/obj/Debug/net8.0/Meatcorps.Engine.Raylib.Examples.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Raylib.Examples/obj/Debug/net8.0/Meatcorps.Engine.Raylib.Examples.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Raylib.Examples/obj/Debug/net8.0/Meatcorps.Engine.ControllerTest.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Raylib.Examples/obj/Debug/net8.0/Meatcorps.Engine.ControllerTest.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Raylib.Examples/obj/Debug/net8.0/Meatcorps.Engine.Examples.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Raylib.Examples/Scenes/MainScene.cs ====
+public class MainScene: BaseScene
+==== ./Meatcorps.Engine.Raylib.Examples/Enums/GameInput.cs ====
+public enum GameInput
+==== ./Meatcorps.Engine.Raylib.Examples/GameObjects/RawControllerTest.cs ====
+public class RawControllerTest : BaseGameObject
+==== ./Meatcorps.Engine.Raylib.Examples/GameObjects/InputLocalSinglePlayerExample.cs ====
+public class InputLocalSinglePlayerExample: BaseGameObject
+        public Vector2 Position { get; set; }
+        public Vector2 Velocity { get; set; }
+        public Color Color { get; set; }
+==== ./Meatcorps.Engine.Raylib.Examples/GameObjects/ImGuiTest.cs ====
+public class ImGuiTest: BaseImGuiGameObject
+==== ./Meatcorps.Engine.Raylib.Examples/GameObjects/InputLocalMultiPlayerExample.cs ====
+public class InputLocalMultiPlayerExample: BaseGameObject
+        public Vector2 Position { get; set; }
+        public Vector2 Velocity { get; set; }
+        public Color Color { get; set; }
+==== ./Meatcorps.Engine.Raylib.Examples/Program.cs ====
+==== ./Meatcorps.Engine.AsciiScript/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.AsciiScript/obj/Release/net8.0/Meatcorps.Engine.AsciiScript.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.AsciiScript/obj/Release/net8.0/Meatcorps.Engine.AsciiScript.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.AsciiScript/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Engine.AsciiScript/obj/Debug/net8.0/Meatcorps.Engine.AsciiScript.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.AsciiScript/obj/Debug/net8.0/Meatcorps.Engine.AsciiScript.GlobalUsings.g.cs ====
@@ -876,53 +934,516 @@ public class AsciiScriptReader
     public void Read(string data)
 ==== ./Meatcorps.Engine.AsciiScript/Interfaces/IAsciiScriptCommand.cs ====
 public interface IAsciiScriptCommand
+==== ./Meatcorps.Engine.MQTTTest/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.MQTTTest/obj/Debug/net8.0/Meatcorps.Engine.MQTTTest.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.MQTTTest/obj/Debug/net8.0/Meatcorps.Engine.MQTTTest.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.MQTTTest/TestObject.cs ====
+public class TestObject : EqualityComparer<TestObject>
+    public string test { get; set; }
+    public float value { get; set; }
+    public List<string> List { get; } = new List<string>();
+    public override string ToString()
+    public override bool Equals(TestObject? x, TestObject? y)
+    public override bool Equals(object? obj)
+    public override int GetHashCode(TestObject obj)
+==== ./Meatcorps.Engine.MQTTTest/Program.cs ====
+==== ./Meatcorps.Engine.SDL/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.SDL/obj/Debug/net8.0/Meatcorps.Engine.SDL.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.SDL/obj/Debug/net8.0/Meatcorps.Engine.SDL.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.SDL/Controller/SDLControllerDevice.cs ====
+public class SDLControllerDevice : IControllerDevice
+    public int Id => _device.ControllerIndex;
+    public SDLControllerDevice()
+    public IInput GetState(ControllerInputEnum input)
+    public void Rumble(float left, float right, float duration)
+    public ControllerType Type { get; set; }
+    public bool IsConnected => _device.IsAttached();
+==== ./Meatcorps.Engine.SDL/Controller/SDLControllerWatcher.cs ====
+    public int ControllerCount => _controllers.Count;
+    public SDLControllerWatcher(bool initSdl)
+    public void Initialize()
+    public IEnumerable<SDLController> GetControllers()
+    public void Update()
+    public void Dispose()
+==== ./Meatcorps.Engine.SDL/Controller/SDLController.cs ====
+    public readonly int ControllerIndex;
+    public bool IsActive => _controller != IntPtr.Zero;
+    public IntPtr Handle => _controller;
+    public SDLController(int controllerIndex)
+    public string? GetSerial()
+    public void Rumble(float leftRumble, float rightRumble, float duration)
+    public ushort GetVendorId()
+    public void Dispose()
+    public byte GetButton(int index)
+    public bool IsAttached()
+    public byte GetButton(SDL.SDL_GameControllerButton button)
+    public float GetAxis(SDL.SDL_GameControllerAxis axis)
+==== ./Meatcorps.Engine.SDL/Controller/SDLControllerDeviceManager.cs ====
+public class SDLControllerDeviceManager: IControllerDeviceManager, IDisposable
+    public IControllerDevice? GetDevice(int player)
+    public IEnumerable<IControllerDevice> GetDevices()
+    public int TotalDevices => _watcher.ControllerCount;
+    public void AssignDevice(int player, int device)
+    public void UnassignDevice(int player)
+    public bool IsDeviceAssigned(int player)
+    public int WhichPlayerOnDevice(int device)
+    public void Initialize()
+    public void Update(float deltaTime)
+    public void Dispose()
+==== ./Meatcorps.Engine.SDL/Class1.cs ====
+public class Class1
+==== ./Meatcorps.Engine.Collision/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Collision/obj/Release/net8.0/Meatcorps.Engine.Collision.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Collision/obj/Release/net8.0/Meatcorps.Engine.Collision.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.Collision/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Engine.Collision/obj/Debug/net8.0/Meatcorps.Engine.Collision.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.Collision/obj/Debug/net8.0/Meatcorps.Engine.Collision.AssemblyInfo.cs ====
-==== ./Meatcorps.Engine.Collision/Enum/ContactPhase.cs ====
+==== ./Meatcorps.Engine.Collision/Providers/Bodies/Body.cs ====
+public sealed class Body : IBody, IInternalBody
+    public BodyType BodyType { get; private set; } = BodyType.Dynamic;
+    public Vector2 Position
+    public Vector2 PreviousPosition { get; set; }
+    public Vector2 Velocity { get; set; }
+    public object Owner { get; set; }
+    public IWorldService WorldService { get; }
+    public IEnumerable<ICollider> Colliders
+    public float Mass { get; private set; } = 1f;
+    public float Restitution { get; private set; } = 0f;
+    public float Friction { get; private set; } = 0f;
+    public float LinearDamping { get; private set; } = 0f;
+    public float MaxSpeed { get; private set; } = 0f;
+    public float GravityScale { get; private set; } = 0f;
+    public bool IsAwake { get; set; } = true;
+    public bool CanSleep { get; private set; } = false;
+    public int StableIndex { get; private set; } = -1;
+    public bool Enabled { get; set; } = true;
+    public float MovementConstraintAngle { get; private set; } = 0f;
+    public RectF BoundingBox
+    public Body(IWorldService world, object owner = null)
+    public Body SetType(BodyType type)
+    public Body SetMass(float mass)
+    public Body SetRestitution(float r)
+    public Body SetFriction(float f)
+    public Body SetLinearDamping(float d)
+    public Body SetMaxSpeed(float s)
+    public Body SetGravityScale(float g)
+    public Body SetCanSleep(bool can)
+    public Body SetMovementConstraintAngle(float degrees)
+    public Body SetEnabled(bool enabled)
+    public Body AddCollider(ICollider collider)
+    public Body RemoveCollider(ICollider collider)
+    public Body SetLayer(uint layer)
+    public Body SetMask(uint mask)
+    public void Dispose()
+==== ./Meatcorps.Engine.Collision/Providers/Colliders/RectRectProvider.cs ====
+public sealed class RectRectProvider : RectRectProviderBase<RectCollider, RectCollider>
+    public RectRectProvider(IResolutionPolicy policy) : base(policy) { }
+==== ./Meatcorps.Engine.Collision/Providers/Colliders/OneWayGateProvider.cs ====
+public sealed class OneWayGateProvider : RectRectProviderBase<ICollider, ICollider>
+    public OneWayGateProvider(IResolutionPolicy policy, Vector2 allowedNormal, float degreesTolerance)
+==== ./Meatcorps.Engine.Collision/Providers/DefaultResolutionPolicy.cs ====
+public class DefaultResolutionPolicy: IResolutionPolicy
+==== ./Meatcorps.Engine.Collision/Providers/WorldEntityResource/SpatialEntityGridResource.cs ====
+public class SpatialEntityGridResource: IWorldEntityResource
+    public SpatialEntityGridResource(ISpatialEntityGrid? grid)
+    public void Add(IBody collider)
+    public void Remove(IBody collider)
+    public void Update(IBody collider)
+    public HashSet<IBody> Query(RectF queryAABB)
+    public HashSet<IBody> Query(Vector2 position)
+==== ./Meatcorps.Engine.Collision/Enums/ContactPhase.cs ====
 public enum ContactPhase
-==== ./Meatcorps.Engine.Collision/Enum/BodyType.cs ====
+==== ./Meatcorps.Engine.Collision/Enums/BodyType.cs ====
 public enum BodyType
-==== ./Meatcorps.Engine.Collision/Colliders/RectFShape.cs ====
-public class RectFShape : ICollider
+==== ./Meatcorps.Engine.Collision/Extensions/WorldExtensions.cs ====
+public static class WorldExtensions
+    public static Body RegisterRectFBody(this WorldService world, object owner, RectF rect, bool registerCollisionEvents = true)
+    public static Body RegisterRectFBodySensor(this WorldService world, object owner, RectF rect, bool registerCollisionEvents = true)
+    public static Body RegisterStaticRectFBody(this WorldService world, object owner, RectF rect)
+==== ./Meatcorps.Engine.Collision/Extensions/IColliderExtensions.cs ====
+public static class IColliderExtensions
+    public static T SetLayer<TEnum, T>(this T collider, TEnum layerEnum) 
+    public static T SetMask<TEnum, T>(this T collider, params TEnum[] layers) 
+==== ./Meatcorps.Engine.Collision/Utilities/LayerBits.cs ====
+public static class LayerBits
+    public static uint Bit<TEnum>(TEnum value) where TEnum : struct, System.Enum
+    public static uint MaskOf<TEnum>(params TEnum[] values) where TEnum : struct, System.Enum
+    public static uint Add(this uint mask, uint bits)
+    public static uint Remove(this uint mask, uint bits)
+    public static bool Has(this uint mask, uint bits)
+    public static IEnumerable<string> NamesFromMask<TEnum>(uint mask) where TEnum : struct, System.Enum
+==== ./Meatcorps.Engine.Collision/Utilities/GridMovement.cs ====
+public static class GridMovement
+    public static void TryMove(
+==== ./Meatcorps.Engine.Collision/Colliders/RectCollider.cs ====
+public class RectCollider : ICollider
+    public IBody Body { get; }
+    public bool IsSensor { get; private set; }
+    public uint Layer { get; set; }
+    public uint CollisionMask { get; set; }
+    public uint Tag { get; set; }
+    public bool Enabled
+    public RectF LocalRect
+    public RectF WorldRect => new RectF(
+    public RectCollider(IBody body, RectF localRect)
+    public RectCollider SetSensor(bool sensor)
+    public RectCollider SetLayer(uint layer)
+    public RectCollider SetMask(uint mask)
+    public bool CollidesWith(ICollider other)
+    public void Solve(ICollider other)
 ==== ./Meatcorps.Engine.Collision/Abstractions/BaseCollideProvider.cs ====
-public abstract class BaseCollideProvider<TCollider1, TCollider2> : IColliderProvider
-    public Type ColliderType1 => typeof(TCollider1);
-    public Type ColliderType2 => typeof(TCollider2);
-    public abstract bool CollideWith(TCollider1 first, TCollider2 second);
-    public abstract bool Solve(TCollider1 first, TCollider2 second);
+public abstract class BaseCollideProvider<TA, TB> : IColliderProvider
+    public Type ColliderType1 => typeof(TA);
+    public Type ColliderType2 => typeof(TB);
+    public bool CollideWith(ICollider a, ICollider b, out ContactManifold manifold)
+    public bool Solve(ICollider a, ICollider b, in ContactManifold m, IResolutionPolicy policy)
+    public abstract bool CollideWith(TA a, TB b, out ContactManifold manifold);
+    public abstract bool Solve(TA a, TB b, in ContactManifold m, IResolutionPolicy policy);
+==== ./Meatcorps.Engine.Collision/Abstractions/BaseRectRectProvider.cs ====
+public abstract class RectRectProviderBase<TA, TB> : BaseCollideProvider<TA, TB>
+    public sealed override bool CollideWith(TA a, TB b, out ContactManifold m)
+    public sealed override bool Solve(TA a, TB b, in ContactManifold m, IResolutionPolicy policy)
+==== ./Meatcorps.Engine.Collision/Modules/CollisionModule.cs ====
+public class CollisionModule
+    public static CollisionModule Setup(ObjectManager manager)
+    public CollisionModule LoadAllDefaultCollisionProviders()
+    public CollisionModule CustomWorldEntityResource(IWorldEntityResource resource)
+    public CollisionModule SetGridSpatialGridSize(int gridSize)
+    public CollisionModule SetResolutionPolicy(IResolutionPolicy policy)
+    public CollisionModule RegisterCollisionProvider<T1,T2>(BaseCollideProvider<T1,T2> p)
+    public WorldService Load()
 ==== ./Meatcorps.Engine.Collision/Data/ColliderSet.cs ====
 public readonly record struct ColliderSet() : IEquatable<ColliderSet>
     public int A { get; init; }
     public int B { get; init; }
     public ColliderSet(int t1, int t2) : this() => (A, B) = t1 <= t2 ? (t1, t2) : (t2, t1);
 ==== ./Meatcorps.Engine.Collision/Data/ContactPair.cs ====
-public readonly struct ContactPair
-    public ICollider A { get; init; }
-    public ICollider B { get; init; }
-==== ./Meatcorps.Engine.Collision/Data/ICollisionEvents.cs ====
-public interface ICollisionEvents
+public readonly struct ContactPair : IEquatable<ContactPair>
+    public readonly ICollider A; // ordered (stable)
+    public readonly ICollider B;
+    public ContactPair(ICollider a, ICollider b)
+    public bool Equals(ContactPair other)
+    public override bool Equals(object? obj)
+    public override int GetHashCode()
+    public bool ContainsOwner(object owner) => A.Body.Owner == owner || B.Body.Owner == owner;
+    public bool TryGetOwner<T>(out T owner)
 ==== ./Meatcorps.Engine.Collision/Data/ContactManifold.cs ====
 public struct ContactManifold
     public Vector2 Normal { get; init; }       // points from A to B (resolution axis)
     public float Penetration { get; init; }    // absolute overlap on the chosen axis
     public RectF OverlapArea { get; init; } 
 ==== ./Meatcorps.Engine.Collision/Services/WorldService.cs ====
-public class WorldService
-    public bool IsColliding(ICollider one, ICollider two)
-    public bool Solve(ICollider one, ICollider two)
+public sealed class WorldService : IWorldService
+    public IResolutionPolicy Policy  { get; private set; } =  new DefaultResolutionPolicy();
+    public IColliderProvider ColliderProviders => _providers;
+    public WorldService(IWorldEntityResource spatial, ColliderProviderRegistry providers)
+    public WorldService RegisterBody(IBody body)
+    public WorldService UnregisterBody(IBody body)
+    public WorldService AddCollisionEvents(ICollisionEvents sink)
+    public WorldService RemoveCollisionEvents(ICollisionEvents sink)
+    public WorldService SetGravity(Vector2 gravity)
+    public WorldService SetResolutionPolicy(IResolutionPolicy policy)
+    public void Step(float deltaTime)
+    public IEnumerable<(ICollider A, ICollider B, ContactManifold Manifold)>
+==== ./Meatcorps.Engine.Collision/Services/ColliderProviderRegistry.cs ====
+public sealed class ColliderProviderRegistry : IColliderProviderRegistry, IColliderProvider
+    public ColliderProviderRegistry Register<T1,T2>(BaseCollideProvider<T1,T2> p)
+    public bool TryGet(ICollider a, ICollider b, out IColliderProvider provider, out bool swapped)
+    public bool CollideWith(ICollider a, ICollider b, out ContactManifold manifold)
+    public bool Solve(ICollider a, ICollider b, in ContactManifold m, IResolutionPolicy policy)
+==== ./Meatcorps.Engine.Collision/Interfaces/ICollisionEventsFiltered.cs ====
+public interface ICollisionEventsFiltered: ICollisionEvents
 ==== ./Meatcorps.Engine.Collision/Interfaces/IWorldService.cs ====
 public interface IWorldService
+==== ./Meatcorps.Engine.Collision/Interfaces/IResolutionPolicy.cs ====
+public interface IResolutionPolicy
+==== ./Meatcorps.Engine.Collision/Interfaces/IInternalBody.cs ====
+==== ./Meatcorps.Engine.Collision/Interfaces/IColliderProviderRegistry.cs ====
+public interface IColliderProviderRegistry
 ==== ./Meatcorps.Engine.Collision/Interfaces/IWorldEntityResource.cs ====
 public interface IWorldEntityResource
 ==== ./Meatcorps.Engine.Collision/Interfaces/IColliderProvider.cs ====
 public interface IColliderProvider
-    public Type ColliderType1 { get; }
-    public Type ColliderType2 { get; }
+    // public Type ColliderType1 { get; }
+    // public Type ColliderType2 { get; }
+==== ./Meatcorps.Engine.Collision/Interfaces/ICollisionEvents.cs ====
+public interface ICollisionEvents
 ==== ./Meatcorps.Engine.Collision/Interfaces/IBody.cs ====
-public interface IBody
+public interface IBody: IGridItem, IDisposable
 ==== ./Meatcorps.Engine.Collision/Interfaces/ICollider.cs ====
 public interface ICollider
+==== ./Meatcorps.Game.CyberMaze/obj/Release/net8.0/win-x64/Meatcorps.Game.Pacman.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Release/net8.0/win-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Release/net8.0/win-x64/Meatcorps.Game.Pacman.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Release/net8.0/linux-x64/Meatcorps.Game.Pacman.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Release/net8.0/linux-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Release/net8.0/linux-x64/Meatcorps.Game.Pacman.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Debug/net8.0/Meatcorps.Game.Pacman.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Debug/net8.0/Meatcorps.Game.CyberMaze.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Debug/net8.0/Meatcorps.Game.CyberMaze.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Debug/net8.0/Meatcorps.Game.Pacman.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Debug/net8.0/linux-x64/Meatcorps.Game.Pacman.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Debug/net8.0/linux-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.CyberMaze/obj/Debug/net8.0/linux-x64/Meatcorps.Game.Pacman.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.CyberMaze/Scenes/LevelScene.cs ====
+public class LevelScene : BaseScene
+    public int TotalPlayers => DemoMode ? 1 : _sessionService.CurrentSession.TotalPlayers;
+    public bool DemoMode { get; }
+    public LevelScene(string levelPath = "Assets/Level1.txt", bool demoMode = false)
+    public void Died(BasePlayer? playerObject)
+    public void EndGame()
+==== ./Meatcorps.Game.CyberMaze/Scenes/EndScene.cs ====
+public class EndScene : BaseScene
+    public int TimeLeft => (int)(_timer.TimeRemaining / 1000);
+==== ./Meatcorps.Game.CyberMaze/Scenes/IntroScene.cs ====
+public class IntroScene : BaseScene
+    public int TotalPlayersReady { get; set; } = 0;
+==== ./Meatcorps.Game.CyberMaze/Input/InputMapper.cs ====
+public static class InputMapper
+    public static IInputMapper<GameInput> ArduinoInput()
+==== ./Meatcorps.Game.CyberMaze/Resources/GameTileRules.cs ====
+public class GameTileRules
+    public static TileRuleSet<GameSprites, GameTileGroup> Create()
+==== ./Meatcorps.Game.CyberMaze/Resources/GameSpriteFactory.cs ====
+public static class GameSpriteFactory
+    public static Texture2DItem<GameSprites> Load()
+==== ./Meatcorps.Game.CyberMaze/Resources/GameFallbackInput.cs ====
+public static class GameFallbackInput
+    public static void Load()
+==== ./Meatcorps.Game.CyberMaze/Particles/SmokeParticle.cs ====
+public static class SmokeParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Texture2DItem<GameSprites> sprites, int maxParticles = 50)
+==== ./Meatcorps.Game.CyberMaze/Particles/ScoreParticle.cs ====
+public static class ScoreParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Color color, Font font)
+==== ./Meatcorps.Game.CyberMaze/Particles/BloodParticle.cs ====
+public static class BloodParticle
+    public static ParticleSystemBuilder GenerateParticleSystem()
+==== ./Meatcorps.Game.CyberMaze/Particles/ExplosionParticle.cs ====
+public static class ExplosionParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Texture2DItem<GameSprites> sprites, SoundFxManager<GameSounds> soundFx)
+==== ./Meatcorps.Game.CyberMaze/Particles/DutchParticle.cs ====
+public static class DutchParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Texture2DItem<GameSprites> sprites, int maxParticles = 50)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/UI/EndGameGameObject.cs ====
+public class EndGameGameObject : ResourceGameObject
+==== ./Meatcorps.Game.CyberMaze/GameObjects/UI/Leaderboard.cs ====
+public class Leaderboard : ResourceGameObject, IIntroSlide
+==== ./Meatcorps.Game.CyberMaze/GameObjects/UI/IntroUI.cs ====
+public class IntroUI : ResourceGameObject, IIntroSlide
+==== ./Meatcorps.Game.CyberMaze/GameObjects/UI/FinalScoreCalculator.cs ====
+public class FinalScoreCalculator : ResourceGameObject
+    public FinalScoreCalculator(Rect bounds, int playerId)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/UI/PlayerUI.cs ====
+public class PlayerUI : ResourceGameObject
+    public PlayerUI(Player player)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/UI/IIntroSlide.cs ====
+public interface IIntroSlide
+==== ./Meatcorps.Game.CyberMaze/GameObjects/UI/GuidePage.cs ====
+public class GuidePage : ResourceGameObject, IIntroSlide
+    public bool Active { get; set; }
+==== ./Meatcorps.Game.CyberMaze/GameObjects/Drone.cs ====
+public class Drone: ResourceGameObject
+    public Drone(Vector2 targetPosition, GameSprites payload, Action onPickupOrDrop, int startDelay = 1000, bool pickedUp = false, Action? onDone = null)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/Background.cs ====
+public class Background : ResourceGameObject
+==== ./Meatcorps.Game.CyberMaze/GameObjects/ExtraCollectable.cs ====
+public class ExtraCollectable: ResourceGameObject, ICollisionEventsFiltered
+    public ExtraCollectable(PointInt position)
+    public void OnContact(ContactPhase phase, in ContactPair pair, in ContactManifold manifold)
+    public void OnTrigger(ContactPhase phase, in ContactPair pair)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/CyberPlayer.cs ====
+public class CyberPlayer: BasePlayer, ICollisionEventsFiltered
+    public CyberPlayer(Player _player) : base(_player)
+    public static void Setup(WorldService world, Player player, Vector2 position)
+    public void OnContact(ContactPhase phase, in ContactPair pair, in ContactManifold manifold)
+    public void OnTrigger(ContactPhase phase, in ContactPair pair)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/PowerPellet.cs ====
+public class PowerPellet: ResourceGameObject, ICollisionEventsFiltered
+    public PowerPellet(PointInt position)
+    public void OnContact(ContactPhase phase, in ContactPair pair, in ContactManifold manifold)
+    public void OnTrigger(ContactPhase phase, in ContactPair pair)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/Collectable.cs ====
+public class Collectable: ResourceGameObject, ICollisionEventsFiltered
+    public Collectable(PointInt position)
+    public void OnContact(ContactPhase phase, in ContactPair pair, in ContactManifold manifold)
+    public void OnTrigger(ContactPhase phase, in ContactPair pair)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/Ghost.cs ====
+public class Ghost : ResourceGameObject, ICollisionEvents
+    public GhostState State => _ghostState.State;
+    public void SetBehaviour(GhostBehaviour behaviour)
+    public void OnContact(ContactPhase phase, in ContactPair pair, in ContactManifold manifold)
+    public void SetTimers()
+    public void OnTrigger(ContactPhase phase, in ContactPair pair)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/GhostManagers/GhostFactory.cs ====
+public class GhostFactory
+    public static Ghost Create(Vector2 startPosition, PointInt corner, GhostType type, LevelData level, WorldService world)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/GhostManagers/GhostState.cs ====
+public enum GhostState
+==== ./Meatcorps.Game.CyberMaze/GameObjects/GhostManagers/GhostMovement.cs ====
+public class GhostMovement
+    public IEnumerable<PointInt> PossibleDirections => _possibleDirections;
+    public GhostMovement(GhostBehaviour behaviour, GridDistanceCalculator distanceCalculator, LevelData levelData, GhostStateManager stateManager, List<PointInt> breadCrumb)
+    public void Update(float deltaTime)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/GhostManagers/GhostStateManager.cs ====
+public class GhostStateManager
+    public void ResetTimers()
+    public float TimeLeft
+    public GhostState State => _state;
+    public MapItem CurrentMapItem { get; private set; }
+    public GhostStateManager(LevelData levelData, GhostBehaviour behaviour, List<PointInt> breadCrumb)
+    public void SetTimers()
+    public void PreUpdate()
+    public void Update(float deltaTime)
+    public void IsEaten()
+    public void PostUpdate(float deltaTime)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/GhostManagers/GhostType.cs ====
+public enum GhostType
+==== ./Meatcorps.Game.CyberMaze/GameObjects/Map.cs ====
+public class Map: ResourceGameObject, ICollisionEventsFiltered
+    public void LevelLoaded()
+    public void OnContact(ContactPhase phase, in ContactPair pair, in ContactManifold manifold)
+    public void OnTrigger(ContactPhase phase, in ContactPair pair)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/ScreenFlash.cs ====
+public class ScreenFlash: ResourceGameObject
+    public ScreenFlash(Color color, int duration = 2000)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/Abstractions/BasePlayer.cs ====
+public abstract class BasePlayer : ResourceGameObject
+    public Player Player { get; }
+    public BasePlayer(Player _player)
+==== ./Meatcorps.Game.CyberMaze/GameObjects/Abstractions/ResourceGameObject.cs ====
+public abstract class ResourceGameObject : BaseGameObject
+==== ./Meatcorps.Game.CyberMaze/GameObjects/TargetSeekerGameObject.cs ====
+public class TargetSeekerGameObject: ResourceGameObject
+==== ./Meatcorps.Game.CyberMaze/AI/GhostStrangeBehaviour.cs ====
+public class GhostStrangeBehaviour : GhostLogic
+    public override int TimeoutBeforeStart => 3000;
+    public GhostStrangeBehaviour(LevelData levelData) : base(levelData)
+==== ./Meatcorps.Game.CyberMaze/AI/GhostAttackerBehaviour.cs ====
+public class GhostAttackerBehaviour: GhostLogic
+    public GhostAttackerBehaviour(LevelData levelData) : base(levelData)
+    public override int TimeoutBeforeStart => 1000;
+==== ./Meatcorps.Game.CyberMaze/AI/GhostLogic.cs ====
+public abstract class GhostLogic: BaseGridDistanceResource
+    public override Rect Bounds { get; }
+    public abstract int TimeoutBeforeStart { get; }
+    public PointInt Corner { get; set; }
+    public GhostLogic(LevelData levelData)
+    public PointInt GetTarget(GhostState state)
+    public int GetStartDistance()
+==== ./Meatcorps.Game.CyberMaze/AI/GhostAnotherBehaviour.cs ====
+public class GhostAnotherBehaviour: GhostLogic
+    public override int TimeoutBeforeStart => 2000;
+    public GhostAnotherBehaviour(LevelData levelData) : base(levelData)
+==== ./Meatcorps.Game.CyberMaze/AI/GhostEmoBehaviour.cs ====
+public class GhostEmoBehaviour: GhostLogic
+    public override int TimeoutBeforeStart => 4000;
+    public GhostEmoBehaviour(LevelData levelData) : base(levelData)
+==== ./Meatcorps.Game.CyberMaze/Data/GhostBehaviour.cs ====
+public class GhostBehaviour
+    public Body Body { get; init; } = null!;
+    public AI.GhostLogic Logic { get; init; }
+    public GhostType Type { get; init; }
+    public bool Enabled { get; set; }
+==== ./Meatcorps.Game.CyberMaze/Data/MapItem.cs ====
+public readonly record struct MapItem
+    public PointInt Position { get; init; }
+    public required PointInt[] Directions { get; init; }
+    public bool Walkable { get; init; }
+    public bool OneWay { get; init; }
+    public bool GhostHome { get; init; }
+==== ./Meatcorps.Game.CyberMaze/Data/Player.cs ====
+public class Player
+    public required SessionDataBag<GamePlayerData> SessionDataBag { get; init; }
+    public bool IsDead { get; set; }
+    public Body Body { get; set; }
+    public CyberPlayer CyberPlayer { get; set; }
+    public PlayerUI Ui { get; set; }
+    public int Score
+    public int StartScore { get; private set; }
+    public int PlayerId { get; init; }
+    public float WorldSpeed { get; set; } = 1;
+    public Color Color { get; init; }
+    public Player()
+    public void Initialize()
+    public void PreUpdate()
+    public void PostUpdate()
+    public void AddValue(GamePlayerData item, int amount = 1)
+    public void MaxValue(GamePlayerData item, int amount)
+==== ./Meatcorps.Game.CyberMaze/Data/PacmanTargetFinder.cs ====
+public class CyberPlayerTargetFinder: BaseGridDistanceResource
+    public override Rect Bounds { get; }
+    public CyberPlayerTargetFinder(LevelData levelData)
+    public void GetPath(PointInt from, PointInt to, List<PointInt> path, int maxPath = 50)
+==== ./Meatcorps.Game.CyberMaze/Data/LevelData.cs ====
+public class LevelData
+    public List<Player> Players { get; } = new();
+    public Dictionary<GhostLogic, PointInt> HomeTaken { get; } = new();
+    public int LevelWidth { get; }
+    public int LevelHeight { get; }
+    public int GridSize { get; }
+    public float Speed { get; set; } = 75;
+    public bool GhostScared { get; set; } = false;
+    public bool GhostScaredResetTimer { get; set; } = false;
+    public Player? TargetCyberPlayer { get; set; }
+    public int CollectibleCount { get; set; } = 0;
+    public int CollectiblesGone { get; set; } = 0;
+    public int ChaseTime { get; set; } = 10000;
+    public int ScatterTime { get; set; } = 10000;
+    public int StayAtHomeTime { get; set; } = 3000;
+    public int ScaredTime { get; set; } = 10000;
+    public int TotalGhostEaten { get; set; } = 0;
+    public bool AuthenticBug { get; set; } = true;
+    public bool FreezePlayersAndGhosts { get; set; } = false;
+    public SingleEntityGrid<MapItem> Map { get; } = new();
+    public List<GhostBehaviour> Ghosts { get; } = new();
+    public TargetSeekerGameObject? TargetSeeker { get; set; }
+    public bool DutchMode { get; set; } = false;
+    public LevelData(int levelWidth = 39, int levelHeight = 19, int gridSize = 16)
+    public Vector2 ToWorldPosition(in PointInt position, bool center = false)
+    public Rect ToWorldRectangle(in PointInt position)
+    public PointInt WorldToCell(in Vector2 world)
+==== ./Meatcorps.Game.CyberMaze/Data/GameConfig.cs ====
+public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum
+    public string GetOrDefault(T key, string? defaultValue)
+    public void Set(T key, string value)
+    public int GetOrDefault(T key, int? defaultValue)
+    public void Set(T key, int value)
+    public float GetOrDefault(T key, float? defaultValue)
+    public void Set(T key, float value)
+    public bool GetOrDefault(T key, bool? defaultValue)
+    public void Set(T key, bool value)
+    public static GameConfig<T> Create()
+==== ./Meatcorps.Game.CyberMaze/GameEnums/GameSettings.cs ====
+public enum GameSettings
+==== ./Meatcorps.Game.CyberMaze/GameEnums/GameSession.cs ====
+public static class GameSession
+    public static void Load()
+==== ./Meatcorps.Game.CyberMaze/GameEnums/GameMusic.cs ====
+public enum GameMusic
+==== ./Meatcorps.Game.CyberMaze/GameEnums/GameInput.cs ====
+public enum GameInput
+==== ./Meatcorps.Game.CyberMaze/GameEnums/GameSprites.cs ====
+public enum GameSprites
+==== ./Meatcorps.Game.CyberMaze/GameEnums/GamePlayerData.cs ====
+public enum GamePlayerData
+==== ./Meatcorps.Game.CyberMaze/GameEnums/GameTileGroup.cs ====
+public enum GameTileGroup
+==== ./Meatcorps.Game.CyberMaze/GameEnums/GameSessionData.cs ====
+public enum GameSessionData
+==== ./Meatcorps.Game.CyberMaze/GameEnums/CollisionLayer.cs ====
+public enum CollisionLayer: uint
+==== ./Meatcorps.Game.CyberMaze/GameEnums/GameSounds.cs ====
+public enum GameSounds
+==== ./Meatcorps.Game.CyberMaze/Program.cs ====
+==== ./Meatcorps.Engine.Assets.Packager/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Assets.Packager/obj/Debug/net8.0/Meatcorps.Engine.Assets.Packager.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Assets.Packager/obj/Debug/net8.0/Meatcorps.Engine.Assets.Packager.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Assets.Packager/Program.cs ====
+==== ./Meatcorps.Engine.Pathfinding/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Pathfinding/obj/Release/net8.0/Meatcorps.Engine.Pathfinding.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Pathfinding/obj/Release/net8.0/Meatcorps.Engine.Pathfinding.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.Pathfinding/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Engine.Pathfinding/obj/Debug/net8.0/Meatcorps.Engine.Pathfinding.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.Pathfinding/obj/Debug/net8.0/Meatcorps.Engine.Pathfinding.GlobalUsings.g.cs ====
@@ -948,6 +1469,127 @@ public class GridDistanceCalculator
 ==== ./Meatcorps.Engine.Pathfinding/Interfaces/IGridDistanceResource.cs ====
 public interface IGridDistanceResource : IReadonlyDistanceResource
 public interface IReadonlyDistanceResource
+==== ./Meatcorps.Game.HorrorJackpot/obj/Release/net8.0/linux-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.HorrorJackpot/obj/Release/net8.0/linux-x64/Meatcorps.Game.HorrorJackpot.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.HorrorJackpot/obj/Release/net8.0/linux-x64/Meatcorps.Game.HorrorJackpot.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.HorrorJackpot/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.HorrorJackpot/obj/Debug/net8.0/Meatcorps.Game.HorrorJackpot.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.HorrorJackpot/obj/Debug/net8.0/Meatcorps.Game.HorrorJackpot.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.HorrorJackpot/Scenes/LevelScene.cs ====
+public class LevelScene : BaseScene
+    public int TotalPlayersReady { get; set; } = 0;
+==== ./Meatcorps.Game.HorrorJackpot/Scenes/IntroScene.cs ====
+public class IntroScene : BaseScene
+    public int TotalPlayersReady { get; set; } = 0;
+==== ./Meatcorps.Game.HorrorJackpot/Input/InputMapper.cs ====
+public static class InputMapper
+    public static IInputMapper<GameInput> ArduinoInput()
+==== ./Meatcorps.Game.HorrorJackpot/Resources/GameSpriteFactory.cs ====
+public static class GameSpriteFactory
+    public static Texture2DItem<GameSprites> Load()
+==== ./Meatcorps.Game.HorrorJackpot/Resources/GameFallbackInput.cs ====
+public static class GameFallbackInput
+    public static void Load()
+==== ./Meatcorps.Game.HorrorJackpot/Particles/ScoreParticle.cs ====
+public static class ScoreParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Color color, Font font)
+==== ./Meatcorps.Game.HorrorJackpot/Particles/BloodParticle.cs ====
+public static class BloodParticle
+    public static ParticleSystemBuilder GenerateParticleSystem()
+==== ./Meatcorps.Game.HorrorJackpot/Particles/ExplosionParticle.cs ====
+public static class ExplosionParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Texture2DItem<GameSprites> sprites)
+==== ./Meatcorps.Game.HorrorJackpot/GameObjects/UI/PlayerUI.cs ====
+public class PlayerUI : ResourceGameObject
+    public PlayerUI(Player player)
+==== ./Meatcorps.Game.HorrorJackpot/GameObjects/MainGameObject.cs ====
+public class MainGameObject: ResourceGameObject
+==== ./Meatcorps.Game.HorrorJackpot/GameObjects/Abstractions/ResourceGameObject.cs ====
+public abstract class ResourceGameObject : BaseGameObject
+    public MusicManager<GameMusic> Music { get; private set; }
+    public IArcadePointsMutator PointMutator { get; private set; }
+==== ./Meatcorps.Game.HorrorJackpot/GameObjects/OverlayGameObject.cs ====
+public class OverlayGameObject: ResourceGameObject
+    public bool Done { get; set; } = false;
+    public OverlayGameObject(OverlaySettings settings)
+    public void Hide()
+public class OverlaySettings
+    public Action<float, Color> OnDrawLayer { get; set; } = (_, __) => { };
+    public float AppearTimeMs { get; set; } = 1000;
+    public float DisappearTimeMs { get; set; } = 1000;
+    public float DurationMs { get; set; } = 30000;
+==== ./Meatcorps.Game.HorrorJackpot/Shaders/DrumRenderer.cs ====
+public class DrumRenderer
+    public float Glow { get; set; } // 0..1
+    public float Speed { get; set; } // wraps per second
+    public float Rotation { get; set; } // 0..1 (wrap)
+    public float BlinkSpeed { get; set; } = 1f;
+    public float VScale { get; set; } = 1f;
+    public float UScale { get; set; } = 1f;
+    public RectF Rectangle { get; set; } = new(52, 52, 256, 536);
+    public Color GlowColor { get; set; }
+    public DrumRenderer()
+    public void Update(float deltaTime)
+    public void Draw()
+==== ./Meatcorps.Game.HorrorJackpot/Data/DrumTypes.cs ====
+public enum DrumTypes
+==== ./Meatcorps.Game.HorrorJackpot/Data/Player.cs ====
+public class Player
+    public required SessionDataBag<GamePlayerData> SessionDataBag { get; init; }
+    public bool IsDead { get; set; }
+    public int Score
+    public int StartScore { get; private set; }
+    public int PlayerId { get; init; }
+    public float WorldSpeed { get; set; }
+    public Color Color { get; init; }
+    public Player()
+    public void Initialize()
+    public void PreUpdate()
+    public void PostUpdate()
+    public void AddValue(GamePlayerData item, int amount = 1)
+    public void MaxValue(GamePlayerData item, int amount)
+==== ./Meatcorps.Game.HorrorJackpot/Data/LevelData.cs ====
+public class LevelData
+    public int CurrentJackpot { get; }
+==== ./Meatcorps.Game.HorrorJackpot/Data/GameConfig.cs ====
+public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum
+    public string GetOrDefault(T key, string? defaultValue)
+    public void Set(T key, string value)
+    public int GetOrDefault(T key, int? defaultValue)
+    public void Set(T key, int value)
+    public float GetOrDefault(T key, float? defaultValue)
+    public void Set(T key, float value)
+    public bool GetOrDefault(T key, bool? defaultValue)
+    public void Set(T key, bool value)
+    public static GameConfig<T> Create()
+==== ./Meatcorps.Game.HorrorJackpot/Services/DrumHelper.cs ====
+public static class DrumHelper
+    public static DrumTypes GetDrumTypeFromNormal(float normal)
+==== ./Meatcorps.Game.HorrorJackpot/GameEnums/GameFonts.cs ====
+public enum GameFonts
+==== ./Meatcorps.Game.HorrorJackpot/GameEnums/GameSettings.cs ====
+public enum GameSettings
+==== ./Meatcorps.Game.HorrorJackpot/GameEnums/GameSession.cs ====
+public static class GameSession
+    public static void Load()
+==== ./Meatcorps.Game.HorrorJackpot/GameEnums/GameMusic.cs ====
+public enum GameMusic
+==== ./Meatcorps.Game.HorrorJackpot/GameEnums/GameInput.cs ====
+public enum GameInput
+==== ./Meatcorps.Game.HorrorJackpot/GameEnums/GameSprites.cs ====
+public enum GameSprites
+==== ./Meatcorps.Game.HorrorJackpot/GameEnums/GamePlayerData.cs ====
+public enum GamePlayerData
+==== ./Meatcorps.Game.HorrorJackpot/GameEnums/GameShaders.cs ====
+public enum GameShaders
+==== ./Meatcorps.Game.HorrorJackpot/GameEnums/GameSessionData.cs ====
+public enum GameSessionData
+==== ./Meatcorps.Game.HorrorJackpot/GameEnums/GameSounds.cs ====
+public enum GameSounds
+==== ./Meatcorps.Game.HorrorJackpot/Program.cs ====
+==== ./Meatcorps.Engine.Arcade/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Arcade/obj/Release/net8.0/Meatcorps.Engine.Arcade.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Arcade/obj/Release/net8.0/Meatcorps.Engine.Arcade.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.Arcade/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Engine.Arcade/obj/Debug/net8.0/Meatcorps.Engine.Arcade.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.Arcade/obj/Debug/net8.0/Meatcorps.Engine.Arcade.AssemblyInfo.cs ====
@@ -955,6 +1597,7 @@ public interface IReadonlyDistanceResource
 public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgroundService
     public ArcadeGame Game { get; }
     public int GamePrice => Game.PricePoints;
+    public void SetTotalPlayerSessions(int total)
     public int TotalPlayers => _players.Count;
     public bool RemovePlayersAtIdle { get; set; }
     public FallbackArcadeSystem(int totalPlayers = 2, int maxPlayers = 2, int startingPoints = 3000)
@@ -969,8 +1612,47 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
     public void PreUpdate(float deltaTime)
     public void Update(float deltaTime)
     public void LateUpdate(float deltaTime)
+==== ./Meatcorps.Engine.Arcade/Constants/ArcadeEndpointTopics.cs ====
+public static class ArcadeEndpointTopics
+    public const string REGISTER_GAME = "out/arcade/registergame";
+    public const string SYSTEM_MESSAGE = "out/arcade/systemmessage";
+    public const string WEB_ALLDATA = "out/arcade/weballdata";
+    public const string CHANGE_POINTS = "out/arcade/changepoints";
+    public const string GAMESESSION_SIGNIN_AND_UPDATE = "out/arcade/playersigninupdate";
+    public const string GAMESESSION_SIGNOUT = "out/arcade/playersignout";
+    public const string JOIN_GAME = "out/arcade/playerjoingame";
+    public const string REGISTER_PLAYER = "out/arcade/registerplayer";
+    public const string QUESTION = "out/arcade/question";
+    public const string QUESTIONRESPONSE = "out/arcade/questionresponse";
+    public const string ADMIN_ACTIONS = "arcade/adminactions";
+public static class ArcadeSystemMessageCommands
+    public const string GET_ALL_DATA = "GET_ALL_DATA";
 ==== ./Meatcorps.Engine.Arcade/Enums/GameState.cs ====
 public enum GameState
+==== ./Meatcorps.Engine.Arcade/ArcadeGameSystem.cs ====
+public sealed class ArcadeGameSystem: IPlayerCheckin, IArcadePointsMutator, IBackgroundService, IDisposable
+    public ArcadeGame Game => _gameSignal.Value;
+    public void SetTotalPlayerSessions(int total)
+    public int TotalPlayers => _players.Count;
+    public ArcadeGameSystem()
+    public bool IsPlayerCheckedIn(int player, out string name)
+    public string GetPlayerName(int player)
+    public void SignPlayerOut(int player)
+    public void PreUpdate(float deltaTime)
+    public void Update(float deltaTime)
+    public void LateUpdate(float deltaTime)
+    public int GamePrice => Game.PricePoints;
+    public int GetPoints(int player)
+    public bool RequestPoints(int player, int points)
+    public bool RequestPoints(int player)
+    public void SubmitPoints(int player, int points)
+    public void Dispose()
+==== ./Meatcorps.Engine.Arcade/Modules/ArcadeGameSystemModule.cs ====
+public class ArcadeGameSystemModule
+    public static ArcadeGameSystemModule Load(ArcadeGame game, MQTTModule mqttModule)
+==== ./Meatcorps.Engine.Arcade/Modules/ArcadeRegisterEndpointModule.cs ====
+public class ArcadeRegisterEndpointModule
+    public static ArcadeRegisterEndpointModule Load(MQTTModule mqttModule)
 ==== ./Meatcorps.Engine.Arcade/Modules/HighScoreModule.cs ====
 public static class HighScoreModule
     public static void Load(int maxScores = 50)
@@ -978,26 +1660,92 @@ public static class HighScoreModule
 public class ArcadeServer
     public string Url { get; init; } = "HTTP://LOCALHOST:8080/";
     public string AutoSignIn(ArcadeGame game) => Url + "SIGNIN/" + game.Code;
+==== ./Meatcorps.Engine.Arcade/Data/ArcadeResponse.cs ====
+public class ArcadeResponse: MessageIdentifierBase
+    public string Id { get; set; }
+    public string QuestionId { get; set; }
+    public string From { get; set; }
+    public string Message { get; set; }
+==== ./Meatcorps.Engine.Arcade/Data/ArcadeQuestion.cs ====
+public class ArcadeQuestion: MessageIdentifierBase
+    public string Id { get; set; }
+    public string From { get; set; }
+    public string Question { get; set; }
+    public List<string> Answers { get; set; }
+    public int Timeout { get; set; }
+    public List<string> IgnorePlayers { get; set; }
 ==== ./Meatcorps.Engine.Arcade/Data/ArcadeGame.cs ====
-public class ArcadeGame
+public class ArcadeGame: MessageIdentifierBase
     public required int Code { get; init; }
     public required string Name { get; init; }
     public string Description { get; init; } = "";
     public required int PricePoints { get; init; }
+    public required int MaxPlayers { get; init; }
+    public DateTime LastReported { get; set; }
     public GameState State { get; set; } = GameState.Idle;
+==== ./Meatcorps.Engine.Arcade/Data/ArcadeSystemMessage.cs ====
+public class ArcadeSystemMessage: MessageIdentifierBase
+    public string Message { get; set; } = "";
 ==== ./Meatcorps.Engine.Arcade/Data/ArcadePlayer.cs ====
-public class ArcadePlayer
-    public Guid Id { get; init; }
-    public string Name { get; init; }
+public class ArcadePlayer: MessageIdentifierBase
+    public string Id { get; init; } = "";
+    public string Name { get; init; } = "";
     public int Points { get; set; }
+    public int CurrentGame { get; set; }
+==== ./Meatcorps.Engine.Arcade/Data/ArcadePointChange.cs ====
+public class ArcadePointChange: MessageIdentifierBase
+    public string Id { get; set; } = "";
+    public int Value { get; set; }
+==== ./Meatcorps.Engine.Arcade/Data/ArcadeCentralData.cs ====
+public class ArcadeCentralData: MessageIdentifierBase
+    public List<ArcadeGame> Games { get; set; } = new List<ArcadeGame>();
+    public List<ArcadePlayer> Players { get; set; } = new List<ArcadePlayer>();
 ==== ./Meatcorps.Engine.Arcade/Data/ArcadeScoreItem.cs ====
 public class ArcadeScoreItem
     public string Name { get; init; }
     public int Score { get; init; }
     public DateTime Date { get; init; }
+==== ./Meatcorps.Engine.Arcade/Data/ArcadeAdminActions.cs ====
+public class ArcadeAdminActions: MessageIdentifierBase
+    public string Action { get; set; }
+    public string Param1 { get; set; }
+    public string Param2 { get; set; }
 ==== ./Meatcorps.Engine.Arcade/Data/ArcadeScores.cs ====
 public class ArcadeScores
     public List<ArcadeScoreItem> Scores { get; set; }
+==== ./Meatcorps.Engine.Arcade/Services/ArcadeResponseService.cs ====
+public class ArcadeResponseService : IBackgroundService, IDisposable
+    public IObservable<Unit> QuestionChange => _questionChangeSubject.AsObservable();
+    public IObservable<float> TimeoutTicking => _timeoutTickingSubject.Where(_ => _questionRunning).AsObservable();
+    public ArcadeResponseService()
+    public void PreUpdate(float deltaTime)
+    public ArcadeQuestion? GetQuestion(string username)
+    public void SubmitResponse(string username, string answer)
+    public void Update(float deltaTime)
+    public void LateUpdate(float deltaTime)
+    public void Dispose()
+==== ./Meatcorps.Engine.Arcade/Services/ArcadeDataService.cs ====
+public class ArcadeDataService: IDisposable
+    public IObservable<ArcadePlayer> PlayerUpdate => _playerUpdateSubject.AsObservable();
+    public IObservable<ArcadeGame> GameUpdate => _gameUpdateSubject.AsObservable();
+    public bool DataReady { get; private set; }
+    public IObservable<Unit> DataChanged => Observable.Merge(
+    public ArcadeDataService()
+    public void SendMessage(string message)
+    public IEnumerable<ArcadeGame> Games()
+    public IEnumerable<ArcadePlayer> Players()
+    public bool TryGetGame(int code, out ArcadeGame? game)
+    public bool TryGetPlayer(string id, out ArcadePlayer? player)
+    public void Dispose()
+==== ./Meatcorps.Engine.Arcade/Services/ArcadeQuestionService.cs ====
+public class ArcadeQuestionService: IBackgroundService, IDisposable
+    public IObservable<ArcadeResponse> Responses => _responseSubject
+    public ArcadeQuestionService()
+    public void AskQuestion(string question, int player, int timeout, params string[] answers)
+    public void PreUpdate(float deltaTime)
+    public void Update(float deltaTime)
+    public void LateUpdate(float deltaTime)
+    public void Dispose()
 ==== ./Meatcorps.Engine.Arcade/Services/HighScoreService.cs ====
 public class HighScoreService
     public HighScoreService()
@@ -1018,13 +1766,61 @@ public interface IArcadePointsMutator: IArcadeGameInfo
     public void SubmitPoints(int player, int points);
 ==== ./Meatcorps.Engine.Arcade/Interfaces/IPlayerCheckin.cs ====
 public interface IPlayerCheckin : IArcadeGameInfo
+==== ./Meatcorps.Engine.RayLib.Pathfinding/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.RayLib.Pathfinding/obj/Release/net8.0/Meatcorps.Engine.RayLib.Pathfinding.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.RayLib.Pathfinding/obj/Release/net8.0/Meatcorps.Engine.RayLib.Pathfinding.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.RayLib.Pathfinding/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Engine.RayLib.Pathfinding/obj/Debug/net8.0/Meatcorps.Engine.RayLib.Pathfinding.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.RayLib.Pathfinding/obj/Debug/net8.0/Meatcorps.Engine.RayLib.Pathfinding.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.RayLib.Pathfinding/Extensions/GridDistanceHeatmapVisualizer.cs ====
 public static class GridDistanceHeatmapVisualizer
-    public static void DrawHeatMap(this GridDistanceCalculator calculator, Rect topLeftCell, float alpha = 0.5f)
+    public static void DrawHeatMap(this GridDistanceCalculator calculator, Rect topLeftCell, float alpha = 0.5f, bool includeNumbers = false)
+==== ./Meatcorps.Engine.Signals/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Signals/obj/Release/net8.0/Meatcorps.Engine.Signals.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Signals/obj/Release/net8.0/Meatcorps.Engine.Signals.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Signals/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Signals/obj/Debug/net8.0/Meatcorps.Engine.Signals.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Signals/obj/Debug/net8.0/Meatcorps.Engine.Signals.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Signals/Enums/SignalDefault.cs ====
+public enum SignalDefault
+==== ./Meatcorps.Engine.Signals/Abstractions/BaseSignalValueEvent.cs ====
+public abstract class BaseSignalValueEvent<TGroup>: IBackgroundService, ISignalValueEvent<TGroup>, IDisposable where TGroup : Enum
+    public void PreUpdate(float deltaTime)
+    public void Update(float deltaTime)
+    public void LateUpdate(float deltaTime)
+    public abstract TGroup GetGroup();
+    public bool Register<TValueType>(SignalValue<TValueType, TGroup> value, in TValueType? initialValue, out TValueType? currentValue)
+    public void Unregister<TValueType>(SignalValue<TValueType, TGroup> value)
+    public void OnValueChanged<TValueType>(SignalValue<TValueType, TGroup> value)
+    public void Dispose()
+==== ./Meatcorps.Engine.Signals/Modules/SignalModule.cs ====
+public static class SignalModule
+    public static void Load(ObjectManager? objectManager = null)
+==== ./Meatcorps.Engine.Signals/Data/SignalValue.cs ====
+public interface ISignalValueTracker
+    public TGroup Group { get; }
+    public string GroupName => Group.ToString();
+    public string Topic { get; init; }
+    public event ValueChangedEventHandler ValueChanged = _ => { };
+    public event ValueChangedEventHandler IncomingValue = _ => { };
+    public delegate void ValueChangedEventHandler(TValueType value);
+    public TValueType Value
+    public SignalValue(TGroup group, string topic, TValueType? initialValue = default, ObjectManager? manager = null)
+    public void Push()
+    public void UpdateValueFromTracker(object value)
+    public bool Equals(SignalValue<TValueType, TGroup>? x, SignalValue<TValueType, TGroup>? y)
+    public int GetHashCode(SignalValue<TValueType, TGroup> obj) => HashCode.Combine(obj.Group, obj.Topic);
+    public void Dispose()
+==== ./Meatcorps.Engine.Signals/Services/InternalSignalValueEvent.cs ====
+public class InternalSignalValueEvent<TGroup>: BaseSignalValueEvent<TGroup> where TGroup : Enum
+    public InternalSignalValueEvent(TGroup group)
+    public override TGroup GetGroup()
+==== ./Meatcorps.Engine.Signals/Interfaces/ISignalValueEvent.cs ====
+public interface ISignalValueEvent<TGroup> where TGroup : Enum
 ==== ./Meatcorps.Engine.InputTest/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.InputTest/obj/Release/net8.0/win-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.InputTest/obj/Release/net8.0/win-x64/Meatcorps.Engine.InputTest.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.InputTest/obj/Release/net8.0/win-x64/Meatcorps.Engine.InputTest.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.InputTest/obj/Release/net8.0/Meatcorps.Engine.InputTest.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.InputTest/obj/Release/net8.0/Meatcorps.Engine.InputTest.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.InputTest/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
@@ -1033,8 +1829,37 @@ public static class GridDistanceHeatmapVisualizer
 ==== ./Meatcorps.Engine.InputTest/obj/Debug/net8.0/ArcadeGames.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.InputTest/obj/Debug/net8.0/Meatcorps.Engine.InputTest.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.InputTest/Program.cs ====
+==== ./Meatcorps.Engine.ArcadeClient/obj/Release/net8.0/linux-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.ArcadeClient/obj/Release/net8.0/linux-x64/Meatcorps.Engine.ArcadeClient.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.ArcadeClient/obj/Release/net8.0/linux-x64/Meatcorps.Engine.ArcadeClient.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.ArcadeClient/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.ArcadeClient/obj/Debug/net8.0/Meatcorps.Engine.ArcadeClient.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.ArcadeClient/obj/Debug/net8.0/Meatcorps.Engine.ArcadeClient.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.ArcadeClient/TestService.cs ====
+public class TestService
+    public int Count { get; set; }
+==== ./Meatcorps.Engine.ArcadeClient/Providers/BrowserUserIdProvider.cs ====
+public sealed class BrowserUserIdProvider(IJSRuntime js) : IAsyncDisposable, IUserIdProvider
+    public string? CurrentId => _cached;
+    public bool IsAdmin { get; private set; }
+    public async ValueTask<string> GetUserIdAsync()
+    public async ValueTask<bool> IsAdminAsync()
+    public async ValueTask DisposeAsync()
+==== ./Meatcorps.Engine.ArcadeClient/Services/PlayerService.cs ====
+public class PlayerService : IDisposable
+    public PlayerService(ArcadeDataService arcadeDataService)
+    public async Task<bool> RegisterPlayerAsync(string id, string name)
+    public void MutatePoints(string id, int points)
+    public async Task<bool> JoinGameAsync(int gameCode, string id)
+    public void Dispose()
+==== ./Meatcorps.Engine.ArcadeClient/Interfaces/IUserIdProvider.cs ====
+public interface IUserIdProvider
+==== ./Meatcorps.Engine.ArcadeClient/Program.cs ====
+==== ./Meatcorps.Engine.Arcade.RayLib/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Arcade.RayLib/obj/Release/net8.0/Meatcorps.Engine.Arcade.RayLib.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Arcade.RayLib/obj/Release/net8.0/Meatcorps.Engine.Arcade.RayLib.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.Arcade.RayLib/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
-==== ./Meatcorps.Engine.Arcade.RayLib/obj/Debug/net8.0/Meatcorps.Engine.Arcade.Raylib.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Arcade.RayLib/obj/Debug/net8.0/Meatcorps.Engine.Arcade.RayLib.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.Arcade.RayLib/obj/Debug/net8.0/Meatcorps.Engine.Arcade.RayLib2.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.Arcade.RayLib/obj/Debug/net8.0/Meatcorps.Engine.Arcade.Raylib.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.Arcade.RayLib/obj/Debug/net8.0/Meatcorps.Engine.Arcade.RayLib2.AssemblyInfo.cs ====
@@ -1050,13 +1875,72 @@ public class WaitForPlayersGameObject: BaseGameObject
     public WaitForPlayersGameObject(int totalPlayersRequested, BaseScene jumpToScene, BaseScene timeOutToScene, int fontScale = 1)
 ==== ./Meatcorps.Engine.Arcade.RayLib/Modules/ArcadeEmulatorModule.cs ====
 public class ArcadeEmulatorModule
-    public static ArcadeEmulatorModule Load(ArcadeGame game, string serverUrl = "http://localhost:8080/")
+    public static ArcadeEmulatorModule Load(ArcadeGame game, MQTTModule? mqttModule, string serverUrl = "http://localhost:8080/")
     public void SetIntroScene<T>() where T : BaseScene
+==== ./Meatcorps.Engine.Arcade.RayLib/Modules/ArcadeGameSystemModuleExtensions.cs ====
+public static class ArcadeGameSystemModuleExtensions
+    public static void SetIntroScene<T>(this ArcadeGameSystemModule _) where T : BaseScene
 ==== ./Meatcorps.Engine.Arcade.RayLib/Services/ArcadeGameStateTracker.cs ====
 public class ArcadeGameStateTracker: ISceneSwitchTracker
     public ArcadeGameStateTracker(ArcadeGame game)
     public void SetIntroScene<T>() where T : BaseScene
     public void OnActiveSceneSwitch(object scene)
+==== ./Meatcorps.Game.Web.TruthOrDare/obj/Release/net8.0/linux-arm64/Meatcorps.Game.Web.TruthOrDare.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.Web.TruthOrDare/obj/Release/net8.0/linux-arm64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.Web.TruthOrDare/obj/Release/net8.0/linux-arm64/Meatcorps.Game.Web.TruthOrDare.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.Web.TruthOrDare/obj/Debug/net8.0/Meatcorps.Game.Web.TruthOrDare.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.Web.TruthOrDare/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.Web.TruthOrDare/obj/Debug/net8.0/Meatcorps.Game.Web.TruthOrDare.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.Web.TruthOrDare/Utilities/QrCodeHelper.cs ====
+public class QrCodeHelper
+    public static string SvgQrCode(string payload, int size = 10)
+==== ./Meatcorps.Game.Web.TruthOrDare/Data/ReceiveItem.cs ====
+public class ReceiveItem
+    public string Type { get; set; } = "";
+    public string Icon { get; set; } = "";
+    public string Text { get; set; } = "";
+    public int LeftPosition { get; set; } = Random.Shared.Next(0, 1000);
+==== ./Meatcorps.Game.Web.TruthOrDare/Data/TruthDareItem.cs ====
+public class TruthDareItem
+    public TruthDareType Type { get; set; }
+    public int ItemId { get; set; }
+    public string Category { get; set; } = "";
+    public string Description { get; set; } = "";
+    public int RandomValue { get; set; } = 0;
+public enum TruthDareType
+==== ./Meatcorps.Game.Web.TruthOrDare/Data/GameConfig.cs ====
+public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum
+    public string GetOrDefault(T key, string? defaultValue)
+    public void Set(T key, string value)
+    public int GetOrDefault(T key, int? defaultValue)
+    public void Set(T key, int value)
+    public float GetOrDefault(T key, float? defaultValue)
+    public void Set(T key, float value)
+    public bool GetOrDefault(T key, bool? defaultValue)
+    public void Set(T key, bool value)
+    public static GameConfig<T> Create()
+==== ./Meatcorps.Game.Web.TruthOrDare/Services/TruthOrDareService.cs ====
+public class TruthOrDareService
+    public TruthOrDareService()
+    public string[] GetAllCategories(TruthDareType type)
+    public TruthDareItem? GetRandomTruthDareItem(TruthDareType type, string category)
+==== ./Meatcorps.Game.Web.TruthOrDare/Services/SfxService.cs ====
+public sealed class SfxService : IAsyncDisposable
+    public SfxService(IJSRuntime js) => this.js = js;
+    public async Task InitAsync() => (await JSReference()).InvokeVoidAsync("init");
+    public async Task PreloadAsync(params string[] urls)
+    public async Task PlayAsync(string url, float volume = 1f)
+    public async ValueTask DisposeAsync()
+==== ./Meatcorps.Game.Web.TruthOrDare/GameEnums/GameSettings.cs ====
+public enum GameSettings
+==== ./Meatcorps.Game.Web.TruthOrDare/GameEnums/GameSession.cs ====
+public static class GameSession
+    public static void Load()
+==== ./Meatcorps.Game.Web.TruthOrDare/GameEnums/GamePlayerData.cs ====
+public enum GamePlayerData
+==== ./Meatcorps.Game.Web.TruthOrDare/GameEnums/GameSessionData.cs ====
+public enum GameSessionData
+==== ./Meatcorps.Game.Web.TruthOrDare/Program.cs ====
 ==== ./Meatcorps.Game.ArcadeTemplate/obj/Debug/net8.0/Meatcorps.Game.Template.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Game.ArcadeTemplate/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Game.ArcadeTemplate/obj/Debug/net8.0/Meatcorps.Game.ArcadeTemplate.GlobalUsings.g.cs ====
@@ -1172,12 +2056,34 @@ public enum GameSessionData
 ==== ./Meatcorps.Game.ArcadeTemplate/GameEnums/GameSounds.cs ====
 public enum GameSounds
 ==== ./Meatcorps.Game.ArcadeTemplate/Program.cs ====
+==== ./Meatcorps.Engine.RayLib.RemixIcons/RemixIconEnum.cs ====
+public enum RemixIcon
+==== ./Meatcorps.Engine.RayLib.RemixIcons/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.RayLib.RemixIcons/obj/Debug/net8.0/Meatcorps.Engine.RayLib2.RemixIcons.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.RayLib.RemixIcons/obj/Debug/net8.0/Meatcorps.Engine.RayLib2.RemixIcons.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.RayLib.RemixIcons/obj/Debug/net8.0/Meatcorps.Engine.Raylib.RemixIcons.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.RayLib.RemixIcons/obj/Debug/net8.0/Meatcorps.Engine.Raylib.RemixIcons.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.RayLib.RemixIcons/RemixIconExtensions.cs ====
+public static class RemixIconExtensions
+    public static string ToGlyph(this RemixIcon icon)
+    public static TextManager<T> AddRemixFont<T>(this TextManager<T> manager, T font, string location = "Assets/Fonts/remixicon.ttf") where T: Enum
+    public static void DrawRemixIcon<T>(this TextManager<T> manager, T font, RemixIcon icon, Vector2 positon, float size = 32, Color? color = null) where T: Enum
+    public static void DrawRemixIcon<T>(this TextManager<T> manager, T font, RemixIcon icon, Vector2 positon, float rotation, float size = 32, Color? color = null) where T: Enum
 ==== ./Meatcorps.Game.Snake/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Game.Snake/obj/Release/net8.0/Meatcorps.Game.Snake.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Game.Snake/obj/Release/net8.0/Meatcorps.Game.Snake.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.Snake/obj/Release/net8.0/win-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.Snake/obj/Release/net8.0/win-x64/Meatcorps.Game.Snake.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.Snake/obj/Release/net8.0/win-x64/Meatcorps.Game.Snake.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.Snake/obj/Release/net8.0/linux-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.Snake/obj/Release/net8.0/linux-x64/Meatcorps.Game.Snake.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.Snake/obj/Release/net8.0/linux-x64/Meatcorps.Game.Snake.AssemblyInfo.cs ====
 ==== ./Meatcorps.Game.Snake/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Game.Snake/obj/Debug/net8.0/Meatcorps.Game.Snake.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Game.Snake/obj/Debug/net8.0/Meatcorps.Game.Snake.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.Snake/obj/Debug/net8.0/linux-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.Snake/obj/Debug/net8.0/linux-x64/Meatcorps.Game.Snake.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.Snake/obj/Debug/net8.0/linux-x64/Meatcorps.Game.Snake.AssemblyInfo.cs ====
 ==== ./Meatcorps.Game.Snake/Scenes/LevelScene.cs ====
 public class LevelScene : BaseScene
     public int TotalPlayers => DemoMode ? 2 : _sessionService.CurrentSession.TotalPlayers;
@@ -1253,6 +2159,7 @@ public class Background : SnakeGameObject
 public class Wall: SnakeGameObject
     public SnakeSprites Sprite { get; private set; }
     public Wall(float waitUntilWallIsPlaced, PointInt position, bool placeDirect = false, SnakeSprites sprite = SnakeSprites.Wall)
+    public void Remove()
 ==== ./Meatcorps.Game.Snake/GameObjects/Snake.cs ====
 public class Snake : SnakeGameObject
     public Player Player { get; }
@@ -1278,10 +2185,9 @@ public class FlyAgent : IBoidAgent, IGridItem
     public bool IsActive { get; set; } = true;
     public int CurrentAnimationFrame { get; set; } = 0;
     public RectF BoundingBox 
-    public object Parent { get; }
+    public object Owner { get; }
     public FlyAgent(object parent, Vector2 startPosition)
     public void Update(float deltaTime)
-    public void Move(in Vector2 newPosition)
 ==== ./Meatcorps.Game.Snake/GameObjects/Consumable.cs ====
 public class Consumable: SnakeGameObject
     public IConsumableItem Item { get; }
@@ -1476,6 +2382,316 @@ public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum
     public void Set(T key, bool value)
     public static GameConfig<T> Create()
 ==== ./Meatcorps.Game.Snake/Program.cs ====
+==== ./Meatcorps.Engine.Assets/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Assets/obj/Debug/net8.0/Meatcorps.Engine.Assets.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Assets/obj/Debug/net8.0/Meatcorps.Engine.Assets.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Assets/Sinks/AesResourceSink.cs ====
+public class AesResourceSink: IEncryptDecryptSink
+    public AesResourceSink(string password)
+    public byte[] Encrypt(byte[] data)
+    public byte[] Decrypt(byte[] data)
+    public int Decrypt(byte[] data, byte[] to)
+==== ./Meatcorps.Engine.Assets/Sinks/DirectResourceSink.cs ====
+public class DirectResourceSink: IEncryptDecryptSink
+    public byte[] Encrypt(byte[] data)
+    public byte[] Decrypt(byte[] data)
+    public int Decrypt(byte[] data, byte[] to)
+==== ./Meatcorps.Engine.Assets/Manager/AssetPackageManager.cs ====
+public class AssetPackageManager
+    public AssetPackageManager(string path, IEncryptDecryptSink sink)
+    public void Load()
+    public bool Exists(string path)
+    public bool DirectoryExists(string path)
+    public IEnumerable<string> GetFiles(string path)
+    public bool Data(out byte[] data, string path)
+==== ./Meatcorps.Engine.Assets/Data/AssetMapData.cs ====
+public class AssetMapData
+    public List<AssetMapItemData> Items = new();
+public class AssetMapItemData
+    public string Path { get; set; }
+    public long Length { get; set; }
+    public long PlainLength { get; set; }
+    public long Position { get; set; }
+==== ./Meatcorps.Engine.Assets/Interfaces/IEncryptDecryptSink.cs ====
+public interface IEncryptDecryptSink
+==== ./Meatcorps.Game.KillTheSkulls/obj/Release/net8.0/win-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.KillTheSkulls/obj/Release/net8.0/win-x64/Meatcorps.Game.KillTheSkulls.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.KillTheSkulls/obj/Release/net8.0/win-x64/Meatcorps.Game.KillTheSkulls.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.KillTheSkulls/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Game.KillTheSkulls/obj/Debug/net8.0/Meatcorps.Game.KillTheSkulls.GlobalUsings.g.cs ====
+==== ./Meatcorps.Game.KillTheSkulls/obj/Debug/net8.0/Meatcorps.Game.KillTheSkulls.AssemblyInfo.cs ====
+==== ./Meatcorps.Game.KillTheSkulls/Scenes/LevelScene.cs ====
+public class LevelScene : BaseScene
+    public int TotalPlayers => DemoMode ? 2 : _sessionService.CurrentSession.TotalPlayers;
+    public bool DemoMode { get; }
+    public int RandomNumber = -1;
+    public int MaxIdle = 4;
+    public int GetLiveCount = 0;
+    public bool StartGame = false;
+    public LevelScene(string levelPath = "Assets/Level1.txt", bool demoMode = false)
+    public void EnemyAttack()
+    public void Died(BasePlayer? playerObject)
+    public void EndGame()
+    public static UIMessageStyle DefaultTextStyle(Font font) => new()
+==== ./Meatcorps.Game.KillTheSkulls/Scenes/EndScene.cs ====
+public class EndScene : BaseScene
+    public int TimeLeft => (int)(_timer.TimeRemaining / 1000);
+==== ./Meatcorps.Game.KillTheSkulls/Scenes/IntroScene.cs ====
+public class IntroScene : BaseScene
+    public int TotalPlayersReady { get; set; } = 0;
+==== ./Meatcorps.Game.KillTheSkulls/Input/InputMapper.cs ====
+public static class InputMapper
+    public static IInputMapper<GameInput> ArduinoInput()
+==== ./Meatcorps.Game.KillTheSkulls/Resources/GameSpriteFactory.cs ====
+public static class GameSpriteFactory
+    public static Texture2DItem<GameSprites> Load()
+==== ./Meatcorps.Game.KillTheSkulls/Resources/GameFallbackInput.cs ====
+public static class GameFallbackInput
+    public static void Load()
+==== ./Meatcorps.Game.KillTheSkulls/Particles/SmokeParticle.cs ====
+public static class SmokeParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Texture2DItem<GameSprites> sprites, int maxParticles = 50)
+==== ./Meatcorps.Game.KillTheSkulls/Particles/ScoreParticle.cs ====
+public static class ScoreParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Color color, Font font)
+==== ./Meatcorps.Game.KillTheSkulls/Particles/BloodParticle.cs ====
+public static class BloodParticle
+    public static ParticleSystemBuilder GenerateParticleSystem()
+==== ./Meatcorps.Game.KillTheSkulls/Particles/ExplosionParticle.cs ====
+public static class ExplosionParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Texture2DItem<GameSprites> sprites)
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/Thunder.cs ====
+public class Thunder : ResourceGameObject
+    public ThunderState State { get; private set; } = ThunderState.Idle;
+    public bool IsRunning => State != ThunderState.Idle;
+    public Thunder(Vector2 position)
+    public void Start()
+public enum ThunderState
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/UI/EndGameGameObject.cs ====
+public class EndGameGameObject : ResourceGameObject
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/UI/Leaderboard.cs ====
+public class Leaderboard : ResourceGameObject, IIntroSlide
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/UI/IntroUI.cs ====
+public class IntroUI : ResourceGameObject, IIntroSlide
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/UI/FinalScoreCalculator.cs ====
+public class FinalScoreCalculator : ResourceGameObject
+    public FinalScoreCalculator(Rect bounds, int playerId)
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/UI/PlayerUI.cs ====
+public class PlayerUI : ResourceGameObject
+    public PlayerUI(Player player)
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/UI/IIntroSlide.cs ====
+public interface IIntroSlide
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/UI/GuidePage.cs ====
+public class GuidePage : ResourceGameObject, IIntroSlide
+    public bool Active { get; set; }
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/Background.cs ====
+public class Background : ResourceGameObject
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/ScoreEmitter.cs ====
+public class ScoreEmitter: ResourceGameObject
+    public void ShowScore(Vector2 position, string text)
+    public void Negative(Vector2 position, string text)
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/RowManager.cs ====
+public class RowManager : ResourceGameObject
+    public RowManager(LevelRow levelRow, int rowNumber)
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/PipeOverlay.cs ====
+public class PipeOverlay : ResourceGameObject
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/Enemy.cs ====
+public class Enemy : ResourceGameObject
+    public EnemyState State { get; private set; } = EnemyState.Idle;
+    public bool Died;
+    public bool Attacked;
+    public float DieNormal => _dieTimer.NormalizedElapsed;
+    public bool InRange => _getNormalValue > 0.3f;
+    public ParticleSystemBuilder _smokeParticle;
+    public Enemy(Vector2 position, int index)
+    public void Attack()
+    public void Start()
+    public void Die()
+public enum EnemyState
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/LedBar.cs ====
+public class LedBar: ResourceGameObject
+    public float Charge { get; set; } = 0;
+    public LedBarMode Mode { get; set; } = LedBarMode.On;
+    public LedBar(Vector2 position, Color color)
+public enum LedBarMode
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/Abstractions/BasePlayer.cs ====
+public abstract class BasePlayer : ResourceGameObject
+    public Player Player { get; }
+    public BasePlayer(Player _player)
+==== ./Meatcorps.Game.KillTheSkulls/GameObjects/Abstractions/ResourceGameObject.cs ====
+public abstract class ResourceGameObject : BaseGameObject
+    public MusicManager<GameMusic> Music { get; private set; }
+    public IArcadePointsMutator PointMutator { get; private set; }
+==== ./Meatcorps.Game.KillTheSkulls/Data/Player.cs ====
+public class Player
+    public required SessionDataBag<GamePlayerData> SessionDataBag { get; init; }
+    public bool IsDead { get; set; }
+    public int Score
+    public int MaxStreak
+    public int Lives
+    public int Streak
+    public int StartScore { get; private set; }
+    public int PlayerId { get; init; }
+    public float WorldSpeed { get; set; }
+    public Color Color { get; init; }
+    public Player()
+    public void Initialize()
+    public void PreUpdate()
+    public void PostUpdate()
+    public void AddValue(GamePlayerData item, int amount = 1)
+    public void MaxValue(GamePlayerData item, int amount)
+==== ./Meatcorps.Game.KillTheSkulls/Data/LevelData.cs ====
+public class LevelData
+    public LevelRow[] LevelRows { get; private set; }
+    public LevelData(LevelRow[] levelRows){
+public class LevelRow
+    public bool Miss { get; set; }
+    public bool Hit { get; set; }
+    public required LedBar LedBar { get; init; }
+    public required Thunder Thunder { get; init; }
+    public required Enemy Enemy { get; init; }
+==== ./Meatcorps.Game.KillTheSkulls/Data/GameConfig.cs ====
+public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum
+    public string GetOrDefault(T key, string? defaultValue)
+    public void Set(T key, string value)
+    public int GetOrDefault(T key, int? defaultValue)
+    public void Set(T key, int value)
+    public float GetOrDefault(T key, float? defaultValue)
+    public void Set(T key, float value)
+    public bool GetOrDefault(T key, bool? defaultValue)
+    public void Set(T key, bool value)
+    public static GameConfig<T> Create()
+==== ./Meatcorps.Game.KillTheSkulls/GameEnums/GameSettings.cs ====
+public enum GameSettings
+==== ./Meatcorps.Game.KillTheSkulls/GameEnums/GameSession.cs ====
+public static class GameSession
+    public static void Load()
+==== ./Meatcorps.Game.KillTheSkulls/GameEnums/GameMusic.cs ====
+public enum GameMusic
+==== ./Meatcorps.Game.KillTheSkulls/GameEnums/GameInput.cs ====
+public enum GameInput
+==== ./Meatcorps.Game.KillTheSkulls/GameEnums/GameSprites.cs ====
+public enum GameSprites
+==== ./Meatcorps.Game.KillTheSkulls/GameEnums/GamePlayerData.cs ====
+public enum GamePlayerData
+==== ./Meatcorps.Game.KillTheSkulls/GameEnums/GameSessionData.cs ====
+public enum GameSessionData
+==== ./Meatcorps.Game.KillTheSkulls/GameEnums/GameSounds.cs ====
+public enum GameSounds
+==== ./Meatcorps.Game.KillTheSkulls/Program.cs ====
+==== ./Meatcorps.Engine.AtlasPicker/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.AtlasPicker/obj/Debug/net8.0/Meatcorps.Engine.AtlasPicker.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.AtlasPicker/obj/Debug/net8.0/Meatcorps.Engine.AtlasPicker.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.AtlasPicker/Program.cs ====
+==== ./Meatcorps.Engine.Arcade.Server/obj/Release/net8.0/linux-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Arcade.Server/obj/Release/net8.0/linux-x64/Meatcorps.Engine.Arcade.Server.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Arcade.Server/obj/Release/net8.0/linux-x64/Meatcorps.Engine.Arcade.Server.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Arcade.Server/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Arcade.Server/obj/Debug/net8.0/Meatcorps.Engine.Arcade.Server.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Arcade.Server/obj/Debug/net8.0/Meatcorps.Engine.Arcade.Server.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Arcade.Server/Managers/PlayerManager.cs ====
+public class PlayerManager: BaseManager
+    public PlayerManager()
+==== ./Meatcorps.Engine.Arcade.Server/Managers/BaseManager.cs ====
+public abstract class BaseManager: IDisposable
+    public void Push()
+    public void Dispose()
+==== ./Meatcorps.Engine.Arcade.Server/Managers/DataManager.cs ====
+public sealed class DataManager: IDisposable
+    public DataManager()
+    public void Dispose()
+==== ./Meatcorps.Engine.Arcade.Server/Managers/GamesManager.cs ====
+public class GamesManager : BaseManager
+    public GamesManager()
+==== ./Meatcorps.Engine.Arcade.Server/Program.cs ====
+==== ./Meatcorps.Engine.RayLib.ImGuiTools/obj/Debug/net8.0/Meatcorps.Engine.RayLib.ImGui.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.RayLib.ImGuiTools/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.RayLib.ImGuiTools/obj/Debug/net8.0/Meatcorps.Engine.RayLib.ImGuiTools.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.RayLib.ImGuiTools/obj/Debug/net8.0/Meatcorps.Engine.RayLib.ImGui.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.RayLib.ImGuiTools/obj/Debug/net8.0/Meatcorps.Engine.RayLib.ImGuiTools.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.RayLib.ImGuiTools/BaseImGuiGameObject.cs ====
+public abstract class BaseImGuiGameObject: BaseGameObject
+    public BaseImGuiGameObject(bool darkMode = true)
+==== ./Meatcorps.Engine.RayLib.ImGuiTools/Controllers/rlImGui.cs ====
+public static class rlImGui
+    public delegate void SetupUserFontsCallback(ImGuiIOPtr imGuiIo);
+    public static SetupUserFontsCallback SetupUserFonts = null;
+    public static Func<Vector2> GetMouseCursorPosition { get; set; } = () => new Vector2(Raylib.GetMouseX(), Raylib.GetMouseY());
+    public static Func<Vector2> GetScreenSize { get; set; } = () =>
+    public static void Setup(bool darkTheme = true, bool enableDocking = false)
+    public static void BeginInitImGui()
+    public static unsafe void ReloadFonts()
+    public static bool LoadDefaultFont = true;
+    public static bool LoadFontAwesome = true;
+    public static bool UseHighDPI = true;
+    public static void EndInitImGui()
+    public static void Begin(float dt = -1)
+    public static void End()
+    public static void Shutdown()
+    public static void Image(Texture2D image)
+    public static void ImageSize(Texture2D image, int width, int height)
+    public static void ImageSize(Texture2D image, Vector2 size)
+    public static void ImageRect(Texture2D image, int destWidth, int destHeight, Rectangle sourceRect)
+    public static void ImageRenderTexture(RenderTexture2D image)
+    public static void ImageRenderTextureFit(RenderTexture2D image, bool center = true)
+    public static bool ImageButton(System.String name, Texture2D image)
+    public static bool ImageButtonSize(System.String name, Texture2D image, Vector2 size)
+==== ./Meatcorps.Engine.Arcade.Leaderboard/obj/Release/net8.0/win-x64/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Arcade.Leaderboard/obj/Release/net8.0/win-x64/Meatcorps.Engine.Arcade.Leaderboard.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Arcade.Leaderboard/obj/Release/net8.0/win-x64/Meatcorps.Engine.Arcade.Leaderboard.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Arcade.Leaderboard/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Arcade.Leaderboard/obj/Debug/net8.0/Meatcorps.Engine.Arcade.Leaderboard.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Arcade.Leaderboard/obj/Debug/net8.0/Meatcorps.Engine.Arcade.Leaderboard.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Arcade.Leaderboard/Scenes/MainScene.cs ====
+public class MainScene : BaseScene
+==== ./Meatcorps.Engine.Arcade.Leaderboard/Input/InputMapper.cs ====
+public static class InputMapper
+    public static IInputMapper<GameInput> ArduinoInput()
+==== ./Meatcorps.Engine.Arcade.Leaderboard/Resources/GameSpriteFactory.cs ====
+public static class GameSpriteFactory
+    public static Texture2DItem<GameSprites> Load()
+==== ./Meatcorps.Engine.Arcade.Leaderboard/Particles/ScoreParticle.cs ====
+public static class ScoreParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Color color, Font font)
+==== ./Meatcorps.Engine.Arcade.Leaderboard/Particles/BloodParticle.cs ====
+public static class BloodParticle
+    public static ParticleSystemBuilder GenerateParticleSystem()
+==== ./Meatcorps.Engine.Arcade.Leaderboard/Particles/ExplosionParticle.cs ====
+public static class ExplosionParticle
+    public static ParticleSystemBuilder GenerateParticleSystem(Texture2DItem<GameSprites> sprites)
+==== ./Meatcorps.Engine.Arcade.Leaderboard/GameObjects/MainGameObject.cs ====
+public class MainGameObject : ResourceGameObject
+==== ./Meatcorps.Engine.Arcade.Leaderboard/GameObjects/Abstractions/ResourceGameObject.cs ====
+public abstract class ResourceGameObject : BaseGameObject
+==== ./Meatcorps.Engine.Arcade.Leaderboard/Data/GameConfig.cs ====
+public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum
+    public string GetOrDefault(T key, string? defaultValue)
+    public void Set(T key, string value)
+    public int GetOrDefault(T key, int? defaultValue)
+    public void Set(T key, int value)
+    public float GetOrDefault(T key, float? defaultValue)
+    public void Set(T key, float value)
+    public bool GetOrDefault(T key, bool? defaultValue)
+    public void Set(T key, bool value)
+    public static GameConfig<T> Create()
+==== ./Meatcorps.Engine.Arcade.Leaderboard/GameEnums/GameSettings.cs ====
+public enum GameSettings
+==== ./Meatcorps.Engine.Arcade.Leaderboard/GameEnums/GameSession.cs ====
+public static class GameSession
+    public static void Load()
+==== ./Meatcorps.Engine.Arcade.Leaderboard/GameEnums/GameMusic.cs ====
+public enum GameMusic
+==== ./Meatcorps.Engine.Arcade.Leaderboard/GameEnums/GameInput.cs ====
+public enum GameInput
+==== ./Meatcorps.Engine.Arcade.Leaderboard/GameEnums/GameSprites.cs ====
+public enum GameSprites
+==== ./Meatcorps.Engine.Arcade.Leaderboard/GameEnums/GamePlayerData.cs ====
+public enum GamePlayerData
+==== ./Meatcorps.Engine.Arcade.Leaderboard/GameEnums/GameSessionData.cs ====
+public enum GameSessionData
+==== ./Meatcorps.Engine.Arcade.Leaderboard/GameEnums/GameSounds.cs ====
+public enum GameSounds
+==== ./Meatcorps.Engine.Arcade.Leaderboard/Program.cs ====
 ==== ./Meatcorps.Engine.RayLib/UI/UIAnchorHelper.cs ====
 public static class UIAnchorHelper
     public static Vector2 ResolveAnchorPixel(Anchor anchor)
@@ -1570,11 +2786,12 @@ public class NineSliceRenderer
 ==== ./Meatcorps.Engine.RayLib/Renderer/RenderService.cs ====
 public class RenderService
     public Color BackgroundColor { get; set; } = Color.Black;
-    public long TotalRenderTimeInMs { get; private set; }
     public RenderService(ObjectManager objectManager, int sceneLayers = 2, int gameObjectLayers = 16)
     public void RegisterRender(BaseGameObject gameObject)
     public void Update(float deltaTime)
+    public void StartRenderer()
     public void Render()
+    public void StopRendering()
 ==== ./Meatcorps.Engine.RayLib/Renderer/BasicScreenRenderTarget.cs ====
 public class BasicScreenRenderTarget : IRenderTargetStrategy
     public void BeginRender(Color clearColor, ICamera camera)
@@ -1595,8 +2812,28 @@ public sealed class PixelPerfectRenderTarget : IRenderTargetStrategy, IDisposabl
     public void Dispose()
 ==== ./Meatcorps.Engine.RayLib/Scenes/EmptyScene.cs ====
 public class EmptyScene: BaseScene
+==== ./Meatcorps.Engine.RayLib/Input/RayLibControllerDevice.cs ====
+public class RayLibControllerDevice : IControllerDevice
+    public int Id { get; private set; }
+    public RayLibControllerDevice(int id)
+    public IInput GetState(ControllerInputEnum input)
+    public void Rumble(float left, float right, float duration)
+    public ControllerType Type { get; set; }
+    public bool IsConnected => Raylib.IsGamepadAvailable(Id);
+==== ./Meatcorps.Engine.RayLib/Input/RayLibControllerDeviceManager.cs ====
+public class RayLibControllerDeviceManager: IControllerDeviceManager
+    public IControllerDevice? GetDevice(int player)
+    public IEnumerable<IControllerDevice> GetDevices()
+    public int TotalDevices { get; private set; }
+    public void AssignDevice(int player, int device)
+    public void UnassignDevice(int player)
+    public bool IsDeviceAssigned(int player)
+    public int WhichPlayerOnDevice(int device)
+    public void Initialize()
+    public void Update(float deltaTime)
 ==== ./Meatcorps.Engine.RayLib/Camera/CameraControllerGameObject.cs ====
 public class CameraControllerGameObject : BaseGameObject
+    public float Zoom => _targetZoom;
     public CameraControllerGameObject(ICamera? camera)
     public void SetPosition(Vector2 position)
     public CameraControllerGameObject Follow(BaseGameObject target, Vector2? offset = null, float followSpeed = 8f)
@@ -1630,10 +2867,25 @@ public class FixedSizeCamera : ICamera, ICameraFixedWidthAndHeight
     public Vector2 WorldToScreen(Vector2 worldPos) => Raylib.GetWorldToScreen2D(worldPos, Camera);
     public Vector2 ScreenToWorld(Vector2 screenPos) => Raylib.GetScreenToWorld2D(screenPos, Camera);
     public void Update(float deltaTime, IRenderTargetStrategy renderTargetStrategy)
+==== ./Meatcorps.Engine.RayLib/Resources/FileResourceLoader.cs ====
+public class FileResourceLoader: IRaylibResource
+    public bool Exists(string path)
+    public bool DirectoryExists(string path)
+    public string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
+    public Image LoadImage(string path)
+    public Texture2D LoadTexture(string path)
+    public Font LoadFontEx(string fileName, int fontSize, int[]? codepoints, int codepointCount)
+    public Wave LoadWave(string path)
+    public Sound LoadSound(string path)
+    public Music LoadMusic(string path)
+    public Model LoadModel(string path)
+    public Shader LoadShader(string? vertexPath, string? fragmentPath)
+    public string LoadText(string path)
+    public byte[] LoadBytes(string path)
 ==== ./Meatcorps.Engine.RayLib/Resources/TextManager.cs ====
-public sealed class TextManager<T> : ILoadAfterRayLibInit, IDisposable, IDefaultFont where T: Enum
+public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultFont where T: Enum
     public TextManager()
-    public TextManager<T> AddFont(string fontPath, T type, int size = 32, TextureFilter filter = TextureFilter.Point)
+    public TextManager<T> AddFont(string fontPath, T type, int size = 32, TextureFilter filter = TextureFilter.Point, int[] codePoints = null)
     public void Load()
     public Font GetFont()
     public Font GetFont(T font)
@@ -1641,32 +2893,38 @@ public sealed class TextManager<T> : ILoadAfterRayLibInit, IDisposable, IDefault
 public static class TextManager
     public static TextManager<DefaultFont> OnlyOneFont(string fontPath, int size = 32,
 ==== ./Meatcorps.Engine.RayLib/Resources/OneTexture.cs ====
-public class OneTexture: ILoadAfterRayLibInit, IDisposable
+public class OneTexture: IResourceLoadOnInit, IDisposable
     public Texture2D Texture { get; private set; }
-    public OneTexture(string path)
+    public OneTexture(string path, TextureFilter filter = TextureFilter.Point, TextureWrap wrap = TextureWrap.Repeat)
     public OneTexture(string path, Action<Texture2D> onLoaded)
     public void Load()
     public void Dispose()
 ==== ./Meatcorps.Engine.RayLib/Resources/SoundAutoBinder.cs ====
 public static class AudioEnumBinder
-    public static SoundFxResource<T> BindAllSounds<T>(SoundFxResource<T> res, string baseDir)
-    public static MusicResource<T> BindAllMusic<T>(MusicResource<T> res, string baseDir) where T : struct, System.Enum
+    public static SoundFxResource<T> BindAllSounds<T>(SoundFxResource<T> res, string baseDir, bool strict = false)
+    public static MusicResource<T> BindAllMusic<T>(MusicResource<T> res, string baseDir, bool strict = false) where T : struct, System.Enum
 ==== ./Meatcorps.Engine.RayLib/Resources/SoundFxResource.cs ====
-public class SoundFxResource<T> : ILoadAfterRayLibInit, IAudioInitNeeded where T : struct, Enum
+public class SoundFxResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T : struct, Enum
     public SoundFxResource(int poolSize = 4, string name = "SoundFx", float masterVolume = 1f)
-    public SoundFxResource<T> AddSound(T music, string path)
+    public SoundFxResource<T> AddSound(T sound, string path)
     public SoundFxResource<T> SetMasterVolume(float volume)
     public SoundFxResource<T> SetName(string name)
+    public SoundFxResource<T> UsePlaceHoldersForMissingFiles(string path = "Assets/PlaceHolders/sound.wav")
     public void Load()
     public static SoundFxResource<T> Create(int poolSize = 4)
 ==== ./Meatcorps.Engine.RayLib/Resources/ShaderManager.cs ====
-public sealed class ShaderManager<T> : ILoadAfterRayLibInit, IDisposable where T: Enum
-    public ShaderManager<T> AddShader(string shaderPath, T shader)
+public sealed class ShaderManager<T> : IResourceLoadOnInit, IDisposable where T: Enum
+    public ShaderManager<T> AddShader(string shaderPathFs, T shader)
+    public ShaderManager<T> AddShader(string shaderPathVs, string shaderPathFs, T shader)
     public void Load()
+    public IDisposable UseShader(T shader)
     public Shader GetShader(T shader)
     public void Dispose()
+public class ShaderDisposable: IDisposable
+    public ShaderDisposable(Shader shader)
+    public void Dispose()
 ==== ./Meatcorps.Engine.RayLib/Resources/Texture2DItem.cs ====
-public sealed class Texture2DItem<T>: ILoadAfterRayLibInit, IDisposable where T : Enum
+public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T : Enum
     public string Name { get; private set; }
     public Texture2D Texture { get; private set; }
     public Rectangle TextureRect { get; private set; } = new();
@@ -1684,14 +2942,17 @@ public sealed class Texture2DItem<T>: ILoadAfterRayLibInit, IDisposable where T 
     public int GetAnimationCount(T key)
     public void Dispose()
 ==== ./Meatcorps.Engine.RayLib/Resources/MusicResource.cs ====
-public class MusicResource<T>: ILoadAfterRayLibInit, IAudioInitNeeded where T : struct, Enum
-    public MusicResource(float masterVolume = 1f)
+public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : struct, Enum
+    public MusicResource()
     public MusicResource<T> AddMusic(T k, string path, float volume = 1f)
     public MusicResource<T> SetMasterVolume(float volume)
+    public MusicResource<T> UsePlaceHoldersForMissingFiles(string path = "Assets/PlaceHolders/music.mp3")
     public void Load()
     public static MusicResource<T> Create()
 ==== ./Meatcorps.Engine.RayLib/Enums/CameraLayer.cs ====
 public enum CameraLayer
+==== ./Meatcorps.Engine.RayLib/Enums/GameLoopType.cs ====
+public enum GameLoopType
 ==== ./Meatcorps.Engine.RayLib/Enums/Orientation.cs ====
 public enum Orientation
 ==== ./Meatcorps.Engine.RayLib/Enums/Anchor.cs ====
@@ -1702,6 +2963,42 @@ public enum HAlign { Left, Center, Right }
 public enum DefaultFont
 ==== ./Meatcorps.Engine.RayLib/Enums/VAlign.cs ====
 public enum VAlign { Top, Middle, Bottom }
+==== ./Meatcorps.Engine.RayLib/TileRenderer/TileRuleSet.cs ====
+public class TileRuleSet<TSprite, TRuleGroup>
+    public bool CacheEnabled { get; set; } = true;
+    public TileRuleBuilder For(TSprite tile)
+    public readonly struct TileRuleBuilder
+        public TileRuleBuilder(TileRuleSet<TSprite, TRuleGroup> set, TSprite tile)
+        public TileRuleBuilder Require(TRuleGroup group, TileRuleCheck check)
+        public TileRuleSet<TSprite, TRuleGroup> End() => _set;
+    public void Invalidate(Rect rect) {
+    public void ShowTile(PointInt position)
+    public void HideTile(PointInt position)
+    public void ClearCache()
+    public void UpdateCache(TileRuleSettings<TRuleGroup> settings)
+    public bool GetTile(TileRuleSettings<TRuleGroup> settings, PointInt position, out TSprite tile)
+public class TileRule<TSprite, TRuleGroup>
+    public TSprite Tile { get; }
+    public Dictionary<TRuleGroup, TileRuleCheck> Rules { get; }
+    public TileRule(TSprite tile)
+    public bool Validate(TileRuleSettings<TRuleGroup> settings, PointInt position)
+public class TileRuleSettings<TGroup> where TGroup : struct, Enum
+    public Rect Bounds { get; private set; }
+    public bool Wrap { get; private set; }
+    public bool UseBounds { get; private set; }
+    public IsAllowedDelegateEvent IsAllowedReceiver { get; private set; }
+    public List<PointInt> Neighbors { get; }
+    public delegate bool IsAllowedDelegateEvent(PointInt position, TGroup group);
+    public TileRuleSettings()
+    public TileRuleSettings<TGroup> WithBounds(Rect bounds, bool wrap = false)
+    public TileRuleSettings<TGroup> WithIsAllowed(IsAllowedDelegateEvent receiver)
+    public TileRuleSettings<TGroup> Use4Neighbors()
+    public TileRuleSettings<TGroup> Use8Neighbors()
+    public bool IsValid(TGroup group, PointInt position)
+public class TileRuleCheck
+    public HashSet<PointInt> AllowedNeighbors { get; }
+    public static TileRuleCheck Create(params PointInt[] allowedNeighbors)
+    public static TileRuleCheck Create(bool left, bool right, bool up, bool down)
 ==== ./Meatcorps.Engine.RayLib/Particles/ParticleSystemBuilder.cs ====
 public class ParticleSystemBuilder
     public FixedTimer? AutoEmitTimer { get; private set; } = null;
@@ -1775,21 +3072,68 @@ public class TimeService : ITimeService
     public bool HitCatchUpCapThisFrame { get; private set; }
     public int MaxCatchUpCycles { get; set; } = 4;
     public float TargetFps { get; set; } = 60f;
+    public float DeltaMultiplier { get; set; } = 1f;
     public void UpdateFrameTimes()
     public bool TryDequeueStep(out float deltaTime)
     public void FinalizeFrame()
+==== ./Meatcorps.Engine.RayLib/Game/GameTasks/SceneTask.cs ====
+public class SceneTask: IGameLoopTask
+    public int Priority { get; } = 50;
+    public bool Enabled { get; set; } = false;
+    public bool IsInitialized { get; private set; }
+    public SceneTask(int priority = 50)
+    public void SwitchScene(BaseScene scene)
+    public void Initialize(GameHost host)
+    public void Task(GameLoopType type, float deltaTime)
+==== ./Meatcorps.Engine.RayLib/Game/GameTasks/LoadAfterRayLibInitTask.cs ====
+public class LoadAfterRayLibInitTask: IGameLoopTask
+    public int Priority { get; } = 1;
+    public bool Enabled { get; set; } = true;
+    public bool IsInitialized { get; private set; }
+    public LoadAfterRayLibInitTask(int priority = 1)
+    public void Initialize(GameHost host)
+    public void Task(GameLoopType type, float deltaTime)
+==== ./Meatcorps.Engine.RayLib/Game/GameTasks/MouseTask.cs ====
+public class MouseTask: IGameLoopTask
+    public int Priority { get; }
+    public bool Enabled { get; set; } = true;
+    public bool IsInitialized { get; private set; }
+    public MouseTask(int priority = 0)
+    public void Initialize(GameHost host)
+    public void Task(GameLoopType type, float deltaTime)
+==== ./Meatcorps.Engine.RayLib/Game/GameTasks/BackgroundServicesTask.cs ====
+public class BackgroundServicesTask: IGameLoopTask
+    public int Priority { get; } = 2;
+    public bool Enabled { get; set; } = true;
+    public bool IsInitialized { get; private set; }
+    public BackgroundServicesTask(int priority = 2)
+    public void Initialize(GameHost host)
+    public void Task(GameLoopType type, float deltaTime)
+==== ./Meatcorps.Engine.RayLib/Game/GameTasks/AudioTask.cs ====
+public class AudioTask: IGameLoopTask
+    public int Priority => 0;
+    public bool Enabled { get; set; } = true;
+    public bool IsInitialized { get; private set; }
+    public void Initialize(GameHost host)
+    public void Task(GameLoopType type, float deltaTime)
 ==== ./Meatcorps.Engine.RayLib/Game/GameHost.cs ====
 public sealed class GameHost : IDisposable
     public int Width { get; private set; }
     public int Height { get; private set; }
-    public long UpdateTimeInMs { get; private set; }
-    public long RenderTimeInMs { get; private set;}
+    public double UpdateTimeInMs { get; private set; }
+    public double RenderTimeInMs { get; private set;}
+    public FrameTimer UpdateLoopTime;
+    public FrameTimer RenderLoopTime;
     public RenderService RenderService { get; }
     public GameHost(int width, int height, string title, int targetFps = 60, ICamera? camera = null)
+    public void SetMultiplier(float multiplier)
     public void ToggleFullscreen()
+    public void ToggleBorderlessWindow()
     public void SetWindowSize(int newWidth, int newHeight)
     public Vector2 GetWindowSize()
+    public void SetExistKey(KeyboardKey key = KeyboardKey.Null)
     public void SwitchScene(BaseScene scene)
+    public void LoadGameLoopTasks()
     public void Run()
     public void Dispose()
 ==== ./Meatcorps.Engine.RayLib/Extensions/ColorExtensions.cs ====
@@ -1797,7 +3141,7 @@ public static class ColorExtensions
     public static Color Heatmap(float normal)
 ==== ./Meatcorps.Engine.RayLib/Extensions/GenericInputExtensions.cs ====
 public static class GenericInputExtensions
-    public static GenericMapper<T> AddInputKeyboard<T>(this GenericMapper<T> mapper, int player, T key, KeyboardKey keyboardKey) where T : Enum
+    public static GenericMapper<T> AddInputKeyboard<T>(this GenericMapper<T> mapper, int profileId, T key, KeyboardKey keyboardKey) where T : Enum
 ==== ./Meatcorps.Engine.RayLib/Extensions/Texture2DExtensions.cs ====
 public static class Texture2DExtensions
     public static NineSliceRenderer CreateNineSlice<T>(
@@ -1843,6 +3187,14 @@ public static class InlineRenderExtensions
         public float FontSize { get; set; }
         public Color Color { get; set; }
         public float Spacing { get; set; }
+==== ./Meatcorps.Engine.RayLib/Utilities/SmoothColor.cs ====
+public class SmoothColor
+    public Color DisplayValue
+    public Color RealValue
+    public SmoothColor(Color initialValue, float speed = 1f)
+    public bool IsAtRealValue
+    public void Update(float deltaTime)
+    public void SetSpeed(float speed)
 ==== ./Meatcorps.Engine.RayLib/Audio/MusicManager.cs ====
 public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IDisposable where TTrack : struct, Enum
     public string Name => "Music";
@@ -1878,6 +3230,7 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, ID
     public void SetMasterVolume(float volume)
     public SoundFxManager<TSfx> SetMasterVolumeSetup(float volume)
     public SoundFxManager<TSfx> Play(TSfx key, float? volumeOverride = null, float? pitch = null)
+    public bool IsPlaying(TSfx key)
     public OneSoundManager GetOneSoundManager(TSfx key, float volume = 1, bool fromSoundPool = true)
     public void RemoveOneSoundManager(OneSoundManager manager)
     public bool Has(TSfx key)
@@ -1935,6 +3288,10 @@ public sealed class UIMessageEmitter : BaseGameObject
     public void Show(string text, UIMessageStyle? message = null)
     public void Countdown(int durationInMilliseconds, UIMessageStyle? style = null, UIMessageStyle? goStyle = null, string finalText = "GO!")
     public void ClearAll()
+==== ./Meatcorps.Engine.RayLib/GameObjects/UI/InputAssignmentGameObject.cs ====
+public class InputAssignmentGameObject<T>: BaseGameObject where T : Enum 
+    public string Title { get; set; } = "Waiting for players";
+    public InputAssignmentGameObject(int totalPlayers, Action onReady, int countDownToStartInSeconds = 3, bool useSceneObjectManager = false)
 ==== ./Meatcorps.Engine.RayLib/GameObjects/PersistantCanvas.cs ====
 public class PersistentCanvas : BaseGameObject
     public Texture2D Texture => _renderTexture.Texture;
@@ -1957,7 +3314,7 @@ public class FixedPalettePostProcessor8 : BasePostProcessor
     public FixedPalettePostProcessor8() 
 ==== ./Meatcorps.Engine.RayLib/PostProcessing/HeatwaveBasePostProcessing.cs ====
 public class HeatwaveBasePostProcessing : BasePostProcessor
-    public HeatwaveBasePostProcessing() : base("Assets/Shaders/heatwave.fx", ["time", "resolution"], false)
+    public HeatwaveBasePostProcessing() : base("Assets/Shaders/heatwave.fx", ["time", "resolution"], true)
 ==== ./Meatcorps.Engine.RayLib/PostProcessing/FixedPalettePostProcessorTex.cs ====
 public class FixedPalettePostProcessorTex : BasePostProcessor
     public Vector3[] Palette { get; set; } = new Vector3[32]; // 0..1 RGB
@@ -1995,6 +3352,7 @@ public static class FixedPaletteExtension
     public static RayLibModule SetupProcessingFixedPalette8(this RayLibModule module, params Vector3[] palette01)
     public static RayLibModule SetupProcessingFixedPalette8(this RayLibModule module, params Color[] colors255)
     public static RayLibModule SetupProcessingPaletteGameBoy(this RayLibModule module)
+    public static RayLibModule SetupProcessingPaletteRed(this RayLibModule module)
     public static RayLibModule SetupProcessingPaletteCGA1(this RayLibModule module)
     public static RayLibModule SetupProcessingPaletteCGA2(this RayLibModule module)
     public static RayLibModule SetupProcessingPaletteAmiga(this RayLibModule module)
@@ -2103,7 +3461,7 @@ public abstract class BaseScene: IDisposable
     public void AddScene<T>(T scene) where T : BaseScene
     public void RemoveScene<T>(T scene) where T : BaseScene
     public T? GetScene<T>() where T : BaseScene
-    public void AddGameObject<T>(T gameObject) where T : BaseGameObject
+    public T AddGameObject<T>(T gameObject) where T : BaseGameObject
     public T? GetGameObject<T>() where T : BaseGameObject
     public IEnumerable<T> GetGameObjects<T>() where T : BaseGameObject
     public BaseGameObject? GetGameObjectByName(string name) 
@@ -2158,20 +3516,24 @@ public class TweenStackColor
         public Color Lerp(float normal)
 ==== ./Meatcorps.Engine.RayLib/Modules/RayLibModule.cs ====
 public class RayLibModule
-    public static RayLibModule Setup()
+    public static RayLibModule Setup(IRaylibResource? raylibResource = null)
     public RayLibModule()
     public RayLibModule SetInitialSize(int width, int height)
     public RayLibModule SetTitle(string title)
+    public RayLibModule SetFps(int fps)
     public RayLibModule SetCustomCamera(ICamera camera)
     public RayLibModule SetFixedSizeCamera(int targetWidth, int targetHeight, bool pixelPerfect = true)
-    public RayLibModule SetResource<T>(T instance) where T : class, ILoadAfterRayLibInit
+    public RayLibModule SetResource<T>(T instance, string tag = "default") where T : class, IResourceLoadOnInit
     public RayLibModule SetProcessing<T>(T postProcessor) where T : class, IPostProcessor
+    public RayLibModule SetExitKey(KeyboardKey key = KeyboardKey.Null)
     public RayLibModule Load<T>(T scene) where T : BaseScene
     public GameHost Run()
 ==== ./Meatcorps.Engine.RayLib/Interfaces/IDefaultFont.cs ====
 public interface IDefaultFont
 ==== ./Meatcorps.Engine.RayLib/Interfaces/INeedsSceneTexture.cs ====
 public interface INeedsSceneTexture
+==== ./Meatcorps.Engine.RayLib/Interfaces/IGameLoopTask.cs ====
+public interface IGameLoopTask
 ==== ./Meatcorps.Engine.RayLib/Interfaces/IRenderTargetStrategy.cs ====
 public interface IRenderTargetStrategy
 ==== ./Meatcorps.Engine.RayLib/Interfaces/IPostProcessor.cs ====
@@ -2180,10 +3542,12 @@ public interface IPostProcessor
 public interface ITimeService
 ==== ./Meatcorps.Engine.RayLib/Interfaces/IMasterVolume.cs ====
 public interface IMasterVolume
+==== ./Meatcorps.Engine.RayLib/Interfaces/IResourceLoadOnInit.cs ====
+public interface IResourceLoadOnInit
 ==== ./Meatcorps.Engine.RayLib/Interfaces/ICameraFixedWidthAndHeight.cs ====
 public interface ICameraFixedWidthAndHeight
-==== ./Meatcorps.Engine.RayLib/Interfaces/ILoadAfterRayLibInit.cs ====
-public interface ILoadAfterRayLibInit
+==== ./Meatcorps.Engine.RayLib/Interfaces/IRaylibResource.cs ====
+public interface IRaylibResource : IResource
 ==== ./Meatcorps.Engine.RayLib/Interfaces/IAudioInitNeeded.cs ====
 public interface IAudioInitNeeded
 ==== ./Meatcorps.Engine.RayLib/Interfaces/ICamera.cs ====
@@ -2208,15 +3572,152 @@ public class VisualDebugger : BaseGameObject
 ==== ./Meatcorps.Engine.Logging/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Engine.Logging/obj/Debug/net8.0/Meatcorps.Engine.Logging.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.Logging/obj/Debug/net8.0/Meatcorps.Engine.Logging.GlobalUsings.g.cs ====
-==== ./Meatcorps.Engine.Logging/Module/ConsoleLoggingModule.cs ====
-public static class ConsoleLoggingModule
+==== ./Meatcorps.Engine.Logging/Module/LoggingModule.cs ====
+public static class LoggingModule
     public static void Load()
+==== ./Meatcorps.Engine.Visualizer/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Visualizer/obj/Debug/net8.0/Meatcorps.Engine.Visualizer.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Visualizer/obj/Debug/net8.0/Meatcorps.Engine.Visualizer.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Visualizer/Scenes/MainScene.cs ====
+public class MainScene: BaseScene
+    public Font Font => _font.GetFont();
+    public Font IconFont => _font.GetFont(FontEnum.Icons);
+    public VisualData VisualData { get; set; } = new();
+    public bool BlockTheEditor => _editor.BlockTheEditor;
+    public bool EditorIsOpen => VisualData.EditItem != null;
+    public DataLoaderService DataLoaderService { get; } = new DataLoaderService();
+    public string MouseText { get; set; } = "";
+    public bool HideUI = false;
+    public bool ValidMove => true;
+    public Vector2 MousePosition
+    public Vector2 MousePositionGrid { get; private set; }
+    public bool IsKeyDown(KeyboardKey key, bool ignoreEditor = false)
+    public bool IsKeyPressed(KeyboardKey key, bool ignoreEditor = false)
+    public bool IsMouseDown(MouseButton button)
+    public bool IsMouseUp(MouseButton button)
+    public void LoadData(IEnumerable<IVisualItem>? items)
+    public void SaveData()
+==== ./Meatcorps.Engine.Visualizer/VisualItems/TextNode.cs ====
+public class TextNode: IVisualItem 
+    public Guid Id { get; set; }
+    public string Name { get; set; } = "Lorem ipsum";
+    public string Name2 { get; set; } = "Delore set atom";
+    public int Size1 { get; set; } = 16;
+    public int Size2 { get; set; } = 8;
+    public Rectangle Bounds { get; set; }
+    public bool Selected { get; set; }
+    public int Order { get; set; }
+    public Color Color { get; set; } = new Color(0, 255, 255);
+    public Color Color2 { get; set; } = new Color(255, 255, 255);
+    public Color BackgroundColor { get; set; } = new Color(255, 255, 255, 0);
+    public float AnimationSpeedMs { get; set; } = 1000;
+    public bool AnimationEnabled { get; set; }
+    public void OnInitialize(MainScene scene)
+    public bool IsColliding(IVisualItem other)
+    public bool CheckMouseIsInsideItem(Vector2 position)
+    public bool CheckMouseIsInsideItem(RectF rect)
+    public void OnDraw()
+    public void OnEditorDraw()
+    public VisualType Type => VisualType.Node;
+    public IVisualItem Clone()
+    public void Update(float deltaTime)
+    public void OnDragStart(Vector2 position, EditType type)
+    public void OnDrag(Vector2 position, EditType type)
+    public void OnDragEnd(Vector2 position, EditType type)
+    public override string ToString()
+==== ./Meatcorps.Engine.Visualizer/VisualItems/NodeLine.cs ====
+public class NodeLine: IVisualItem 
+    public Guid Id { get; set; }
+    public bool Selected { get; set; }
+    public int Order { get; set; }
+    public Vector2 StartPoint = Vector2.Zero;
+    public Vector2 EndPoint = Vector2.Zero;
+    public bool StartArrow { get; set; }
+    public bool EndArrow { get; set; }
+    public int Thickness { get; set; } = 5;
+    public Color Color { get; set; } = new Color(255,0, 255);
+    public int DashedSize { get; set; } = 4;
+    public int ArrowSize { get; set; } = 10;
+    public float ArrowDegrees { get; set; } = 45;
+    public LineStyleEnum LineStyle = LineStyleEnum.Solid;
+    public string Text { get; set; } = "";
+    public int TextSize { get; set; } = 8;
+    public Color ColorText { get; set; } = new Color(255,255, 255);
+    public float AnimationSpeedMs { get; set; } = 1000;
+    public bool AnimationEnabled { get; set; }
+    public bool StartEndAnimation { get; set; } = true;
+    public void OnInitialize(MainScene scene)
+    public bool IsColliding(IVisualItem other)
+    public bool CheckMouseIsInsideItem(Vector2 position)
+    public bool CheckMouseIsInsideItem(RectF rect)
+    public void OnDraw()
+    public void OnEditorDraw()
+    public VisualType Type => VisualType.Node;
+    public IVisualItem Clone()
+    public void Update(float deltaTime)
+    public void OnDragStart(Vector2 position, EditType type)
+    public void OnDrag(Vector2 position, EditType type)
+    public void OnDragEnd(Vector2 position, EditType type)
+    public override string ToString()
+public enum LineStyleEnum
+==== ./Meatcorps.Engine.Visualizer/VisualItems/IVisualItem.cs ====
+public interface IVisualItem
+==== ./Meatcorps.Engine.Visualizer/Enums/FontEnum.cs ====
+public enum FontEnum
+==== ./Meatcorps.Engine.Visualizer/Converters/VisualItemConverter.cs ====
+public class VisualItemConverter: JsonConverter<IVisualItem>
+    public VisualItemConverter()
+    public override void WriteJson(JsonWriter writer, IVisualItem? value, JsonSerializer serializer)
+    public override IVisualItem? ReadJson(JsonReader reader, Type objectType, IVisualItem? existingValue, bool hasExistingValue,
+==== ./Meatcorps.Engine.Visualizer/GameObjects/Toolbox.cs ====
+public class Toolbox: BaseGameObject
+    public List<ToolboxItem> Items { get; set; } = new();
+    public bool IsMouseOverToolbox { get; private set; }
+public class ToolboxItem
+    public string Name { get; set; } = "";
+    public RemixIcon? Icon { get; set; }
+    public Action Action { get; set; } = () => { };
+    public Func<bool> Enabled { get; set; } = () => true;
+    public Func<bool> Highlight { get; set; } = () => false;
+    public bool IsMouseOver { get; set; } = false;
+    public int Order { get; set; } = 0;
+    public TimerOn ClickTimer { get; set; } = new TimerOn(500);
+==== ./Meatcorps.Engine.Visualizer/GameObjects/Editor.cs ====
+public class Editor: BaseImGuiGameObject
+    public bool BlockTheEditor => _editName || _openFile || _scene.VisualData.EditItem != null;
+    public void OpenFile()
+    public void EditName()
+==== ./Meatcorps.Engine.Visualizer/GameObjects/MainGameObject.cs ====
+public class MainGameObject : BaseGameObject
+    public bool ValidMove => _validMove;
+public enum VisualType
+public enum EditType
+==== ./Meatcorps.Engine.Visualizer/Data/VisualData.cs ====
+public class VisualData
+    public string Name { get; set; } = Guid.NewGuid().ToString();
+    public List<IVisualItem> Data { get; set; } = new List<IVisualItem>();
+    public VisualType VisualType { get; set; }
+    public EditType EditType { get; set; } = EditType.None;
+    public IVisualItem? SelectedItem { get; set; }
+    public IVisualItem? EditItem { get; set; }
+    public bool MultiSelect { get; set; }
+    public bool GetItemBasedOn(Vector2 position, bool matchType, out IVisualItem? item)
+    public IReadOnlyList<IVisualItem> GetItemBasedOn(RectF rect)
+==== ./Meatcorps.Engine.Visualizer/Services/DataLoaderService.cs ====
+public class DataLoaderService
+    public DataLoaderService()
+    public IEnumerable<string> GetFiles()
+    public IEnumerable<IVisualItem>? LoadFile(string file)
+    public void SaveFile(string file, IEnumerable<IVisualItem> items)
+==== ./Meatcorps.Engine.Visualizer/Program.cs ====
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/obj/Release/net8.0/Meatcorps.Engine.Hardware.ArduinoController.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/obj/Release/net8.0/Meatcorps.Engine.Hardware.ArduinoController.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/obj/Debug/net8.0/Meatcorps.Engine.Hardware.ArduinoController.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/obj/Debug/net8.0/Meatcorps.Engine.Hardware.ArduinoController.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Hardware.ArduinoController/Utilities/SerialPortDataParser.cs ====
+    public static IEnumerable<int> Parse(string data)
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/ArduinoController/FlashAnimation.cs ====
 public class FlashAnimation : IButtonAnimation
     public FlashAnimation(long speedInMs, bool selfTerminate = true)
@@ -2226,6 +3727,7 @@ public class FlashAnimation : IButtonAnimation
 public enum ButtonLightsEnum
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/ArduinoController/ArduinoInput.cs ====
 public class ArduinoInput : IInput
+    public string Label { get; private set; }
     public bool Enable { get; set; }
     public bool Down { get; private set; }
     public bool Up { get; private set; }
@@ -2242,12 +3744,21 @@ public class ArduinoInputMapper<T> : IInputMapperWithManager<T, ArduinoControlle
     public ArduinoInputMapper(ArduinoControllerManager manager)
     public IInput GetState(int player, T input)
     public Vector2 GetAxis(int player, int axis = 1)
+    public void Rumble(int player, float left, float right, float duration)
+    public void AssignProfile(int profileId, int player)
+    public void UnassignProfile(int player)
+    public bool IsAssigned(int player)
+    public bool IsConnected(int _)
+    public bool AnyInputPressed(out int profileId, out int playerId)
+    public PlayerInputType InputType(int _) => PlayerInputType.Arcade;
+    public IReadOnlyList<int> GetAvailableProfiles()
     public ControllerInputEnum MapInput(T input)
     public void AddMapping(T input, ControllerInputEnum controllerInput)
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/ArduinoController/ArduinoControllerCommunication.cs ====
 public class ArduinoControllerCommunication : IDisposable
     public ControllerInputEnum ControllerState1 { get; private set; }
     public ControllerInputEnum ControllerState2 { get; private set; }
+    public bool IsConnected => _serialPort.IsOpen;
     public ArduinoControllerCommunication(string port)
     public void SetButtonLights(ButtonLightsEnum? buttonLights1 = null, ButtonLightsEnum? buttonLights2 = null)
     public void Dispose()
@@ -2257,7 +3768,7 @@ public class DotNetSerialPort : ISerialPort
     public void Reconnect()
     public bool IsOpen => _serialPort?.IsOpen ?? false;
     public void Write(byte[] data)
-    public string[] Read()
+    public IEnumerable<int> Read()
     public void Dispose()
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/ArduinoController/RJCPSerialPort.cs ====
 public class RjcpSerialPort : ISerialPort
@@ -2265,7 +3776,7 @@ public class RjcpSerialPort : ISerialPort
     public void Reconnect()
     public bool IsOpen => _serialPort?.IsOpen ?? false;
     public void Write(byte[] data)
-    public string[] Read()
+    public IEnumerable<int> Read()
     public void Dispose()
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/ArduinoController/ArduinoControllerManager.cs ====
 public class ArduinoControllerManager
@@ -2274,6 +3785,7 @@ public class ArduinoControllerManager
     public Vector2 GetAxis(int player) => player == 1 ? _axisPlayer1 : _axisPlayer2;
     public IEnumerable<ArduinoInput> GetInputs(int player)
     public void Update()
+    public bool IsConnected => _arduinoControllerCommunication.IsConnected;
 ==== ./Meatcorps.Engine.Hardware.ArduinoController/ArduinoController/AnimationChain.cs ====
 public enum ChainMode
 public readonly struct AnimationStep
@@ -2308,6 +3820,9 @@ public class ArduinoControllerService : IBackgroundService
     public void PreUpdate(float deltaTime)
     public void Update(float deltaTime)
     public void LateUpdate(float deltaTime)
+==== ./Meatcorps.Engine.Session/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Session/obj/Release/net8.0/Meatcorps.Engine.Session.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Session/obj/Release/net8.0/Meatcorps.Engine.Session.GlobalUsings.g.cs ====
 ==== ./Meatcorps.Engine.Session/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
 ==== ./Meatcorps.Engine.Session/obj/Debug/net8.0/Meatcorps.Engine.Session.AssemblyInfo.cs ====
 ==== ./Meatcorps.Engine.Session/obj/Debug/net8.0/Meatcorps.Engine.Session.GlobalUsings.g.cs ====
@@ -2475,3 +3990,153 @@ public readonly struct SessionSeed : IEquatable<SessionSeed>, IValueType
 public interface ISessionTracker<TEnumSession, TEnumPlayer>
 ==== ./Meatcorps.Engine.Session/Interfaces/ISessionService.cs ====
 public interface ISessionService
+==== ./Meatcorps.Engine.Hardware.Controllers/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.Hardware.Controllers/obj/Debug/net8.0/Meatcorps.Engine.Hardware.Controllers.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.Hardware.Controllers/obj/Debug/net8.0/Meatcorps.Engine.Hardware.Controllers.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.Hardware.Controllers/ControllerInput.cs ====
+public class ControllerInput: GenericInput
+    public override string Label
+    public ControllerInput(Func<ControllerType> type, Func<float> pressedFunc, string label) : base(pressedFunc, label)
+==== ./Meatcorps.Engine.Hardware.Controllers/Constants/ButtonConstants.cs ====
+public static class ButtonConstants
+    public const string DpadDown = "DPAD Down";
+    public const string DpadLeft = "DPAD Left";
+    public const string DpadRight = "DPAD Right";
+    public const string DPadUp = "DPAD Up";
+    public const string LeftJoyConClick = "Left Joy Con Click";
+    public const string LeftX = "LeftX";
+    public const string LeftY = "LeftY";
+    public const string RightJoyConClick = "Right Joy Con Click";
+    public const string RightX = "RightX";
+    public const string RightY = "RightY";
+    public const string RightFaceDown = "RightFaceDown";
+    public const string RightFaceRight = "RightFaceRight";
+    public const string RightFaceLeft = "RightFaceLeft";
+    public const string RightFaceUp = "RightFaceUp";
+    public const string LeftBumper = "LeftBumper";
+    public const string RightBumper = "RightBumper";
+    public const string LeftTrigger = "LeftTrigger";
+    public const string RightTrigger = "RightTrigger";
+    public const string Middle = "Middle";
+    public const string MiddleRight = "MiddleRight";
+    public const string MiddleLeft = "MiddleLeft";
+    public const string Button1 = "Button1";
+    public const string Button2 = "Button2";
+    public const string Button3 = "Button3";
+    public const string Button4 = "Button4";
+    public const string Button5 = "Button5";
+    public const string Button6 = "Button6";
+    public const string Button7 = "Button7";
+    public const string Button8 = "Button8";
+    public const string Button9 = "Button9";
+    public const string Button10 = "Button10";
+    public const string A = "A";
+    public const string B = "B";
+    public const string X = "X";
+    public const string Y = "Y";
+    public const string Cross = "Cross";
+    public const string Circle = "Circle";
+    public const string Triangle = "Triangle";
+    public const string Square = "Square";
+    public const string Options = "Options";
+    public const string Share = "Share";
+    public const string Back = "Back";
+    public const string Start = "Start";
+    public const string L1 = "L1";
+    public const string L2 = "L2";
+    public const string R1 = "R1";
+    public const string R2 = "R2";
+==== ./Meatcorps.Engine.Hardware.Controllers/Enums/ControllerType.cs ====
+public enum ControllerType
+==== ./Meatcorps.Engine.Hardware.Controllers/Enums/ControllerInputEnum.cs ====
+public enum ControllerInputEnum
+==== ./Meatcorps.Engine.Hardware.Controllers/Mapper/ControllerVendorToTypeMapping.cs ====
+public static class ControllerVendorToTypeMapping
+    public static ControllerType Get(int vendorId)
+==== ./Meatcorps.Engine.Hardware.Controllers/Mapper/ControllerInputMapper.cs ====
+public class ControllerInputMapper<T> : IBackgroundService, IInputMapper<T> where T : Enum
+    public ControllerInputMapper(IControllerDeviceManager manager)
+    public ControllerInputMapper<T> SetDPadIsAxis(bool isAxis)
+    public ControllerInputMapper<T> Map(T input, ControllerInputEnum controllerInput)
+    public IInput GetState(int player, T input)
+    public Vector2 GetAxis(int player, int axis = 1)
+    public void Rumble(int player, float left, float right, float duration)
+    public void AssignProfile(int profileId, int player)
+    public void UnassignProfile(int player)
+    public bool IsAssigned(int player)
+    public bool IsConnected(int player)
+    public bool AnyInputPressed(out int profileId, out int player)
+    public PlayerInputType InputType(int _) => PlayerInputType.GamePad;
+    public IReadOnlyList<int> GetAvailableProfiles()
+    public void PreUpdate(float deltaTime)
+    public void Update(float deltaTime)
+    public void LateUpdate(float deltaTime)
+==== ./Meatcorps.Engine.Hardware.Controllers/Interfaces/IControllerDeviceManager.cs ====
+public interface IControllerDeviceManager
+    public IControllerDevice? GetDevice(int player);
+    public IEnumerable<IControllerDevice> GetDevices();
+    public int TotalDevices { get; }
+    public void AssignDevice(int player, int device);
+    public void UnassignDevice(int player);
+    public bool IsDeviceAssigned(int player);
+    public int WhichPlayerOnDevice(int device);
+    public void Initialize();
+    public void Update(float deltaTime);
+==== ./Meatcorps.Engine.Hardware.Controllers/Interfaces/IControllerDevice.cs ====
+public interface IControllerDevice
+    public IInput GetState(ControllerInputEnum input);
+    public void Rumble(float left, float right, float duration);
+    public ControllerType Type { get; }
+    public bool IsConnected { get; }
+==== ./Meatcorps.Engine.RayLib.Assets/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.RayLib.Assets/obj/Debug/net8.0/Meatcorps.Engine.RayLib.Assets.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.RayLib.Assets/obj/Debug/net8.0/Meatcorps.Engine.RayLib.Assets.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.RayLib.Assets/PackageResourceLoader.cs ====
+public class PackageResourceLoader: IRaylibResource
+    public PackageResourceLoader(AssetPackageManager packageManager)
+    public bool Exists(string path)
+    public bool DirectoryExists(string path)
+    public string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
+    public string LoadText(string path)
+    public byte[] LoadBytes(string path)
+    public Image LoadImage(string path)
+    public Texture2D LoadTexture(string path)
+    public Font LoadFontEx(string fileName, int fontSize, int[]? codepoints, int codepointCount)
+    public Wave LoadWave(string path)
+    public Sound LoadSound(string path)
+    public Music LoadMusic(string path)
+    public Model LoadModel(string path)
+    public Shader LoadShader(string? vertexPath, string? fragmentPath)
+==== ./Meatcorps.Engine.MQTT/obj/Release/net8.0/Meatcorps.Engine.MQTT.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.MQTT/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.MQTT/obj/Release/net8.0/Meatcorps.Engine.MQTT.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.MQTT/obj/Debug/net8.0/Meatcorps.Engine.MQTT.AssemblyInfo.cs ====
+==== ./Meatcorps.Engine.MQTT/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ====
+==== ./Meatcorps.Engine.MQTT/obj/Debug/net8.0/Meatcorps.Engine.MQTT.GlobalUsings.g.cs ====
+==== ./Meatcorps.Engine.MQTT/Enums/MQTTGroup.cs ====
+public enum MQTTGroup
+==== ./Meatcorps.Engine.MQTT/MQTTClient.cs ====
+public class MQTTClient: IDisposable
+    public IObservable<Unit> Connected => _connected.AsObservable();
+    public bool IsConnected => _client.IsConnected;
+    public MQTTClient(string host)
+    public async Task Connect(string username = "user", string password = "admin", int port = 1883)
+    public async Task<IObservable<string>> SubscribeToTopic(string topic)
+    public async Task Publish(string topic, string payload)
+    public void Dispose()
+==== ./Meatcorps.Engine.MQTT/Modules/MQTTModule.cs ====
+public class MQTTModule
+    public static MQTTModule Load()
+    public MQTTModule Register<TValueType>(string topic, Func<object, string> getConverter,
+    public MQTTModule RegisterComplexObject<TValueType>(string topic, bool onlyRead, bool onlyWrite, TValueType defaultValue, bool sendOnRegister = true)
+    public void Create()
+==== ./Meatcorps.Engine.MQTT/Services/MQTTSignalValueEvent.cs ====
+public class MQTTSignalValueEvent: BaseSignalValueEvent<MQTTGroup>
+    public MQTTSignalValueEvent(MQTTClient client)
+    public MQTTSignalValueEvent Register<TValueType>(string topic, Func<object, string> getConverter,
+    public MQTTSignalValueEvent ForcePublish<TValueType>(string topic)
+    public MQTTSignalValueEvent RegisterComplexObject<TValueType>(string topic, bool onlyRead, bool onlyWrite)
+    public override MQTTGroup GetGroup()
+==== ./Meatcorps.Engine.MQTT/Interfaces/MessageIdentifierBase.cs ====
+public abstract class MessageIdentifierBase
+    public string MessageIdentifier { get; set; } = Guid.NewGuid().ToString();

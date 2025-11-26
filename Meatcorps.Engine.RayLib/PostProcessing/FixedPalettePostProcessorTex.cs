@@ -23,22 +23,22 @@ public class FixedPalettePostProcessorTex : BasePostProcessor
                new[] { "paletteTex", "paletteSize", "ditherStrength", "ditherScale", "ditherOffset", "exactEpsilon", "usePerceptual" })
     { }
 
-    protected override void OnLoad()
-    {
-        // Create Nx1 texture once (N=32)
-        var img = Raylib.GenImageColor(32, 1, Color.Black);
-        _paletteTex = Raylib.LoadTextureFromImage(img);
-        Raylib.UnloadImage(img);
-        _paletteTexReady = true;
-
-        // *** Force nearest sampling so texelFetch and any UV fallback are crisp ***
-        Raylib.SetTextureFilter(_paletteTex, TextureFilter.Point);
-    }
-
     public override void BeginFrame(float dt) => _frame++;
 
     protected override void ApplyValues(Shader shader, Texture2D target)
     {
+        if (!_paletteTexReady)
+        {
+            // Create Nx1 texture once (N=32)
+            var img = Raylib.GenImageColor(32, 1, Color.Black);
+            _paletteTex = Raylib.LoadTextureFromImage(img);
+            Raylib.UnloadImage(img);
+            _paletteTexReady = true;
+
+            // *** Force nearest sampling so texelFetch and any UV fallback are crisp ***
+            Raylib.SetTextureFilter(_paletteTex, TextureFilter.Point);
+        }
+        
         // 1) upload palette to texture each frame (cheap)
         BuildOrUpdatePaletteTexture();
 

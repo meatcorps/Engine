@@ -7,7 +7,7 @@ using Rectangle = Raylib_cs.Rectangle;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public sealed class Texture2DItem<T>: ILoadAfterRayLibInit, IDisposable where T : Enum
+public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T : Enum
 {
     public string Name { get; private set; }
     private bool _isDisposed;
@@ -26,14 +26,21 @@ public sealed class Texture2DItem<T>: ILoadAfterRayLibInit, IDisposable where T 
         _path = path;
     }
 
-    public void Load()
+    public int TotalResources => 1;
+    public int ResourcesLoaded { get; private set; }
+
+    public async Task Load()
     {
         if (_isLoaded)
             return;
         _isLoaded = true;
         Name = Path.GetFileNameWithoutExtension(_path);
-        Texture = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_path);
-        Raylib.SetTextureFilter(Texture, _filter);
+        Texture = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_path);
+        await GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.AddTaskToMainThread(() =>
+        {
+            Raylib.SetTextureFilter(Texture, _filter);
+        });
+        ResourcesLoaded = 1;
         TextureRect = new Rectangle(0, 0, Texture.Width, Texture.Height);
     }
     

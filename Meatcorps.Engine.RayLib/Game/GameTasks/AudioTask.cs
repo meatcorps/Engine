@@ -22,7 +22,7 @@ public class AudioTask: IGameLoopTask
     public void Task(GameLoopType type, float deltaTime)
     {
         if (type == GameLoopType.PostRaylibInit)
-            if (GlobalObjectManager.ObjectManager.GetList<ILoadAfterRayLibInit>()!.Any(x => x is IAudioInitNeeded))
+            if (GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!.Any(x => x is IAudioInitNeeded))
             {
                 if (!Raylib.IsAudioDeviceReady())
                 {

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Services;
@@ -8,12 +9,17 @@ using Meatcorps.Engine.RayLib.Interfaces;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public class SoundFxResource<T> : ILoadAfterRayLibInit, IAudioInitNeeded where T : struct, Enum
+public class SoundFxResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T : struct, Enum
 {
     private readonly int _poolSize;
     private string _name;
     private float _masterVolume;
     private readonly Dictionary<T, string> _sound = new();
+
+    public int TotalResources => _sound.Count;
+    public int ResourcesLoaded  => _done.Count;
+    
+    private ConcurrentBag<string> _done = new ConcurrentBag<string>();
 
     public SoundFxResource(int poolSize = 4, string name = "SoundFx", float masterVolume = 1f)
     {
@@ -54,15 +60,16 @@ public class SoundFxResource<T> : ILoadAfterRayLibInit, IAudioInitNeeded where T
         return this;
     }
 
-    public void Load()
+    public async Task Load()
     {
         var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         var nonExisting = new List<string>();
         var manager = new SoundFxManager<T>(_poolSize, _name);
+        
         foreach (var sound in _sound)
         {
             if (resource.Exists(sound.Value))
-                manager.Load(sound.Key, sound.Value);
+                await manager.Load(sound.Key, sound.Value, () => _done.Add(sound.Value)); 
             else
                 nonExisting.Add($"{sound.Key} -> {sound.Value} does not map to a file");
         }

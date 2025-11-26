@@ -144,6 +144,7 @@ public class ObjectManager : IDisposable
             catch (Exception e)
             {
 #if DEBUG
+                Console.WriteLine(instance.GetType().FullName);
                 throw e;
 #endif
                 /* optional: log; never throw during shutdown */

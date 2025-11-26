@@ -9,12 +9,20 @@ namespace Meatcorps.Engine.RayLib.PostProcessing;
 /// </summary>
 public class ColorGradingPostProcessor : BaseFinalPostProcessor
 {
+    private readonly string _lutPath;
     private Texture2D _lut;
 
     public ColorGradingPostProcessor(string lutPath) 
         : base("Assets/Shaders/colorgrading.fx", new[] { "lutTexture" })
     {
-        _lut = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(lutPath);
+        _lutPath = lutPath;
+        TotalResources++;
+    }
+
+    protected override async Task OnLoad()
+    {
+        _lut = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_lutPath);
+        ResourcesLoaded++;
     }
 
     protected override void ApplyValues(Shader shader, Texture2D target)

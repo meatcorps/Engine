@@ -5,7 +5,7 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public sealed class TextManager<T> : ILoadAfterRayLibInit, IDisposable, IDefaultFont where T: Enum
+public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultFont where T: Enum
 {
     private Dictionary<T, Font> _fonts = new();
     private List<(string, T, int, TextureFilter, int[]? codePoints)> _fontPaths = new();
@@ -26,15 +26,22 @@ public sealed class TextManager<T> : ILoadAfterRayLibInit, IDisposable, IDefault
         _fontPaths.Add((fontPath, type, size, filter, codePoints));
         return this;
     }
-    
-    public void Load()
+
+    public int TotalResources => _fontPaths.Count;
+    public int ResourcesLoaded => _fonts.Count;
+
+    public async Task Load()
     {
         if (_isLoaded)
             return;
         foreach (var fontToBeLoaded in _fontPaths)
         {
-            var font = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadFontEx(fontToBeLoaded.Item1, fontToBeLoaded.Item3, fontToBeLoaded.codePoints, fontToBeLoaded.codePoints?.Length ?? 0);
-            Raylib.SetTextureFilter(font.Texture, fontToBeLoaded.Item4);
+            var font = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadFontEx(fontToBeLoaded.Item1, fontToBeLoaded.Item3, fontToBeLoaded.codePoints, fontToBeLoaded.codePoints?.Length ?? 0);
+            
+            await GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.AddTaskToMainThread(() =>
+            {
+                Raylib.SetTextureFilter(font.Texture, fontToBeLoaded.Item4);
+            });
             _fonts.Add(fontToBeLoaded.Item2, font);
         }
     }

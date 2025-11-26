@@ -43,7 +43,6 @@ public sealed class PixelPerfectRenderTarget : IRenderTargetStrategy, IDisposabl
 
             foreach (var postProcessor in postProcessors!)
             {
-                postProcessor.Load();
                 if (postProcessor is INeedsSceneTexture)
                     _postProcessingWithSceneTexture = true;
             }
