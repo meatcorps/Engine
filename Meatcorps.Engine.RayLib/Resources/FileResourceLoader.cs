@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
 
@@ -6,6 +7,19 @@ namespace Meatcorps.Engine.RayLib.Resources;
 
 public class FileResourceLoader: IRaylibResource
 {
+    private ResourceManager _resourceManager = null!;
+    private bool _isResourceManagerLoaded;
+
+    private void LoadResourceManager()
+    {
+        if (_isResourceManagerLoaded)
+            return;
+
+        _isResourceManagerLoaded = true;
+        
+        _resourceManager = GlobalObjectManager.ObjectManager.Get<ResourceManager>()!;
+    }
+    
     public bool Exists(string path)
     {
         return File.Exists(path);
@@ -21,47 +35,71 @@ public class FileResourceLoader: IRaylibResource
         return Directory.GetFiles(path, searchPattern, searchOption);
     }
 
-    public Image LoadImage(string path)
+    public async Task<Image> LoadImage(string path)
     {
-        return Raylib.LoadImage(path);
+        LoadResourceManager();
+        Image image = default;
+        await _resourceManager.AddTaskToMainThread(() => image = Raylib.LoadImage(path));
+        return image;
     }
 
-    public Texture2D LoadTexture(string path)
+    public async Task<Texture2D> LoadTexture(string path)
     {
-        return Raylib.LoadTexture(path);
+        LoadResourceManager();
+        Texture2D texture2D = default;
+        await _resourceManager.AddTaskToMainThread(() => texture2D = Raylib.LoadTexture(path));
+        return texture2D;
     }
 
-    public Font LoadFontEx(string fileName, int fontSize, int[]? codepoints, int codepointCount)
+    public async Task<Font> LoadFontEx(string fileName, int fontSize, int[]? codepoints, int codepointCount)
     {
-        return Raylib.LoadFontEx(fileName, fontSize, codepoints, codepointCount);;
+        LoadResourceManager();
+        Font font = default;
+        await _resourceManager.AddTaskToMainThread(() => font = Raylib.LoadFontEx(fileName, fontSize, codepoints, codepointCount));
+        return font;
     }
 
-    public Wave LoadWave(string path)
+    public async Task<Wave> LoadWave(string path)
     {
-        return Raylib.LoadWave(path);
+        LoadResourceManager();
+        Wave wave = default;
+        await _resourceManager.AddTaskToMainThread(() => wave = Raylib.LoadWave(path));
+        return wave;
     }
 
-    public Sound LoadSound(string path)
+    public async Task<Sound> LoadSound(string path)
     {
-        return Raylib.LoadSound(path);
+        LoadResourceManager();
+        Sound sound = default;
+        await _resourceManager.AddTaskToMainThread(() => sound = Raylib.LoadSound(path));
+        return sound;
     }
 
-    public Music LoadMusic(string path)
+    public async Task<Music> LoadMusic(string path)
     {
-        return Raylib.LoadMusicStream(path);
+        LoadResourceManager();
+        Music music = default;
+        await _resourceManager.AddTaskToMainThread(() => music = Raylib.LoadMusicStream(path));
+        return music;
     }
 
-    public Model LoadModel(string path)
+    public async Task<Model> LoadModel(string path)
     {
-        return Raylib.LoadModel(path);
+        LoadResourceManager();
+        Model model = default;
+        await _resourceManager.AddTaskToMainThread(() => model = Raylib.LoadModel(path));
+        return model;
     }
 
-    public Shader LoadShader(string? vertexPath, string? fragmentPath)
+    public async Task<Shader> LoadShader(string? vertexPath, string? fragmentPath)
     {
-        return Raylib.LoadShader(
+        LoadResourceManager();
+        Shader shader = default;
+        await _resourceManager.AddTaskToMainThread(() => shader = Raylib.LoadShader(
             string.IsNullOrWhiteSpace(vertexPath) ? null : vertexPath,
             string.IsNullOrWhiteSpace(fragmentPath) ? null : fragmentPath
-        );
+        ));
+        return shader;
     }
 
     public string LoadText(string path)

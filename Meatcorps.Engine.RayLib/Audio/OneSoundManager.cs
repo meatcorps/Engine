@@ -146,7 +146,7 @@ public class OneSoundManager : IDisposable
 
         if (!_sharedSound)
         {
-            Raylib.UnloadSound(_sound);
+            Raylib.UnloadSoundAlias(_sound);
         }
 
         _isDisposed = true;

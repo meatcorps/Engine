@@ -6,7 +6,7 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public sealed class ShaderManager<T> : ILoadAfterRayLibInit, IDisposable where T: Enum
+public sealed class ShaderManager<T> : IResourceLoadOnInit, IDisposable where T: Enum
 {
     private Dictionary<T, Shader> _shaders = new();
     private List<(string?, string, T)> _shaderPaths = new();
@@ -24,8 +24,11 @@ public sealed class ShaderManager<T> : ILoadAfterRayLibInit, IDisposable where T
         _shaderPaths.Add((shaderPathVs, shaderPathFs, shader));
         return this;
     }
-    
-    public void Load()
+
+    public int TotalResources => _shaderPaths.Count;
+    public int ResourcesLoaded => _shaders.Count;
+
+    public async Task Load()
     {
         var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         if (_isLoaded)
@@ -41,7 +44,7 @@ public sealed class ShaderManager<T> : ILoadAfterRayLibInit, IDisposable where T
             if (!resource.Exists(shader.Item2)) 
                 throw new FileNotFoundException($"Shader file FX {shader.Item2} not found"); 
             
-            var shaderToAdd = resource.LoadShader(shader.Item1, shader.Item2);
+            var shaderToAdd = await resource.LoadShader(shader.Item1, shader.Item2);
             
             if (!Raylib.IsShaderValid(shaderToAdd) && shaderToAdd.Id == 0)
                 throw new Exception($"Failed to load shader {shader.Item3} VS:{shader.Item1} FX:{shader.Item2}");

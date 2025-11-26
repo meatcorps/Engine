@@ -4,7 +4,7 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public class OneTexture: ILoadAfterRayLibInit, IDisposable
+public class OneTexture: IResourceLoadOnInit, IDisposable
 {
     private readonly string _path;
     private readonly TextureFilter _filter;
@@ -26,11 +26,18 @@ public class OneTexture: ILoadAfterRayLibInit, IDisposable
         _onLoaded = onLoaded;
     }
 
-    public void Load()
+    public int TotalResources => 1;
+    public int ResourcesLoaded { get; private set; }
+
+    public async Task Load()
     {
-        Texture = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_path);
-        Raylib.SetTextureFilter(Texture, _filter);
-        Raylib.SetTextureWrap(Texture, _wrap);
+        Texture = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadTexture(_path);
+        await GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.AddTaskToMainThread(() =>
+        {
+            Raylib.SetTextureFilter(Texture, _filter);
+            Raylib.SetTextureWrap(Texture, _wrap);
+        });
+        ResourcesLoaded = 1;
         _onLoaded(Texture);
     }
 

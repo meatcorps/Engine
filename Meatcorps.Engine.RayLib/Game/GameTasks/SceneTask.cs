@@ -10,7 +10,7 @@ public class SceneTask: IGameLoopTask
 {
     private Guid _instanceId = Guid.NewGuid();
     public int Priority { get; } = 50;
-    public bool Enabled { get; set; } = true;
+    public bool Enabled { get; set; } = false;
     public bool IsInitialized { get; private set; }
     
     private BaseScene _scene;

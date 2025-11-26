@@ -34,15 +34,13 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, ID
     // Public API
     // -----------------------
 
-    public MusicManager<TTrack> Load(TTrack key, string filePath)
+    public async Task Load(TTrack key, string filePath)
     {
         if (!_tracks.ContainsKey(key))
         {
-            var m = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadMusic(filePath);
+            var m = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadMusic(filePath);
             _tracks[key] = m;
         }
-
-        return this;
     }
 
     public MusicManager<TTrack> Play(TTrack key, float fadeSpeed = 1f)

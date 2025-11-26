@@ -29,17 +29,24 @@ public class RayLibModule
     private IUniversalConfig _config;
     private KeyboardKey _exitKey = KeyboardKey.Escape;
     
-    public static RayLibModule Setup(IRaylibResource? raylibResource = null)
+    public static RayLibModule Setup()
     {
-        GlobalObjectManager.ObjectManager.RegisterList<ILoadAfterRayLibInit>();
+        GlobalObjectManager.ObjectManager.RegisterList<IResourceLoadOnInit>();
         GlobalObjectManager.ObjectManager.RegisterList<IPostProcessor>();
         GlobalObjectManager.ObjectManager.RegisterList<IGameLoopTask>();
+        var raylibResource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>();
         
-        // TODO: Make this switchable based on debug or release build
         if (raylibResource is null)
             raylibResource = new FileResourceLoader();
+        else
+        {
+#if DEBUG
+            raylibResource = new FileResourceLoader();
+#endif
+        }
         GlobalObjectManager.ObjectManager.Register<IRaylibResource>(raylibResource);
         GlobalObjectManager.ObjectManager.Register<IResource>(raylibResource);
+        GlobalObjectManager.ObjectManager.Register<ResourceManager>(new ResourceManager());
         return new RayLibModule();
     }
 
@@ -91,13 +98,13 @@ public class RayLibModule
         return this;
     }
 
-    public RayLibModule SetResource<T>(T instance, string tag = "default") where T : class, ILoadAfterRayLibInit
+    public RayLibModule SetResource<T>(T instance, string tag = "default") where T : class, IResourceLoadOnInit
     {
 #if DEBUG
         if (!_config.GetOrDefault("Debug", "SetResource_" + instance.GetType().Name, true))
             return this;
 #endif
-        GlobalObjectManager.ObjectManager.Add<ILoadAfterRayLibInit>(instance);
+        GlobalObjectManager.ObjectManager.Add<IResourceLoadOnInit>(instance);
         GlobalObjectManager.ObjectManager.Register(instance, tag);
         return this;
     }
@@ -109,6 +116,7 @@ public class RayLibModule
             return this;
 #endif
         GlobalObjectManager.ObjectManager.Add<IPostProcessor>(postProcessor);
+        GlobalObjectManager.ObjectManager.Add<IResourceLoadOnInit>(postProcessor);
         GlobalObjectManager.ObjectManager.Register<T>(postProcessor);
         return this;
     }

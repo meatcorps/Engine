@@ -7,10 +7,13 @@ using Meatcorps.Engine.RayLib.Interfaces;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public class MusicResource<T>: ILoadAfterRayLibInit, IAudioInitNeeded where T : struct, Enum
+public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : struct, Enum
 {
     private float _masterVolume;
     private readonly Dictionary<T, (string path, float volume)> _music = new();
+
+    public int TotalResources => _music.Count;
+    public int ResourcesLoaded { get; private set; }
 
     public MusicResource()
     {
@@ -40,8 +43,8 @@ public class MusicResource<T>: ILoadAfterRayLibInit, IAudioInitNeeded where T : 
 
         return this;
     }
-    
-    public void Load()
+
+    public async Task Load()
     {
         var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         var nonExisting = new List<string>();
@@ -49,7 +52,11 @@ public class MusicResource<T>: ILoadAfterRayLibInit, IAudioInitNeeded where T : 
         foreach (var (k, v) in _music)
         {
             if (resource.Exists(v.path))
-                manager.Load(k, v.path).SetMasterVolume(v.volume);
+            {
+                await manager.Load(k, v.path);
+                ResourcesLoaded++;
+                manager.SetMasterVolume(v.volume);
+            }
             else
                 nonExisting.Add($"{k} -> {v.path} does not map to a file");
         }
