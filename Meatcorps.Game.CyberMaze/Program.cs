@@ -2,7 +2,6 @@
 using Meatcorps.Engine.Arcade.Modules;
 using Meatcorps.Engine.Arcade.RayLib.Modules;
 using Meatcorps.Engine.Assets.Manager;
-using Meatcorps.Engine.Assets.Sinks;
 using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.Modules;

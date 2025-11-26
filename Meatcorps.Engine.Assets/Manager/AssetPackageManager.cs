@@ -2,6 +2,7 @@
 using System.Text;
 using Meatcorps.Engine.Assets.Data;
 using Meatcorps.Engine.Assets.Interfaces;
+using Meatcorps.Engine.Core.Interfaces.Security;
 using Newtonsoft.Json;
 
 namespace Meatcorps.Engine.Assets.Manager;

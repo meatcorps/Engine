@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
-using Meatcorps.Engine.Assets.Interfaces;
+using Meatcorps.Engine.Core.Interfaces.Security;
 
-namespace Meatcorps.Engine.Assets.Sinks;
+namespace Meatcorps.Engine.Core.Security.Sinks;
 
 public class AesResourceSink: IEncryptDecryptSink
 {

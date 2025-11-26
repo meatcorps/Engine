@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Reflection;
 using Meatcorps.Engine.Assets.Interfaces;
+using Meatcorps.Engine.Core.Interfaces.Security;
 
 namespace Meatcorps.Engine.Assets.Packager;
 

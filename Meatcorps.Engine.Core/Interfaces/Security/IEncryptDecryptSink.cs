@@ -1,4 +1,4 @@
-﻿namespace Meatcorps.Engine.Assets.Interfaces;
+﻿namespace Meatcorps.Engine.Core.Interfaces.Security;
 
 public interface IEncryptDecryptSink
 {

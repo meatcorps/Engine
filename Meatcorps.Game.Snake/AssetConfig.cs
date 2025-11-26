@@ -1,5 +1,6 @@
 ﻿using Meatcorps.Engine.Assets.Interfaces;
-using Meatcorps.Engine.Assets.Sinks;
+using Meatcorps.Engine.Core.Interfaces.Security;
+using Meatcorps.Engine.Core.Security.Sinks;
 
 namespace Meatcorps.Game.Snake;
 

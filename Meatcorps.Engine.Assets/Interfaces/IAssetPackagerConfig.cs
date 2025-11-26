@@ -1,3 +1,5 @@
+using Meatcorps.Engine.Core.Interfaces.Security;
+
 namespace Meatcorps.Engine.Assets.Interfaces;
 
 public interface IAssetPackagerConfig
