@@ -15,34 +15,36 @@
       <ProjectReference Include="..\Meatcorps.Engine.Hardware.ArduinoController\Meatcorps.Engine.Hardware.ArduinoController.csproj" />
       <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
       <ProjectReference Include="..\Meatcorps.Engine.Session\Meatcorps.Engine.Session.csproj" />
+        <ProjectReference Include="..\Meatcorps.Engine.Assets.Packager\Meatcorps.Engine.Assets.Packager.csproj" />
+        <ProjectReference Include="..\Meatcorps.Engine.RayLib.Assets\Meatcorps.Engine.RayLib.Assets.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="Assets/**/*" />
+        <Compile Remove="Assets/**/*"/>
     </ItemGroup>
-    
-    <ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
         <Content Include="Assets/**/*.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
-    
-    <ItemGroup>
-      <ClCompile Include="Assets\Shaders\bloom.fx" />
-      <ClCompile Include="Assets\Shaders\bloom_composite.fx" />
-      <ClCompile Include="Assets\Shaders\bloom_threshold.fx" />
-      <ClCompile Include="Assets\Shaders\chromaticaberration.fx" />
-      <ClCompile Include="Assets\Shaders\colorgrading.fx" />
-      <ClCompile Include="Assets\Shaders\crt_newpixie.fx" />
-      <ClCompile Include="Assets\Shaders\fixedpalette_tex.fx" />
-      <ClCompile Include="Assets\Shaders\fixedpalette8.fx" />
-      <ClCompile Include="Assets\Shaders\gaussian_blur.fx" />
-      <ClCompile Include="Assets\Shaders\paletteswap.fx" />
-      <ClCompile Include="Assets\Shaders\scanlines.fx" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <Folder Include="Assets\PlaceHolders\" />
-    </ItemGroup>
+
+    <PropertyGroup>
+        <MSBuildWarningsAsMessages>High</MSBuildWarningsAsMessages>
+        <ConsoleLoggerParameters>verbosity=detailed</ConsoleLoggerParameters>
+    </PropertyGroup>
+
+    <UsingTask TaskName="AssetPackageTask"
+               AssemblyFile="$(ProjectDir)\bin\$(Configuration)\net8.0\Meatcorps.Engine.Assets.Packager.dll" />
+
+    <Target Name="AssetPackageTask"
+            AfterTargets="Build"
+            Condition="'$(Configuration)' == 'Release'">
+
+        <AssetPackageTask
+                GameAssemblyPath="$(TargetPath)"
+                ProjectDirectory="$(ProjectDir)"
+                OutputPath="$(OutputPath)" />
+    </Target>
 
 </Project>

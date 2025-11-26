@@ -6,9 +6,11 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.Modules;
 using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.MQTT.Modules;
+using Meatcorps.Engine.RayLib.Assets.Modules;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
 using Meatcorps.Engine.RayLib.Resources;
+using Meatcorps.Game.Snake;
 using Meatcorps.Game.Snake.Data;
 using Meatcorps.Game.Snake.Input;
 using Meatcorps.Game.Snake.Resources;
@@ -58,6 +60,7 @@ else
 
 SnakeSession.Load();
 Raylib.SetTraceLogLevel(TraceLogLevel.Warning);
+RaylibAssetsModule.Load(new AssetConfig());
 
 using var _ = RayLibModule.Setup()
     .SetTitle("Meatcorps Snake!")

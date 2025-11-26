@@ -6,9 +6,11 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.Modules;
 using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.MQTT.Modules;
+using Meatcorps.Engine.RayLib.Assets.Modules;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
 using Meatcorps.Engine.RayLib.Resources;
+using Meatcorps.Game.KillTheSkulls;
 using Meatcorps.Game.KillTheSkulls.Data;
 using Meatcorps.Game.KillTheSkulls.GameEnums;
 using Meatcorps.Game.KillTheSkulls.Input;
@@ -56,6 +58,8 @@ else
 
 GameSession.Load();
 Raylib.SetTraceLogLevel(TraceLogLevel.Warning);
+
+RaylibAssetsModule.Load(new AssetConfig());
 
 using var _ = RayLibModule.Setup()
     .SetTitle("Meatcorps " + GlobalObjectManager.ObjectManager.Get<ArcadeGame>()!.Name)
