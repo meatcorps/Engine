@@ -5,6 +5,9 @@ namespace Meatcorps.Engine.RayLib.Interfaces;
 
 public interface IRenderTargetStrategy
 {
+    /*ICamera? Camera { get; set; }
+    List<IPostProcessor> PostProcessors { get; set; }*/
+    
     void BeginRender(Color clearColor, ICamera camera);
 
     void PostProcess(CameraLayer layer);
