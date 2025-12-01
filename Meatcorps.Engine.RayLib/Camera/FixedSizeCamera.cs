@@ -11,7 +11,6 @@ public class FixedSizeCamera : ICamera, ICameraFixedWidthAndHeight
 {
     private GameHost? _gameHost;
     public Camera2D Camera { get; set; } = new Camera2D();
-    private Camera2D _uiCamera;
     
     public int TargetWidth { get; }
     public int TargetHeight { get; }
@@ -35,31 +34,14 @@ public class FixedSizeCamera : ICamera, ICameraFixedWidthAndHeight
     {
         TargetWidth = targetWidth;
         TargetHeight = targetHeight;
-        _uiCamera = new Camera2D
-        {
-            Target = Vector2.Zero,
-            Offset = Vector2.Zero,
-            Rotation = 0f,
-            Zoom = 1f
-        };
     }
 
-    public void StartWorldCamera()
+    public void StartCamera()
     {
         Raylib.BeginMode2D(Camera);
     }
 
-    public void EndWorldCamera()
-    {
-        Raylib.EndMode2D();
-    }
-
-    public void StartUICamera()
-    {
-        Raylib.BeginMode2D(_uiCamera);
-    }
-
-    public void EndUICamera()
+    public void EndCamera()
     {
         Raylib.EndMode2D();
     }
@@ -91,8 +73,5 @@ public class FixedSizeCamera : ICamera, ICameraFixedWidthAndHeight
         camera.Zoom = _zoom + Zoom;
         camera.Offset = new Vector2(renderTargetStrategy.RenderWidth, renderTargetStrategy.RenderHeight) / 2;
         Camera = camera;
-        
-        _uiCamera.Zoom = _zoom;
-        _uiCamera.Offset = Vector2.Zero;
     }
 }

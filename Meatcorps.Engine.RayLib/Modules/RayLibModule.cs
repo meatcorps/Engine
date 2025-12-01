@@ -1,3 +1,5 @@
+using System.Numerics;
+using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Resource;
 using Meatcorps.Engine.Core.Interfaces.Services;
@@ -11,6 +13,7 @@ using Meatcorps.Engine.RayLib.Camera;
 using Meatcorps.Engine.RayLib.Game;
 using Meatcorps.Engine.RayLib.Game.GameTasks;
 using Meatcorps.Engine.RayLib.Interfaces;
+using Meatcorps.Engine.RayLib.PostProcessing.Abstractions;
 using Meatcorps.Engine.RayLib.Renderer;
 using Meatcorps.Engine.RayLib.Resources;
 using Microsoft.Extensions.Logging;
@@ -134,12 +137,32 @@ public class RayLibModule
         GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new LoadAfterRayLibInitTask());
         GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new MouseTask());
         GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new SceneTask());
-        
+
         if (_renderTargetStrategy is not null)
+        {
+            var finalRenderer = new BasicScreenRenderTarget().SetFullScreen();
+            foreach (var postProcessor in GlobalObjectManager.ObjectManager.GetList<IPostProcessor>()!)
+            {
+                if (postProcessor is BaseFinalPostProcessor)
+                    finalRenderer.AddPostProcessor(postProcessor);
+                else 
+                    _renderTargetStrategy.PostProcessors.Add(postProcessor);
+            }
+
+            _renderTargetStrategy.Bounds = new RectF(0, 0, 1, 1);
+            _renderTargetStrategy.UsePercentage = true;
+            _renderTargetStrategy.Camera = _camera;
             GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(_renderTargetStrategy);
-        else 
-            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(new BasicScreenRenderTarget());
-        
+            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(new PixelPerfectRenderTarget(_renderTargetStrategy.RenderWidth, _renderTargetStrategy.RenderHeight).SetFullScreen(), "UI");
+            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(finalRenderer, "FINAL");
+        }
+        else
+        {
+            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(new BasicScreenRenderTarget().SetFullScreen());
+            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(new BasicScreenRenderTarget().SetFullScreen(), "UI");
+            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(new BasicScreenRenderTarget().SetFullScreen(), "FINAL");
+        }
+
         var gameHost = new GameHost(_initialWidth, _initialHeight, _title, _fps, _camera);
         gameHost.SetExistKey(_exitKey);
         gameHost.SwitchScene(scene);

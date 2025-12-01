@@ -1,18 +1,14 @@
 using System.Numerics;
-using Meatcorps.Engine.Core.ObjectManager;
-using Meatcorps.Engine.RayLib.Enums;
-using Meatcorps.Engine.RayLib.Interfaces;
-using Meatcorps.Engine.RayLib.PostProcessing.Abstractions;
+using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.PostProcessing.Renderer;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Renderer;
 
-public sealed class PixelPerfectRenderTarget : IRenderTargetStrategy, IDisposable
+public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
 {
     private RenderTexture2D? _renderTexture1;
     private RenderTexture2D? _currentRenderer;
-
     private RenderTexture2D? _renderTextureFinal;
     
     private int _targetWidth, _targetHeight;
@@ -20,14 +16,10 @@ public sealed class PixelPerfectRenderTarget : IRenderTargetStrategy, IDisposabl
     private Vector2 _offset;
     private bool _isDisposed;
 
-    public int RenderWidth => _targetWidth;
-    public int RenderHeight => _targetHeight;
-
-    private List<IPostProcessor>? _postProcessors;
-    private List<IPostProcessor>? _finalPostProcessors;
+    public override int RenderWidth => _targetWidth;
+    public override int RenderHeight => _targetHeight;
 
     private readonly PostProcessingRenderer _postProcessingRenderer = new();
-    private readonly PostProcessingRenderer _finalPostProcessingRenderer = new();
 
     public PixelPerfectRenderTarget(int targetWidth, int targetHeight)
     {
@@ -35,74 +27,57 @@ public sealed class PixelPerfectRenderTarget : IRenderTargetStrategy, IDisposabl
         _targetHeight = targetHeight;
     }
 
-    public void BeginRender(Color clearColor, ICamera camera)
+    public override void BeginRender(Color clearColor)
     {
-        if (_postProcessors is null)
-        {
-            var postProcessors = GlobalObjectManager.ObjectManager.GetList<IPostProcessor>()!;
-
-            _postProcessors = new List<IPostProcessor>(postProcessors.Where(x => x is not BaseFinalPostProcessor));
-            _finalPostProcessors = new List<IPostProcessor>(postProcessors.Where(x => x is BaseFinalPostProcessor));
-        }
-
         if (_renderTexture1 is null)
         {
             _renderTexture1 = Raylib.LoadRenderTexture(_targetWidth + 1, _targetHeight + 1); // +1 for overlap
             Raylib.SetTextureFilter(_renderTexture1.Value.Texture, TextureFilter.Point);
         }
 
-        var screenWidth = Raylib.GetScreenWidth();
-        var screenHeight = Raylib.GetScreenHeight();
-        if (_renderTextureFinal is null || _renderTextureFinal.Value.Texture.Width != screenWidth ||
-            _renderTextureFinal.Value.Texture.Height != screenHeight)
+        var destinationRect = GetScreenRect();
+        if (_renderTextureFinal is null || _renderTextureFinal.Value.Texture.Width != destinationRect.Width ||
+            _renderTextureFinal.Value.Texture.Height != destinationRect.Height)
         {
             if (_renderTextureFinal is not null)
                 Raylib.UnloadRenderTexture(_renderTextureFinal.Value);
-        
-            _renderTextureFinal = Raylib.LoadRenderTexture(screenWidth, screenHeight);
+
+            _renderTextureFinal = Raylib.LoadRenderTexture((int) destinationRect.Width, (int) destinationRect.Height);
             Raylib.SetTextureFilter(_renderTextureFinal.Value.Texture, TextureFilter.Point);
         }
 
         Raylib.BeginTextureMode(_renderTexture1.Value);
-        Raylib.ClearBackground(clearColor);
-    }
-
-    public void PostProcess(CameraLayer layer)
-    {
-        Raylib.EndTextureMode();
-
-        if (layer == CameraLayer.World)
-        {
-            var deltaTime = Raylib.GetFrameTime();
-            _postProcessingRenderer.Start(_postProcessors!, deltaTime);
-        }
+        Raylib.ClearBackground(new Color(0,0,0,0));
         
-        _currentRenderer = _postProcessingRenderer.Render(_postProcessors!, _renderTexture1!.Value);
-
-        if (layer == CameraLayer.World)
-            Raylib.BeginTextureMode(_currentRenderer.Value);
-
-        _currentRenderer = _renderTexture1;
+        Camera?.StartCamera();
     }
 
-    public void EndRender()
+    public override void EndRender(RenderTexture2D? targetTexture = null)
     {
+        
+        Camera?.EndCamera();
+        Raylib.EndTextureMode();
+        
+        var deltaTime = Raylib.GetFrameTime();
+        _postProcessingRenderer.Start(PostProcessors, deltaTime);
+        _currentRenderer = _postProcessingRenderer.Render(PostProcessors, _renderTexture1!.Value);
+        
         var screenWidth = _renderTextureFinal!.Value.Texture.Width;
         var screenHeight = _renderTextureFinal!.Value.Texture.Height;
         
-        var _preScreenScale = MathF.Min(
+        _screenScale = MathF.Min(
             screenWidth / (float)_targetWidth,
             screenHeight / (float)_targetHeight
         );
-        _screenScale = MathF.Floor(_preScreenScale);
 
         var renderWidth = _targetWidth * _screenScale;
         var renderHeight = _targetHeight * _screenScale;
 
-        var camera = GlobalObjectManager.ObjectManager.Get<ICamera>()!;
-        var cameraSubpixelX = camera.Position.X - MathF.Floor(camera.Position.X);
-        var cameraSubpixelY = camera.Position.Y - MathF.Floor(camera.Position.Y);
-
+        var cameraPosition = Camera?.Position ?? Vector2.Zero;
+        
+        var cameraSubpixelX = cameraPosition.X - MathF.Floor(cameraPosition.X);
+        var cameraSubpixelY = cameraPosition.Y - MathF.Floor(cameraPosition.Y);
+        
         var subpixelOffsetX = cameraSubpixelX * _screenScale;
         var subpixelOffsetY = cameraSubpixelY * _screenScale;
 
@@ -112,7 +87,7 @@ public sealed class PixelPerfectRenderTarget : IRenderTargetStrategy, IDisposabl
         );
 
         Raylib.BeginTextureMode(_renderTextureFinal.Value);
-        Raylib.ClearBackground(Color.Black);
+        Raylib.ClearBackground(new Color(0,0,0,0));
         Raylib.DrawTexturePro(
             _currentRenderer!.Value.Texture,
             new Rectangle(0, 0, _targetWidth, -_targetHeight),
@@ -120,25 +95,23 @@ public sealed class PixelPerfectRenderTarget : IRenderTargetStrategy, IDisposabl
             Vector2.Zero, 0f, Color.White
         );
         Raylib.EndTextureMode();
-
-        _finalPostProcessingRenderer.Start(_finalPostProcessors!, Raylib.GetFrameTime());
-        _currentRenderer = _finalPostProcessingRenderer.Render(_finalPostProcessors!, _renderTextureFinal.Value);
         
-        Raylib.BeginDrawing();
+        var destinationRect = GetScreenRect();
+
+        if (targetTexture is not null)
+            Raylib.BeginTextureMode(targetTexture.Value);
+
         Raylib.DrawTexturePro(
-            _currentRenderer.Value.Texture,
+            _renderTextureFinal.Value.Texture,
             new Rectangle(0, 0, screenWidth, -screenHeight),
-            new Rectangle(0, 0, screenWidth, screenHeight),
+            destinationRect.ToRectangle(),
             Vector2.Zero, 0f, Color.White
         );
-    }
-    
-    public void EndDrawing()
-    {
-        Raylib.EndDrawing();
         
-        _postProcessingRenderer.End(_postProcessors!);
-        _finalPostProcessingRenderer.End(_finalPostProcessors!);
+        if (targetTexture is not null)
+            Raylib.EndTextureMode();
+        
+        _postProcessingRenderer.End(PostProcessors!);
     }
 
     public void Dispose()
@@ -157,6 +130,5 @@ public sealed class PixelPerfectRenderTarget : IRenderTargetStrategy, IDisposabl
         _renderTextureFinal = null;
         
         _postProcessingRenderer.Dispose();
-        _finalPostProcessingRenderer.Dispose();
     }
 }

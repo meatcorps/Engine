@@ -3,6 +3,7 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Interfaces;
+using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Game.GameTasks;
 
@@ -80,21 +81,22 @@ public class SceneTask: IGameLoopTask
         {
             activeScene.RegisterForRender();
         }
-        
+
         if (type == GameLoopType.PreRender)
         {
-            _host.RenderService.StartRenderer();
-        }
-
+            Raylib.BeginDrawing();
+        } 
+        
         if (type == GameLoopType.Render)
         {
             activeScene.Draw();
             _host.RenderService.Render();
         }
-
+        
+        
         if (type == GameLoopType.PostRender)
         {
-            _host.RenderService.StopRendering();
-        }
+            Raylib.EndDrawing();
+        } 
     }
 }

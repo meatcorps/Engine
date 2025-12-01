@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Numerics;
+using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
@@ -13,19 +15,21 @@ public class RenderService
 {
     private readonly int _sceneLayers;
     private readonly int _gameObjectLayers;
-    private readonly ICamera _camera;
-    private readonly IRenderTargetStrategy _renderTargetStrategy;
+    private readonly List<IRenderTargetStrategy> _renderTargetStrategies = new List<IRenderTargetStrategy>();
     public Color BackgroundColor { get; set; } = Color.Black;
 
     private List<List<List<BaseGameObject>>> _gameObjects = new();
     private List<List<List<BaseGameObject>>> _uiGameObjects = new();
 
+    private RenderTexture2D? _renderTexture = null;
+
     public RenderService(ObjectManager objectManager, int sceneLayers = 2, int gameObjectLayers = 16)
     {
         _sceneLayers = sceneLayers;
         _gameObjectLayers = gameObjectLayers;
-        _camera = objectManager.Get<ICamera>() ?? new FallBackCamera();
-        _renderTargetStrategy = objectManager.Get<IRenderTargetStrategy>() ?? new BasicScreenRenderTarget();
+        _renderTargetStrategies.Add(objectManager.Get<IRenderTargetStrategy>() ?? new BasicScreenRenderTarget().SetFullScreen());
+        _renderTargetStrategies.Add(objectManager.Get<IRenderTargetStrategy>("UI") ?? new BasicScreenRenderTarget().SetFullScreen());
+        _renderTargetStrategies.Add(objectManager.Get<IRenderTargetStrategy>("FINAL") ?? new BasicScreenRenderTarget().SetFullScreen());
         
         for (var i = 0; i < sceneLayers; i++)
         {
@@ -54,18 +58,31 @@ public class RenderService
 
     public void Update(float deltaTime)
     {
-        _camera.Update(deltaTime, _renderTargetStrategy);
-    }
-
-    public void StartRenderer()
-    {
-        _renderTargetStrategy.BeginRender(BackgroundColor, _camera);
+        foreach (var renderer in _renderTargetStrategies)
+            renderer.Camera?.Update(deltaTime, renderer);
     }
     
     public void Render()
     {
-        _camera.StartWorldCamera();
+        var screenSize = new PointInt(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
 
+        if (_renderTexture == null || _renderTexture.Value.Texture.Width != screenSize.X ||
+            _renderTexture.Value.Texture.Height != screenSize.Y)
+        {
+            if (_renderTexture is not null)
+                Raylib.UnloadRenderTexture(_renderTexture.Value);
+            
+            _renderTexture = Raylib.LoadRenderTexture(screenSize.X, screenSize.Y);
+            Raylib.SetTextureFilter(_renderTexture.Value.Texture, TextureFilter.Point);
+        }
+        
+        //Raylib.BeginDrawing();
+        
+        Raylib.BeginTextureMode(_renderTexture.Value);
+        Raylib.ClearBackground(BackgroundColor);
+        Raylib.EndTextureMode();
+        
+        _renderTargetStrategies[0].BeginRender(BackgroundColor);
         foreach (var layer in _gameObjects)
         foreach (var gameObjects in layer)
         {
@@ -74,12 +91,9 @@ public class RenderService
             gameObjects.Clear();
         }
 
-        _camera.EndWorldCamera();
-        
-        _renderTargetStrategy.PostProcess(CameraLayer.World);
+        _renderTargetStrategies[0].EndRender(_renderTexture);
 
-        _camera.StartUICamera();
-        
+        _renderTargetStrategies[1].BeginRender(BackgroundColor);
         foreach (var layer in _uiGameObjects)
         foreach (var gameObjects in layer)
         {
@@ -88,16 +102,18 @@ public class RenderService
             
             gameObjects.Clear();
         }
+        _renderTargetStrategies[1].EndRender(_renderTexture);
 
-        _camera.EndUICamera();
+        _renderTargetStrategies[2].BeginRender(BackgroundColor);
         
-        _renderTargetStrategy.PostProcess(CameraLayer.UI);
-
-        _renderTargetStrategy.EndRender();
-    }
-
-    public void StopRendering()
-    {
-        _renderTargetStrategy.EndDrawing();
+        Raylib.DrawTexturePro(
+            _renderTexture.Value.Texture,
+            new Rectangle(0, 0, _renderTexture.Value.Texture.Width, -_renderTexture.Value.Texture.Height),
+            new Rectangle(0, 0, _renderTexture.Value.Texture.Width, _renderTexture.Value.Texture.Height),
+            Vector2.Zero, 0f, Color.White
+        );
+        _renderTargetStrategies[2].EndRender();
+        
+        //Raylib.EndDrawing();
     }
 }
