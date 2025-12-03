@@ -19,6 +19,7 @@ public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
     public override int RenderWidth => _targetWidth;
     public override int RenderHeight => _targetHeight;
 
+    private Color _clearColor;
     private readonly PostProcessingRenderer _postProcessingRenderer = new();
 
     public PixelPerfectRenderTarget(int targetWidth, int targetHeight)
@@ -29,6 +30,7 @@ public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
 
     public override void BeginRender(Color clearColor)
     {
+        _clearColor = clearColor;
         if (_renderTexture1 is null)
         {
             _renderTexture1 = Raylib.LoadRenderTexture(_targetWidth + 1, _targetHeight + 1); // +1 for overlap
@@ -47,7 +49,7 @@ public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
         }
 
         Raylib.BeginTextureMode(_renderTexture1.Value);
-        Raylib.ClearBackground(new Color(0,0,0,0));
+        Raylib.ClearBackground(clearColor);
         
         Camera?.StartCamera();
     }
@@ -87,7 +89,7 @@ public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
         );
 
         Raylib.BeginTextureMode(_renderTextureFinal.Value);
-        Raylib.ClearBackground(new Color(0,0,0,0));
+        Raylib.ClearBackground(_clearColor);
         Raylib.DrawTexturePro(
             _currentRenderer!.Value.Texture,
             new Rectangle(0, 0, _targetWidth, -_targetHeight),
