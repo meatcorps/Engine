@@ -9,4 +9,9 @@ public static class RectExtensions
     {
         return new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
     }
+    
+    public static Rectangle ToRectangle(this RectF rect)
+    {
+        return new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
+    }
 }

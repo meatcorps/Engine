@@ -13,19 +13,11 @@ public class FallBackCamera : ICamera
     {
     }
     
-    public void StartWorldCamera()
+    public void StartCamera()
     {
     }
 
-    public void EndWorldCamera()
-    {
-    }
-
-    public void StartUICamera()
-    {
-    }
-
-    public void EndUICamera()
+    public void EndCamera()
     {
     }
 

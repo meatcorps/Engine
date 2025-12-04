@@ -1,3 +1,5 @@
+using System.Numerics;
+using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Resource;
 using Meatcorps.Engine.Core.Interfaces.Services;
@@ -11,6 +13,7 @@ using Meatcorps.Engine.RayLib.Camera;
 using Meatcorps.Engine.RayLib.Game;
 using Meatcorps.Engine.RayLib.Game.GameTasks;
 using Meatcorps.Engine.RayLib.Interfaces;
+using Meatcorps.Engine.RayLib.PostProcessing.Abstractions;
 using Meatcorps.Engine.RayLib.Renderer;
 using Meatcorps.Engine.RayLib.Resources;
 using Microsoft.Extensions.Logging;
@@ -25,7 +28,6 @@ public class RayLibModule
     private string _title = "Meatcorps Engine";
     private int _fps = 60;
     private ICamera? _camera;
-    private IRenderTargetStrategy? _renderTargetStrategy;
     private IUniversalConfig _config;
     private KeyboardKey _exitKey = KeyboardKey.Escape;
     
@@ -34,6 +36,7 @@ public class RayLibModule
         GlobalObjectManager.ObjectManager.RegisterList<IResourceLoadOnInit>();
         GlobalObjectManager.ObjectManager.RegisterList<IPostProcessor>();
         GlobalObjectManager.ObjectManager.RegisterList<IGameLoopTask>();
+        GlobalObjectManager.ObjectManager.RegisterList<IRenderTargetStrategy>();
         var raylibResource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>();
         
         if (raylibResource is null)
@@ -88,13 +91,18 @@ public class RayLibModule
         
         targetWidth = _config.GetOrDefault("Debug", "SetFixedSizeCamera_TargetWidth", targetWidth);
         targetHeight = _config.GetOrDefault("Debug", "SetFixedSizeCamera_TargetHeight", targetHeight);
-        pixelPerfect = _config.GetOrDefault("Debug", "SetFixedSizeCamera_PixelPerfect", pixelPerfect);
         
         #endif
-        if (pixelPerfect)
-            _renderTargetStrategy = new PixelPerfectRenderTarget(targetWidth, targetHeight);
         
         _camera = new FixedSizeCamera(targetWidth, targetHeight);
+        
+        var renderTargetStrategy = new PixelPerfectRenderTarget(targetWidth, targetHeight).SetFullScreen();
+        renderTargetStrategy.Bounds = new RectF(0, 0, 1, 1);
+        renderTargetStrategy.UsePercentage = true;
+        renderTargetStrategy.Camera = _camera;
+        RegisterRenderTargetStrategy(renderTargetStrategy);
+        RegisterRenderTargetStrategy(new PixelPerfectRenderTarget(renderTargetStrategy.RenderWidth, renderTargetStrategy.RenderHeight).SetFullScreen(), "UI");
+        
         return this;
     }
 
@@ -134,16 +142,41 @@ public class RayLibModule
         GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new LoadAfterRayLibInitTask());
         GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new MouseTask());
         GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new SceneTask());
+
+        if (!GlobalObjectManager.ObjectManager.GetList<IRenderTargetStrategy>()!.Any())
+        {
+            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(new BasicScreenRenderTarget().SetFullScreen());
+            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(new BasicScreenRenderTarget().SetFullScreen(), "UI");
+        }
         
-        if (_renderTargetStrategy is not null)
-            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(_renderTargetStrategy);
-        else 
-            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(new BasicScreenRenderTarget());
-        
+        FinalRenderer();
+
         var gameHost = new GameHost(_initialWidth, _initialHeight, _title, _fps, _camera);
         gameHost.SetExistKey(_exitKey);
         gameHost.SwitchScene(scene);
         
+        return this;
+    }
+
+    private void FinalRenderer()
+    {
+        var finalRenderer = new BasicScreenRenderTarget().SetFullScreen();
+        var mainRenderer = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
+        foreach (var postProcessor in GlobalObjectManager.ObjectManager.GetList<IPostProcessor>()!)
+        {
+            if (postProcessor is BaseFinalPostProcessor)
+                finalRenderer.AddPostProcessor(postProcessor);
+            else 
+                mainRenderer.PostProcessors.Add(postProcessor);
+        }
+
+        RegisterRenderTargetStrategy(finalRenderer, "FINAL");
+    }
+
+    public RayLibModule RegisterRenderTargetStrategy(IRenderTargetStrategy renderTargetStrategy, string tag = "default")
+    {
+        GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(renderTargetStrategy, tag);
+        GlobalObjectManager.ObjectManager.Add(renderTargetStrategy);
         return this;
     }
     

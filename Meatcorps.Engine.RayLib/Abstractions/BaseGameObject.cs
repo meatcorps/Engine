@@ -1,6 +1,8 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Interfaces.Components;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Enums;
+using Meatcorps.Engine.RayLib.Interfaces;
 
 namespace Meatcorps.Engine.RayLib.Abstractions;
 
@@ -11,7 +13,32 @@ public abstract class BaseGameObject: IDisposable
     public Vector2 Position { get; protected set; }
     public string Name { get; set; } = "GameObject";
     public int Layer { get; set; } = 0;
-    public CameraLayer Camera { get; set; } = CameraLayer.World;
+    
+    private CameraLayer _cameraLayer = CameraLayer.Other;
+
+    public CameraLayer Camera
+    {
+        get => _cameraLayer; 
+        set {
+            if (_cameraLayer == value)
+                return;
+            
+            _cameraLayer = value;
+
+            switch (_cameraLayer)
+            {
+                case CameraLayer.World:
+                    RenderTarget = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
+                    break;
+                case CameraLayer.UI:
+                    RenderTarget = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>("UI")!;
+                    break;
+            }
+        }
+    }
+
+    public IRenderTargetStrategy? RenderTarget { get; set; }
+    
     public BaseScene Scene { get; private set; }
     
     private List<IGameComponent> _components { get; } = new();
@@ -49,6 +76,11 @@ public abstract class BaseGameObject: IDisposable
     }
     protected bool IsDisposed { get; private set; }
 
+    public BaseGameObject()
+    {
+        Camera = CameraLayer.World;
+    }
+    
     public void SetScene(BaseScene scene)
     {
         Scene = scene;
@@ -148,7 +180,6 @@ public abstract class BaseGameObject: IDisposable
         if (Visible && Enabled) 
             Scene.GameHost.RenderService.RegisterRender(this);
     }
-    
     
     protected virtual void OnEnabled()
     {

@@ -7,9 +7,7 @@ public interface ICamera
 {
     public Vector2 Position { get; set; }
     public float Zoom { get; set; }
-    void StartWorldCamera();
-    void EndWorldCamera();
-    void StartUICamera();
-    void EndUICamera();
+    void StartCamera();
+    void EndCamera();
     void Update(float deltaTime, IRenderTargetStrategy renderTargetStrategy);
 }

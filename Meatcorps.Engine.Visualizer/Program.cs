@@ -23,7 +23,7 @@ using var _ = RayLibModule.Setup()
     .SetInitialSize(1920, 1080)
     .SetFps(120)
     .SetFixedSizeCamera(960, 540)
-    .SetupProcessingBloom(0.6f, 0.2f, 0.8f, 4f)
+    .SetupProcessingBloom(0.6f, 0.2f, 0.8f, 2f)
     .SetProcessing(new CrtNewPixiePostProcessor())
     .SetResource(new OneTexture("Assets/CRTSidePanels.png", texture2D => 
         GlobalObjectManager.ObjectManager.Get<CrtNewPixiePostProcessor>()!.SetFrameTexture(texture2D)
