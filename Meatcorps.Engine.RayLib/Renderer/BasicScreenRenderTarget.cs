@@ -51,7 +51,10 @@ public class BasicScreenRenderTarget : BaseRenderTarget, IDisposable
             var destinationRect = GetScreenRect();
 
             if (targetTexture is not null)
+            {
                 Raylib.BeginTextureMode(targetTexture.Value);
+                Raylib.BeginBlendMode(BlendMode.AlphaPremultiply);
+            }
 
             Raylib.DrawTexturePro(
                 currentRenderer.Texture,
@@ -59,9 +62,12 @@ public class BasicScreenRenderTarget : BaseRenderTarget, IDisposable
                 destinationRect.ToRectangle(),
                 Vector2.Zero, 0f, Color.White
             );
-            
+
             if (targetTexture is not null)
+            {
+                Raylib.EndBlendMode();
                 Raylib.EndTextureMode();
+            }
         }
         
         if (_useRenderTexture)

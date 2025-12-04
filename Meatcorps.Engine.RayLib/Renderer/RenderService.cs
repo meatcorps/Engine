@@ -32,15 +32,31 @@ public class RenderService
         
         _lastRenderTargetStrategy = objectManager.Get<IRenderTargetStrategy>("FINAL") ??
                                     new BasicScreenRenderTarget().SetFullScreen();
+
+        SetRenderTargets(objectManager.GetList<IRenderTargetStrategy>()!);
+    }
+
+    /// <summary>
+    /// Set render targets. If the renderTargetStrategies is null. It will load the ones from the GlobalObjectManager. Which are the default ones.
+    /// </summary>
+    /// <param name="renderTargetStrategies"></param>
+    public void SetRenderTargets(IEnumerable<IRenderTargetStrategy>? renderTargetStrategies = null)
+    {
+        renderTargetStrategies ??= GlobalObjectManager.ObjectManager.GetList<IRenderTargetStrategy>()!;
+        
+        _renderTargetStrategies.Clear();
+        _renderTargetStrategies.AddRange(renderTargetStrategies.Where(x => x != _lastRenderTargetStrategy));
+        _renderTargetStrategies.Add(_lastRenderTargetStrategy);
+        _gameObjects.Clear();
         
         foreach (var renderTargetStrategy in _renderTargetStrategies)
         {
             _gameObjects[renderTargetStrategy] = new List<List<List<BaseGameObject>>>();
-            for (var i = 0; i < sceneLayers; i++)
+            for (var i = 0; i < _sceneLayers; i++)
             {
                 _gameObjects[renderTargetStrategy].Add(new List<List<BaseGameObject>>());
                 
-                for (var j = 0; j < gameObjectLayers; j++)
+                for (var j = 0; j < _gameObjectLayers; j++)
                     _gameObjects[renderTargetStrategy][i].Add(new List<BaseGameObject>());
             }
         }
@@ -75,8 +91,6 @@ public class RenderService
     public void Render()
     {
         SetupRenderTexture();
-
-        var doneRender = false;
         
         foreach (var renderTargetStrategy in _renderTargetStrategies)
         {
@@ -85,32 +99,29 @@ public class RenderService
             if (lastRenderer)
             {
                 renderTargetStrategy.BeginRender(BackgroundColor);
-                
+                Raylib.BeginBlendMode(BlendMode.AlphaPremultiply);
                 Raylib.DrawTexturePro(
                     _renderTexture!.Value.Texture,
                     new Rectangle(0, 0, _renderTexture.Value.Texture.Width, -_renderTexture.Value.Texture.Height),
                     new Rectangle(0, 0, _renderTexture.Value.Texture.Width, _renderTexture.Value.Texture.Height),
                     Vector2.Zero, 0f, Color.White
                 );
+                Raylib.EndBlendMode();
                 
                 renderTargetStrategy.EndRender();
                 break;
             } 
             
             renderTargetStrategy.BeginRender(new Color(0, 0, 0, 0));
-
-            //if (!doneRender)
-            //{
-            //    doneRender = true;
                 
-                foreach (var layer in _gameObjects[renderTargetStrategy])
-                foreach (var gameObjects in layer)
-                {
-                    foreach (var gameObj in gameObjects)
-                        gameObj.Draw();
-                    gameObjects.Clear();
-                }
-            //}
+            foreach (var layer in _gameObjects[renderTargetStrategy])
+            foreach (var gameObjects in layer)
+            {
+                foreach (var gameObj in gameObjects)
+                    gameObj.Draw();
+                gameObjects.Clear();
+            }
+            
 
             renderTargetStrategy.EndRender(_renderTexture);
         }
@@ -129,8 +140,6 @@ public class RenderService
             _renderTexture = Raylib.LoadRenderTexture(screenSize.X, screenSize.Y);
             Raylib.SetTextureFilter(_renderTexture.Value.Texture, TextureFilter.Point);
         }
-        
-        Raylib.ClearBackground(BackgroundColor);
         
         Raylib.BeginTextureMode(_renderTexture.Value);
         Raylib.ClearBackground(BackgroundColor);

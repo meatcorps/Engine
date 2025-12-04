@@ -1,4 +1,5 @@
 using System.Numerics;
+using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.PostProcessing.Renderer;
 using Raylib_cs;
@@ -87,8 +88,9 @@ public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
             (screenWidth - renderWidth) / 2f - subpixelOffsetX,
             (screenHeight - renderHeight) / 2f - subpixelOffsetY
         );
-
+        
         Raylib.BeginTextureMode(_renderTextureFinal.Value);
+        Raylib.BeginBlendMode(BlendMode.AlphaPremultiply);
         Raylib.ClearBackground(_clearColor);
         Raylib.DrawTexturePro(
             _currentRenderer!.Value.Texture,
@@ -96,19 +98,24 @@ public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
             new Rectangle(_offset.X, _offset.Y, renderWidth, renderHeight),
             Vector2.Zero, 0f, Color.White
         );
+        Raylib.EndBlendMode();
         Raylib.EndTextureMode();
         
+
         var destinationRect = GetScreenRect();
 
         if (targetTexture is not null)
             Raylib.BeginTextureMode(targetTexture.Value);
 
+        
+        Raylib.BeginBlendMode(BlendMode.AlphaPremultiply);
         Raylib.DrawTexturePro(
             _renderTextureFinal.Value.Texture,
             new Rectangle(0, 0, screenWidth, -screenHeight),
             destinationRect.ToRectangle(),
             Vector2.Zero, 0f, Color.White
         );
+        Raylib.EndBlendMode();
         
         if (targetTexture is not null)
             Raylib.EndTextureMode();

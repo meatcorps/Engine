@@ -19,7 +19,7 @@ public static class BloomGameModeExtension
         float threshold = 0.8f,
         float knee = 0.1f,
         float intensity = 0.6f,
-        float spread = 1.0f) // NEW
+        float spread = 1.0f) 
     {
         module.SetProcessing(new BloomThresholdPostProcessor
         {
