@@ -1,11 +1,7 @@
-using System.Diagnostics;
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.ObjectManager;
-using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
-using Meatcorps.Engine.RayLib.Camera;
-using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
 
