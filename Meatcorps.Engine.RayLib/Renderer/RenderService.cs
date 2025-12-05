@@ -24,7 +24,7 @@ public class RenderService
         _sceneLayers = sceneLayers;
         _gameObjectLayers = gameObjectLayers;
         
-        _renderTargetStrategies = objectManager.GetList<IRenderTargetStrategy>()!;
+        _renderTargetStrategies = new List<IRenderTargetStrategy>();
         
         _lastRenderTargetStrategy = objectManager.Get<IRenderTargetStrategy>("FINAL") ??
                                     new BasicScreenRenderTarget().SetFullScreen();
