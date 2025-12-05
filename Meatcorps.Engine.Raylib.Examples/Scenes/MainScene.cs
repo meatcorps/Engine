@@ -7,9 +7,11 @@ public class MainScene: BaseScene
 {
     protected override void OnInitialize()
     {
-        AddGameObject(new InputLocalMultiPlayerExample());
+        AddGameObject(new GuiTest());
         //AddGameObject(new InputLocalSinglePlayerExample());
+        
         //AddGameObject(new ImGuiTest());
+        
         //AddGameObject(new RawControllerTest());
     }
 

@@ -15,9 +15,9 @@ public class ImGuiTest: BaseImGuiGameObject
 
     protected override void OnGuiUpdate(float deltaTime)
     {
-        ImGui.ShowDemoWindow();
+        //ImGui.ShowDemoWindow();
         ImGui.Begin("Simple Window");
-        ImGui.TextUnformatted("Icon text " + FontAwesome6.Book);
+        ImGui.Text("Hello, world!");
         ImGui.End();
     }
 }
