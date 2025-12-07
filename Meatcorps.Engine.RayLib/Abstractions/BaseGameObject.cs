@@ -94,6 +94,7 @@ public abstract class BaseGameObject: IDisposable
     public void AddComponent(IGameComponent component)
     {
         _toComponentAdd.Enqueue(component);
+        component.Initialize();
     }
     
     public bool TryGetComponent<T>(out T? component) where T : IGameComponent
@@ -118,10 +119,12 @@ public abstract class BaseGameObject: IDisposable
             return;
         
         OnPreUpdate(deltaTime);
-        
+
         while (_toComponentAdd.TryDequeue(out var component))
+        {
             _components.Add(component);
-        
+        }
+
         while (_toComponentRemove.TryDequeue(out var component))
             _components.Remove(component);
         

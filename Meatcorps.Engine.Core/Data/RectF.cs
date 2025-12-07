@@ -74,6 +74,12 @@ public struct RectF : IEquatable<RectF>
         Height = size.Height;
     }
 
+    public RectF SetPositionWithUV(Vector2 position, Vector2 uv)
+    {
+        var offset = uv * Size;
+        return new RectF(position - offset, Size);
+    }
+
     public static void CreateFrom(Vector2 minimum, Vector2 maximum, out RectF result)
     {
         result.X = minimum.X;
@@ -257,6 +263,16 @@ public struct RectF : IEquatable<RectF>
         interpolatedStringHandler.AppendFormatted(Height);
         return interpolatedStringHandler.ToStringAndClear();
     }
+    
+    public static RectF RectBounds(params RectF[] rects)
+    {
+        var returnRect = rects[0];
+        
+        for (var i = 1; i < rects.Length; i++)
+            returnRect = Union(returnRect, rects[i]);
+        
+        return returnRect;
+    } 
 
     internal string DebugDisplayString => X + "  " + Y + "  " + Width + "  " + Height;
 }

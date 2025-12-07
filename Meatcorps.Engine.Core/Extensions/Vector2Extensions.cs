@@ -303,4 +303,14 @@ public static class Vector2Extensions
             bounds.Y + (point.Y - bounds.Y).Wrap(bounds.Height)
         );
     }
+
+    public static Vector2 Sign(this Vector2 vec)
+    {
+        return new Vector2(MathF.Sign(vec.X), MathF.Sign(vec.Y));
+    }
+
+    public static Vector2 DirectionToUV(this Vector2 direction)
+    {
+        return new Vector2(direction.X + 1, direction.Y + 1) / 2;
+    }
 }
