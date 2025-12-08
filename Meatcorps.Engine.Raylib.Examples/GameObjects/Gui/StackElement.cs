@@ -92,6 +92,6 @@ public class StackElement: BaseGuiItem
 
     public override void FinalizeLayout()
     {
-        // RegisterDraw(() => ElementBound.DrawLines(Color.DarkPurple, 4)); 
+        //RegisterDraw(() => ElementBound.DrawLines(Color.DarkPurple, 4)); 
     }
 }

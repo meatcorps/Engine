@@ -9,7 +9,7 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.Raylib.Examples.GameObjects.Gui;
 
-public class TextElement<T>: BaseGuiItem where T: Enum
+public class TextElement: BaseGuiItem
 {
     private readonly Font _font;
     private readonly string _text;
@@ -48,7 +48,7 @@ public class TextElement<T>: BaseGuiItem where T: Enum
         {
             var textBound = new RectF(Vector2.Zero, TextSize());
             textBound = ElementBound.Align(textBound, _uv);
-            Raylib_cs.Raylib.DrawTextEx(_font, _text, textBound.Position, _size, _spacing, Color);
+            Raylib_cs.Raylib.DrawTextEx(_font, _text, textBound.Position + Offset, _size, _spacing, Color);
         }); 
     }
 }

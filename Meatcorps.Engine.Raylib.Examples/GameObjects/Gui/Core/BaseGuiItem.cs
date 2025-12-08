@@ -1,3 +1,4 @@
+using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Raylib_cs;
 
@@ -5,6 +6,7 @@ namespace Meatcorps.Engine.Raylib.Examples.GameObjects.Gui.Core;
 
 public abstract class BaseGuiItem
 {
+    public Vector2 Offset = Vector2.Zero;
     public Color Color;
     public RectF ContainerBound { get; set; }
     private RectF _elementBound;
@@ -101,6 +103,18 @@ public abstract class BaseGuiItem
     public BaseGuiItem SetPadding(PaddingF padding)
     {
         Padding = padding;
+        return this;
+    }
+    
+    public BaseGuiItem SetColor(Color color)
+    {
+        Color = color;
+        return this;
+    }
+    
+    public BaseGuiItem SetOffset(Vector2 offset)
+    {
+        Offset = offset;
         return this;
     }
 }

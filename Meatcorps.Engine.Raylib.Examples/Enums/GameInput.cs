@@ -6,6 +6,7 @@ public enum GameInput
     Down,
     Left,
     Right,
+    Start,
     Action,
     Back
 }
