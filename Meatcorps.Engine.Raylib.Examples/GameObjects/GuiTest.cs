@@ -34,12 +34,34 @@ public class GuiTest : BaseGameObject
 
     protected override void OnUpdate(float deltaTime)
     {
-        Console.WriteLine("---------- UPDATE");
         _gui.Start();
-        _gui.AddItem(new PanelElement(new RectF(32, 32, 200, 200)).SetMargin(MarginF.All(10)));
-            _gui.AddItem(new RectangleLinesElement(Color.White, 2));
-            _gui.AddItem(new PanelElement(new RectF(0, 0, 100, 100)).SetPadding(PaddingF.All(10)));
-                _gui.AddItem(new RectangleLinesElement(Color.White, 2));
+        _gui.AddItem(new PanelElement(new RectF(32, 32, 200, 200)));
+            //_gui.AddItem(new RectangleLinesElement(Color.White, 2));
+            _gui.AddItem(new StackElement(new RectF(0, 0, 200, 200), uv: UVHelper.LeftTop));
+                _gui.AddItem(new PanelElement(new RectF(0, 0, 50, 50)));
+                    _gui.AddItem(new RectangleLinesElement(Color.White, 2));
+                _gui.CloseItem();
+                _gui.AddItem(new PanelElement(new RectF(0, 0, 100, 20)));
+                    _gui.AddItem(new RectangleLinesElement(Color.Red, 2));
+                    _gui.AddItem(new TextElement<DefaultFont>(Color.White, _textManager.GetFont(), "Hello"));
+                _gui.CloseItem();
+                _gui.AddItem(new PanelElement(new RectF(0, 0, 40, 50)));
+                    _gui.AddItem(new RectangleLinesElement(Color.Green, 2));
+                _gui.CloseItem();
+                _gui.AddItem(new PanelElement(new RectF(0, 0, 30, 50)));
+                    _gui.AddItem(new RectangleLinesElement(Color.Blue, 2));
+                _gui.CloseItem();
+                _gui.AddItem(new StackElement(new RectF(0, 0, 0, 0), 4, new Vector2(1, 0), UVHelper.Left));
+                    _gui.AddItem(new PanelElement(new RectF(0, 0, 50, 50)));
+                    _gui.AddItem(new RectangleLinesElement(Color.White, 2));
+                    _gui.CloseItem();
+                    _gui.AddItem(new PanelElement(new RectF(0, 0, 50, 50)));
+                    _gui.AddItem(new RectangleLinesElement(Color.White, 2));
+                    _gui.CloseItem();
+                    _gui.AddItem(new PanelElement(new RectF(0, 0, 50, 50)));
+                    _gui.AddItem(new RectangleLinesElement(Color.White, 2));
+                    _gui.CloseItem();
+                _gui.CloseItem();
             _gui.CloseItem();
         _gui.CloseItem();
     }
@@ -47,9 +69,6 @@ public class GuiTest : BaseGameObject
 
     protected override void OnDraw()
     {
-        var reference = new RectF(32, 32, 200, 200);
-        reference.DrawFilled(Color.DarkGray);
-        Console.WriteLine("---------- DRAW");
         base.OnDraw();
     }
     

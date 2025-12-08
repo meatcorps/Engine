@@ -1,11 +1,23 @@
 using Meatcorps.Engine.Core.Data;
+using Raylib_cs;
 
 namespace Meatcorps.Engine.Raylib.Examples.GameObjects.Gui.Core;
 
 public abstract class BaseGuiItem
 {
+    public Color Color;
     public RectF ContainerBound { get; set; }
-    public RectF ElementBound { get; set; }
+    private RectF _elementBound;
+    public RectF ElementBound
+    {
+        get => _elementBound;
+        set
+        {
+            _elementBound = value;
+            OnElementSizeChanged();
+        }
+    }
+
     public MarginF Margin { get; set; } = new MarginF(0);
     public PaddingF Padding { get; set; } = new PaddingF(0);
     protected GuiService GuiService { get; set; } = null!;
@@ -26,6 +38,16 @@ public abstract class BaseGuiItem
         OnContainerStart(GuiService);
     }
 
+    public virtual void UpdateChildren(BaseGuiItem parent)
+    {
+        
+    }
+    
+    protected virtual void OnElementSizeChanged()
+    {
+        
+    }
+    
     protected virtual void OnContainerStart(GuiService service)
     {
     }

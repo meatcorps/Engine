@@ -9,6 +9,8 @@ namespace Meatcorps.Engine.Raylib.Examples.GameObjects.Gui;
 public class PanelElement: BaseGuiItem
 {
     public override bool IsContainer => true;
+    private List<BaseGuiItem> _items = new List<BaseGuiItem>();
+    
     protected override void OnInitialize()
     {
     }
@@ -20,37 +22,31 @@ public class PanelElement: BaseGuiItem
 
     public override void ChildGuiItemAdded(BaseGuiItem item)
     {
-        //item.SetRect(item.ElementBound);
+        _items.Add(item);
+        item.ElementBound = ElementBound;
         base.ChildGuiItemAdded(item);
     }
 
-    public override void FinalizeLayout()
+    public override void UpdateChildren(BaseGuiItem parent)
     {
-    }
-}
 
-public class RectangleLinesElement: BaseGuiItem
-{
-    private readonly Color _color;
-    private readonly float _thickness;
-    private readonly int _segments;
-    private readonly float _radius;
-    public override bool IsContainer => false;
-    protected override void OnInitialize()
-    {
-        SetRect(new RectF(Vector2.Zero, (GuiService.CurrentContainer!.ElementBound + GuiService.CurrentContainer!.Padding).Size));
+        foreach (var item in _items)
+        {
+            item.UpdateChildren(this);
+        }
     }
 
-    public RectangleLinesElement(Color color, float thickness = 1, int segments = 4, float radius = 0)
+    protected override void OnContainerStop(GuiService service)
     {
-        _color = color;
-        _thickness = thickness;
-        _segments = segments;
-        _radius = radius;
+        foreach (var item in _items)
+        {
+            item.ElementBound = new RectF(ElementBound.Position, item.ElementBound.Size);
+            item.UpdateChildren(this);
+        }
     }
-    
+
     public override void FinalizeLayout()
     {
-        RegisterDraw(() => ElementBound.DrawLines(_color, _thickness, _radius, _segments)); 
+        // RegisterDraw(() => ElementBound.DrawLines(Color.DarkBrown, 4)); 
     }
 }
