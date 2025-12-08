@@ -8,44 +8,30 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.Raylib.Examples.GameObjects.Gui;
 
-public class PanelElement: BaseGuiItem
+public class ScrollElement: BaseGuiItem
 {
-    private readonly bool _resizeElementX;
-    private readonly bool _resizeElementY;
     public override bool IsContainer => true;
-    public bool ResizeElementX { get; }
-    public bool ResizeElementY { get; }
-    private Vector2 _uv;
     private List<BaseGuiItem> _items = new List<BaseGuiItem>();
     
     protected override void OnInitialize()
     {
     }
 
-    public PanelElement(RectF bounds, Vector2? Uv = null, bool resizeElementX = true, bool resizeElementY = true)
+    public ScrollElement(RectF bounds, Vector2 offset)
     {
-        _resizeElementX = resizeElementX;
-        _resizeElementY = resizeElementY;
         ElementBound = bounds;
-        _uv = Uv ?? UVHelper.LeftTop;
+        Offset = offset;
     }
 
     public override void ChildGuiItemAdded(BaseGuiItem item)
     {
         _items.Add(item);
-        var newSize = ElementBound + Padding;
-        
-        newSize.Width = !_resizeElementX ? newSize.Width : item.ElementBound.Width;
-        newSize.Height = !_resizeElementY ? newSize.Height : item.ElementBound.Height;
-        
-        item.ElementBound = (ElementBound + Padding).Align(newSize, _uv);
-        
+        item.ElementBound = ElementBound;
         base.ChildGuiItemAdded(item);
     }
 
     public override void UpdateChildren(BaseGuiItem parent)
     {
-
         foreach (var item in _items)
         {
             item.UpdateChildren(this);
@@ -57,13 +43,16 @@ public class PanelElement: BaseGuiItem
         foreach (var item in _items)
         {
             var innerElementBound = ElementBound + Padding;
-            item.ElementBound = innerElementBound.Align(new RectF(Vector2.Zero, item.ElementBound.Size), _uv);
+            var rectPosition = innerElementBound.Align(new RectF(Vector2.Zero, item.ElementBound.Size), UVHelper.LeftTop);
+            rectPosition.Position += Offset;    
+            item.ElementBound = rectPosition;
+            
             item.UpdateChildren(this);
         }
     }
 
     public override void FinalizeLayout()
     {
-        //RegisterDraw(() => ElementBound.DrawLines(Color.DarkBrown, 4)); 
+        //RegisterDraw(() => ElementBound.DrawLines(Color.Blue, 4)); 
     }
 }

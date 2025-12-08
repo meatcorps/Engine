@@ -4,6 +4,8 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Storage.Abstractions;
 using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.Logging.Module;
+using Meatcorps.Engine.Raylib.Examples.Enums;
+using Meatcorps.Engine.Raylib.Examples.Resources;
 using Meatcorps.Engine.Raylib.Examples.Scenes;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing;
@@ -14,6 +16,8 @@ LoggingModule.Load();
 CoreModule.Load();
 
 var settings = new BasicConfig();
+
+GameFallbackInput.Load();
 
 GlobalObjectManager.ObjectManager.Register<IUniversalConfig>(settings);
 using var _ = RayLibModule.Setup()
@@ -26,5 +30,9 @@ using var _ = RayLibModule.Setup()
         GlobalObjectManager.ObjectManager.Get<CrtNewPixiePostProcessor>()!.SetFrameTexture(texture2D)
     ))
     .SetResource(TextManager.OnlyOneFont("PressStart2P-Regular.ttf"))
+    .SetResource(AudioEnumBinder.BindAllSounds(
+        SoundFxResource<GameSounds>
+            .Create(6)
+            .UsePlaceHoldersForMissingFiles(), "Assets/SoundFX/"))
     .Load(new MainScene())
     .Run();
