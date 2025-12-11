@@ -9,7 +9,6 @@ public class GuiService: IBackgroundService
     public BaseGuiItem? CurrentContainer { get; private set; }
     public List<BaseGuiItem> Items { get; } = new List<BaseGuiItem>();
     public GuiServiceComponent CurrentComponent { get; set; } = null!;
-    private Queue<Action> _finalizeActions = new Queue<Action>();
 
     public ResourcePool<List<BaseGuiItem>> Pool { get; } =
         new ResourcePool<List<BaseGuiItem>>(10, true, () => new List<BaseGuiItem>(), list => list.Clear());
@@ -29,7 +28,6 @@ public class GuiService: IBackgroundService
     public void AddItem(BaseGuiItem item)
     {
         Items.Add(item);
-        _finalizeActions.Enqueue(item.FinalizeLayout);
         item.Initialize(this);
 
         for (var i = Containers.Count - 1; i >= 0; i--)
@@ -55,7 +53,6 @@ public class GuiService: IBackgroundService
         var item = Containers[^1];
         
         item.ContainerStop();
-        _finalizeActions.Enqueue(item.FinalizeLayoutContainer);
         
         Containers.Remove(item);
         CurrentContainer = Containers.Count > 0 ? Containers[^1] : null;

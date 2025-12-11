@@ -9,9 +9,9 @@ public class GuiServiceComponent : IGameComponent
     private GuiService _guiService = null!;
     private List<Action> _drawActions = new List<Action>();
 
-    public GuiServiceComponent(ObjectManager objectManager)
+    public GuiServiceComponent(ObjectManager? objectManager)
     {
-        _objectManager = objectManager;
+        _objectManager = objectManager ?? GlobalObjectManager.ObjectManager;
     }
 
     public void AddItem(BaseGuiItem item)

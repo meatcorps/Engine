@@ -10,22 +10,22 @@ public static class RectFExtensions
     {
         if (roundness.EqualsSafe(0))
         {
-            Raylib.DrawRectangleRounded(rectF.ToRectangle(), roundness, segmentCount, color);
+            Raylib.DrawRectangleRec(rectF.ToRectangle(), color);
             return;
         }
         
-        Raylib.DrawRectangleRec(rectF.ToRectangle(), color);
+        Raylib.DrawRectangleRounded(rectF.ToRectangle(), roundness, segmentCount, color);
     }
     
     public static void DrawLines(this RectF rectF, Color color, float thickness = 1f, float roundness = 0f, int segmentCount = 4)
     {
         if (roundness.EqualsSafe(0))
         {
-            Raylib.DrawRectangleRoundedLinesEx(rectF.ToRectangle(), roundness, segmentCount, thickness, color);
+            Raylib.DrawRectangleLinesEx(rectF.ToRectangle(), thickness, color);
             return;
         }
         
-        Raylib.DrawRectangleLinesEx(rectF.ToRectangle(), thickness, color);
+        Raylib.DrawRectangleRoundedLinesEx(rectF.ToRectangle(), roundness, segmentCount, thickness, color);
     }
 
     public static void DrawFillAndLines(this RectF rectF, Color outerColor, Color innerColor, float thickness = 1f,
