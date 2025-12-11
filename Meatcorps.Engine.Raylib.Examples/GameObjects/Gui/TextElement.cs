@@ -47,7 +47,7 @@ public class TextElement: BaseGuiItem
         RegisterDraw(() =>
         {
             var textBound = new RectF(Vector2.Zero, TextSize());
-            textBound = ElementBound.Align(textBound, _uv);
+            textBound = (ElementBound + Padding).Align(textBound, _uv);
             Raylib_cs.Raylib.DrawTextEx(_font, _text, textBound.Position + Offset, _size, _spacing, Color);
         }); 
     }

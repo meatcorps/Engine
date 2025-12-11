@@ -41,9 +41,9 @@ public abstract class BaseGameObject: IDisposable
     
     public BaseScene Scene { get; private set; }
     
-    private List<IGameComponent> _components { get; } = new();
-    private Queue<IGameComponent> _toComponentAdd { get; } = new();
-    private Queue<IGameComponent> _toComponentRemove { get; } = new();
+    private readonly List<IGameComponent> _components = new();
+    private readonly Queue<IGameComponent> _toComponentAdd = new();
+    private readonly Queue<IGameComponent> _toComponentRemove = new();
 
     public bool Enabled
     {
@@ -91,10 +91,14 @@ public abstract class BaseGameObject: IDisposable
         OnInitialize();
     }
     
-    public void AddComponent(IGameComponent component)
+    public T AddComponent<T>(T component) where T : IGameComponent
     {
         _toComponentAdd.Enqueue(component);
-        component.Initialize();
+        
+        if (component is IRaylibGameComponent raylibGameComponent)
+            raylibGameComponent.SetOwner(this);
+
+        return component;
     }
     
     public bool TryGetComponent<T>(out T? component) where T : IGameComponent
@@ -123,6 +127,7 @@ public abstract class BaseGameObject: IDisposable
         while (_toComponentAdd.TryDequeue(out var component))
         {
             _components.Add(component);
+            component.Initialize();
         }
 
         while (_toComponentRemove.TryDequeue(out var component))
