@@ -3,15 +3,15 @@ using Meatcorps.Engine.Raylib.Examples.GameObjects;
 
 namespace Meatcorps.Engine.Raylib.Examples.Scenes;
 
-public class MainScene: BaseScene
+public class MainScene : BaseScene
 {
     protected override void OnInitialize()
     {
         AddGameObject(new GuiTest());
         //AddGameObject(new InputLocalSinglePlayerExample());
-        
+
         //AddGameObject(new ImGuiTest());
-        
+
         //AddGameObject(new RawControllerTest());
     }
 

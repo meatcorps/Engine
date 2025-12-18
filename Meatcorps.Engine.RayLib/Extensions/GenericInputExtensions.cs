@@ -5,7 +5,8 @@ namespace Meatcorps.Engine.RayLib.Extensions;
 
 public static class GenericInputExtensions
 {
-    public static GenericMapper<T> AddInputKeyboard<T>(this GenericMapper<T> mapper, int profileId, T key, KeyboardKey keyboardKey) where T : Enum
+    public static GenericMapper<T> AddInputKeyboard<T>(this GenericMapper<T> mapper, int profileId, T key,
+        KeyboardKey keyboardKey) where T : Enum
     {
         mapper.AddInput(profileId, key, keyboardKey.ToString(), () => Raylib.IsKeyDown(keyboardKey) ? 1 : 0);
         return mapper;

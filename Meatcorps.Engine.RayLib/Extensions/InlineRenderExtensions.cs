@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Numerics;
 using System.Text;
 using Meatcorps.Engine.Core.Data;
@@ -225,7 +224,7 @@ public static class InlineRenderExtensions
 
         return ir;
     }
-    
+
     public static InlineRender AddSmoothValue(
         this InlineRender ir,
         Font font,
@@ -249,7 +248,7 @@ public static class InlineRenderExtensions
             CacheSize = false,
             Margin = margin ?? Insets.Zero,
             Data = new LabelData<SmoothValue>(value, floatParseSettings, fontSize, color, spacing),
-            Initialize = (_, item) => {  },
+            Initialize = (_, item) => { },
             GetSize = (_, item) =>
             {
                 var d = (LabelData<SmoothValue>)item.Data!;
@@ -264,7 +263,8 @@ public static class InlineRenderExtensions
             Draw = (_, item, rect) =>
             {
                 var d = (LabelData<SmoothValue>)item.Data!;
-                Raylib.DrawTextEx(font, d.Data.DisplayValue.ToString(d.Text), new Vector2(rect.X, rect.Y), d.FontSize, d.Spacing, d.Color);
+                Raylib.DrawTextEx(font, d.Data.DisplayValue.ToString(d.Text), new Vector2(rect.X, rect.Y), d.FontSize,
+                    d.Spacing, d.Color);
             },
             Destroy = (_, __) => { }
         });
@@ -298,7 +298,7 @@ public static class InlineRenderExtensions
                 {
                     Identifier = nlId,
                     CacheSize = true,
-                    NewLine = true, 
+                    NewLine = true,
                     Margin = Insets.Zero,
                     Initialize = (_, __) => { },
                     GetSize = (_, __) => new PointInt(0, 0),
@@ -358,7 +358,6 @@ public static class InlineRenderExtensions
     {
         var cur = "";
         foreach (var ch in text)
-        {
             if (ch == '\n')
             {
                 if (cur.Length > 0)
@@ -383,7 +382,6 @@ public static class InlineRenderExtensions
             {
                 cur += ch;
             }
-        }
 
         if (cur.Length > 0)
             yield return cur;
@@ -515,14 +513,15 @@ public static class InlineRenderExtensions
 
     public class LabelData<T> : LabelData
     {
-        public T Data { get; init; }
-
-        public LabelData(T data, string text, float fontSize, Color color, float spacing): base(text, fontSize, color, spacing)
+        public LabelData(T data, string text, float fontSize, Color color, float spacing) : base(text, fontSize, color,
+            spacing)
         {
             Data = data;
         }
+
+        public T Data { get; init; }
     }
-    
+
     public class LabelData
     {
         public LabelData(string text, float fontSize, Color color, float spacing)
@@ -532,7 +531,7 @@ public static class InlineRenderExtensions
             Color = color;
             Spacing = spacing;
         }
-        
+
         public string Text { get; set; }
         public float FontSize { get; set; }
         public Color Color { get; set; }

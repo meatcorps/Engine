@@ -5,14 +5,15 @@ namespace Meatcorps.Engine.RayLib.Renderer;
 
 public class NineSliceRenderer
 {
-    private readonly Texture2D _texture;
+    private readonly Rectangle[] _dst = new Rectangle[9];
     private readonly int _left, _right, _top, _bottom;
     private readonly Rectangle _sourceRect;
 
     private readonly Rectangle[] _src = new Rectangle[9];
-    private readonly Rectangle[] _dst = new Rectangle[9];
+    private readonly Texture2D _texture;
 
-    public NineSliceRenderer(Texture2D texture, int left = 2, int right = 2, int top = 2, int bottom = 2, Rectangle? sourceRect = null)
+    public NineSliceRenderer(Texture2D texture, int left = 2, int right = 2, int top = 2, int bottom = 2,
+        Rectangle? sourceRect = null)
     {
         _texture = texture;
         _left = left;
@@ -26,13 +27,13 @@ public class NineSliceRenderer
 
     private void CalculateSourceRects()
     {
-        float sx = _sourceRect.X;
-        float sy = _sourceRect.Y;
-        float sw = _sourceRect.Width;
-        float sh = _sourceRect.Height;
+        var sx = _sourceRect.X;
+        var sy = _sourceRect.Y;
+        var sw = _sourceRect.Width;
+        var sh = _sourceRect.Height;
 
-        float innerW = sw - _left - _right;
-        float innerH = sh - _top - _bottom;
+        var innerW = sw - _left - _right;
+        var innerH = sh - _top - _bottom;
 
         // Top row
         _src[0] = new Rectangle(sx, sy, _left, _top);
@@ -52,14 +53,14 @@ public class NineSliceRenderer
 
     public void Draw(Rectangle target, Color tint)
     {
-        float x = target.X;
-        float y = target.Y;
-        float w = target.Width;
-        float h = target.Height;
+        var x = target.X;
+        var y = target.Y;
+        var w = target.Width;
+        var h = target.Height;
 
         // Sizes
-        float centerW = w - _left - _right;
-        float centerH = h - _top - _bottom;
+        var centerW = w - _left - _right;
+        var centerH = h - _top - _bottom;
 
         // Top row
         _dst[0] = new Rectangle(x, y, _left, _top);
@@ -76,9 +77,6 @@ public class NineSliceRenderer
         _dst[7] = new Rectangle(x + _left, y + h - _bottom, centerW, _bottom);
         _dst[8] = new Rectangle(x + w - _right, y + h - _bottom, _right, _bottom);
 
-        for (int i = 0; i < 9; i++)
-        {
-            Raylib.DrawTexturePro(_texture, _src[i], _dst[i], Vector2.Zero, 0f, tint);
-        }
+        for (var i = 0; i < 9; i++) Raylib.DrawTexturePro(_texture, _src[i], _dst[i], Vector2.Zero, 0f, tint);
     }
 }

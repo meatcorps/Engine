@@ -1,4 +1,3 @@
-using System.Numerics;
 using Meatcorps.Engine.RayLib.PostProcessing.Abstractions;
 using Raylib_cs;
 
@@ -8,7 +7,7 @@ public class HeatwaveBasePostProcessing : BasePostProcessor
 {
     private float _time;
 
-    public HeatwaveBasePostProcessing() : base("Assets/Shaders/heatwave.fx", ["time", "resolution"], true)
+    public HeatwaveBasePostProcessing() : base("Assets/Shaders/heatwave.fx", ["time", "resolution"])
     {
     }
 

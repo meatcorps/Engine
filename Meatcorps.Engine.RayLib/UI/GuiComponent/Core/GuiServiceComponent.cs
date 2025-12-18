@@ -1,26 +1,17 @@
 using Meatcorps.Engine.Core.Interfaces.Components;
 using Meatcorps.Engine.Core.ObjectManager;
 
-namespace Meatcorps.Engine.Raylib.Examples.GameObjects.Gui.Core;
+namespace Meatcorps.Engine.RayLib.UI.GuiComponent.Core;
 
 public class GuiServiceComponent : IGameComponent
 {
+    private readonly List<Action> _drawActions = new();
     private readonly ObjectManager _objectManager;
     private GuiService _guiService = null!;
-    private List<Action> _drawActions = new List<Action>();
 
     public GuiServiceComponent(ObjectManager? objectManager)
     {
         _objectManager = objectManager ?? GlobalObjectManager.ObjectManager;
-    }
-
-    public void AddItem(BaseGuiItem item)
-    {
-        _guiService.AddItem(item);
-    }
-    public void CloseItem()
-    {
-        _guiService.Stop();
     }
 
     public void Initialize()
@@ -28,12 +19,7 @@ public class GuiServiceComponent : IGameComponent
         _guiService = _objectManager.Get<GuiService>()!;
     }
 
-    public void Start()
-    {
-        _guiService.CurrentComponent = this;
-    }
 
-    
     public void PreUpdate(float deltaTime)
     {
         _drawActions.Clear();
@@ -47,14 +33,29 @@ public class GuiServiceComponent : IGameComponent
     {
     }
 
-    public void RegisterDraw(Action draw)
-    {
-        _drawActions.Add(draw);
-    }
-    
     public void Draw()
     {
         foreach (var draw in _drawActions)
             draw();
+    }
+
+    public void AddItem(BaseGuiItem item)
+    {
+        _guiService.AddItem(item);
+    }
+
+    public void CloseItem()
+    {
+        _guiService.Stop();
+    }
+
+    public void Start()
+    {
+        _guiService.CurrentComponent = this;
+    }
+
+    public void RegisterDraw(Action draw)
+    {
+        _drawActions.Add(draw);
     }
 }

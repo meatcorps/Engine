@@ -13,18 +13,19 @@ public static class RectFExtensions
             Raylib.DrawRectangleRec(rectF.ToRectangle(), color);
             return;
         }
-        
+
         Raylib.DrawRectangleRounded(rectF.ToRectangle(), roundness, segmentCount, color);
     }
-    
-    public static void DrawLines(this RectF rectF, Color color, float thickness = 1f, float roundness = 0f, int segmentCount = 4)
+
+    public static void DrawLines(this RectF rectF, Color color, float thickness = 1f, float roundness = 0f,
+        int segmentCount = 4)
     {
         if (roundness.EqualsSafe(0))
         {
             Raylib.DrawRectangleLinesEx(rectF.ToRectangle(), thickness, color);
             return;
         }
-        
+
         Raylib.DrawRectangleRoundedLinesEx(rectF.ToRectangle(), roundness, segmentCount, thickness, color);
     }
 

@@ -28,11 +28,11 @@ public static class GameFallbackInput
             .AddInputKeyboard(1, GameInput.Start, KeyboardKey.F)
             .AddInputKeyboard(1, GameInput.Action, KeyboardKey.F)
             .AddAxis(1, 1, GameInput.Left, GameInput.Right, GameInput.Up, GameInput.Down);
-            
+
            InputModule<GameInput>.CreateOnlyKeyboardMouseMapper(mapper, 2);*/
-        
+
         InputModule<GameInput>.Create()
-            .AddInputMapper(new GenericMapper<GameInput>()
+            .AddInputMapper(new GenericMapper<GameInput>(new RaylibKeyboardBinder<GameInput>())
                 .AddInputKeyboard(0, GameInput.Up, KeyboardKey.Up)
                 .AddInputKeyboard(0, GameInput.Down, KeyboardKey.Down)
                 .AddInputKeyboard(0, GameInput.Left, KeyboardKey.Left)

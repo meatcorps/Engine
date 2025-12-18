@@ -1,28 +1,26 @@
 using System.Runtime.InteropServices;
-using HidSharp;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.Hardware.Controllers.Enums;
 using Meatcorps.Engine.Hardware.Controllers.Interfaces;
-using Meatcorps.Engine.Hardware.Controllers.Mapper;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Input;
 
-public class RayLibControllerDeviceManager: IControllerDeviceManager
+public class RayLibControllerDeviceManager : IControllerDeviceManager
 {
-    private List<RayLibControllerDevice> _devices = new();
-    private FixedTimer _checkTimer = new(1000f);
-    private Dictionary<int, int> _assignedDevices = new();
+    private readonly Dictionary<int, int> _assignedDevices = new();
+    private readonly FixedTimer _checkTimer = new(1000f);
+    private readonly List<RayLibControllerDevice> _devices = new();
     private Dictionary<string, ControllerType> _deviceMapping = new();
-    
+
     public IControllerDevice? GetDevice(int player)
     {
         if (!_assignedDevices.TryGetValue(player, out var device))
             return null;
-        
+
         if (device >= _devices.Count || _devices.Count == 0)
             return null;
-        
+
         return _devices[device];
     }
 
@@ -47,14 +45,12 @@ public class RayLibControllerDeviceManager: IControllerDeviceManager
     {
         return GetDevice(player) is not null;
     }
-    
+
     public int WhichPlayerOnDevice(int device)
     {
         foreach (var (playerId, deviceId) in _assignedDevices)
-        {
             if (deviceId == device && GetDevice(playerId) is not null)
                 return playerId;
-        }
         return -1;
     }
 
@@ -63,9 +59,9 @@ public class RayLibControllerDeviceManager: IControllerDeviceManager
         if (File.Exists("gamecontrollerdb.txt"))
         {
             var db = File.ReadAllText("gamecontrollerdb.txt");
-            Raylib.SetGamepadMappings(db); 
+            Raylib.SetGamepadMappings(db);
         }
-        
+
         UpdateTotalDevices();
     }
 
@@ -81,22 +77,16 @@ public class RayLibControllerDeviceManager: IControllerDeviceManager
         var oldTotal = TotalDevices;
         TotalDevices = 0;
         for (var i = 0; i <= 8; i++)
-        {
             if (Raylib.IsGamepadAvailable(i))
-            {
                 TotalDevices++;
-            }
-        }
-        if (TotalDevices != oldTotal)
-        {
-            UpdateDevices();
-        }
+
+        if (TotalDevices != oldTotal) UpdateDevices();
     }
 
     private void UpdateDevices()
     {
         _devices.Clear();
-        
+
         for (var i = 0; i < TotalDevices; i++)
             _devices.Add(new RayLibControllerDevice(i));
 

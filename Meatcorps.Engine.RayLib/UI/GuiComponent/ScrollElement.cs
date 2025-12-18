@@ -2,25 +2,24 @@ using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Utilities;
-using Meatcorps.Engine.Raylib.Examples.GameObjects.Gui.Core;
-using Meatcorps.Engine.RayLib.Extensions;
-using Raylib_cs;
+using Meatcorps.Engine.RayLib.UI.GuiComponent.Core;
 
-namespace Meatcorps.Engine.Raylib.Examples.GameObjects.Gui;
+namespace Meatcorps.Engine.RayLib.UI.GuiComponent;
 
-public class ScrollElement: BaseGuiItem
+public class ScrollElement : BaseGuiItem
 {
-    public override bool IsContainer => true;
-    private List<BaseGuiItem> _items = new List<BaseGuiItem>();
-    
-    protected override void OnInitialize()
-    {
-    }
+    private readonly List<BaseGuiItem> _items = new();
 
     public ScrollElement(RectF bounds, Vector2 offset)
     {
         ElementBound = bounds;
         Offset = offset;
+    }
+
+    public override bool IsContainer => true;
+
+    protected override void OnInitialize()
+    {
     }
 
     public override void ChildGuiItemAdded(BaseGuiItem item)
@@ -32,10 +31,7 @@ public class ScrollElement: BaseGuiItem
 
     public override void UpdateChildren(BaseGuiItem parent)
     {
-        foreach (var item in _items)
-        {
-            item.UpdateChildren(this);
-        }
+        foreach (var item in _items) item.UpdateChildren(this);
     }
 
     protected override void OnContainerStop(GuiService service)
@@ -43,10 +39,11 @@ public class ScrollElement: BaseGuiItem
         foreach (var item in _items)
         {
             var innerElementBound = ElementBound + Padding;
-            var rectPosition = innerElementBound.Align(new RectF(Vector2.Zero, item.ElementBound.Size), UVHelper.LeftTop);
-            rectPosition.Position += Offset;    
+            var rectPosition =
+                innerElementBound.Align(new RectF(Vector2.Zero, item.ElementBound.Size), UVHelper.LeftTop);
+            rectPosition.Position += Offset;
             item.ElementBound = rectPosition;
-            
+
             item.UpdateChildren(this);
         }
     }

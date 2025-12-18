@@ -2,7 +2,7 @@ using Meatcorps.Engine.RayLib.Abstractions;
 
 namespace Meatcorps.Engine.RayLib.Scenes;
 
-public class EmptyScene: BaseScene
+public class EmptyScene : BaseScene
 {
     protected override void OnInitialize()
     {

@@ -4,21 +4,21 @@ using Meatcorps.Engine.Core.Extensions;
 namespace Meatcorps.Engine.RayLib.TileRenderer;
 
 /// <summary>
-/// Rule-based autotile selector with optional caching and hide/show veto.
-/// Usage:
-///   rules
+///     Rule-based autotile selector with optional caching and hide/show veto.
+///     Usage:
+///     rules
 ///     .For(GroundSprite.Fill)
-///       .Require(Group.Ground, TileRuleCheck.Create(left:true, right:true, up:true, down:true))
+///     .Require(Group.Ground, TileRuleCheck.Create(left:true, right:true, up:true, down:true))
 ///     .For(GroundSprite.EdgeH)
-///       .Require(Group.Ground, TileRuleCheck.Create(left:true, right:true));
+///     .Require(Group.Ground, TileRuleCheck.Create(left:true, right:true));
 /// </summary>
 public class TileRuleSet<TSprite, TRuleGroup>
     where TSprite : struct, Enum
     where TRuleGroup : struct, Enum
 {
-    private readonly List<TileRule<TSprite, TRuleGroup>> _rules = new();
-    private readonly HashSet<PointInt> _hideTiles = new();
     private readonly Dictionary<PointInt, TSprite?> _cache = new();
+    private readonly HashSet<PointInt> _hideTiles = new();
+    private readonly List<TileRule<TSprite, TRuleGroup>> _rules = new();
 
     public bool CacheEnabled { get; set; } = true;
 
@@ -30,32 +30,8 @@ public class TileRuleSet<TSprite, TRuleGroup>
         return new TileRuleBuilder(this, tile);
     }
 
-    public readonly struct TileRuleBuilder
+    public void Invalidate(Rect rect)
     {
-        private readonly TileRuleSet<TSprite, TRuleGroup> _set;
-        private readonly TSprite _tile;
-
-        public TileRuleBuilder(TileRuleSet<TSprite, TRuleGroup> set, TSprite tile)
-        {
-            _set = set;
-            _tile = tile;
-        }
-
-        /// <summary>
-        /// Add/replace a requirement: for this sprite to be selected, all offsets in 'check'
-        /// must be valid positions belonging to 'group'.
-        /// </summary>
-        public TileRuleBuilder Require(TRuleGroup group, TileRuleCheck check)
-        {
-            var r = _set.CreateOrGetRule(_tile);
-            r.Rules[group] = check;
-            return this;
-        }
-        
-        public TileRuleSet<TSprite, TRuleGroup> End() => _set;
-    }
-    
-    public void Invalidate(Rect rect) {
         if (!CacheEnabled) return;
         foreach (var kv in _cache.Keys.Where(p => rect.Contains(p)).ToList())
             _cache.Remove(kv);
@@ -79,7 +55,7 @@ public class TileRuleSet<TSprite, TRuleGroup>
     }
 
     /// <summary>
-    /// Pre-fills the cache inside Bounds (requires UseBounds=true).
+    ///     Pre-fills the cache inside Bounds (requires UseBounds=true).
     /// </summary>
     public void UpdateCache(TileRuleSettings<TRuleGroup> settings)
     {
@@ -95,13 +71,11 @@ public class TileRuleSet<TSprite, TRuleGroup>
 
         for (var x = minX; x < maxX; x++)
         for (var y = minY; y < maxY; y++)
-        {
             GetTile(settings, new PointInt(x, y), out _);
-        }
     }
 
     /// <summary>
-    /// Returns true and sets 'tile' when a rule matches this position. Returns false = do not render.
+    ///     Returns true and sets 'tile' when a rule matches this position. Returns false = do not render.
     /// </summary>
     public bool GetTile(TileRuleSettings<TRuleGroup> settings, PointInt position, out TSprite tile)
     {
@@ -121,7 +95,6 @@ public class TileRuleSet<TSprite, TRuleGroup>
 
         // Evaluate rules in order (define order to be priority)
         foreach (var rule in _rules)
-        {
             if (rule.Validate(settings, position))
             {
                 tile = rule.Tile;
@@ -129,7 +102,6 @@ public class TileRuleSet<TSprite, TRuleGroup>
                     _cache[position] = tile; // write actual tile
                 return true;
             }
-        }
 
         tile = default;
         if (CacheEnabled)
@@ -142,14 +114,40 @@ public class TileRuleSet<TSprite, TRuleGroup>
     private TileRule<TSprite, TRuleGroup> CreateOrGetRule(TSprite tile)
     {
         foreach (var r in _rules)
-        {
             if (EqualityComparer<TSprite>.Default.Equals(r.Tile, tile))
                 return r;
-        }
 
         var created = new TileRule<TSprite, TRuleGroup>(tile);
         _rules.Add(created);
         return created;
+    }
+
+    public readonly struct TileRuleBuilder
+    {
+        private readonly TileRuleSet<TSprite, TRuleGroup> _set;
+        private readonly TSprite _tile;
+
+        public TileRuleBuilder(TileRuleSet<TSprite, TRuleGroup> set, TSprite tile)
+        {
+            _set = set;
+            _tile = tile;
+        }
+
+        /// <summary>
+        ///     Add/replace a requirement: for this sprite to be selected, all offsets in 'check'
+        ///     must be valid positions belonging to 'group'.
+        /// </summary>
+        public TileRuleBuilder Require(TRuleGroup group, TileRuleCheck check)
+        {
+            var r = _set.CreateOrGetRule(_tile);
+            r.Rules[group] = check;
+            return this;
+        }
+
+        public TileRuleSet<TSprite, TRuleGroup> End()
+        {
+            return _set;
+        }
     }
 }
 
@@ -159,18 +157,18 @@ public class TileRule<TSprite, TRuleGroup>
     where TSprite : struct, Enum
     where TRuleGroup : struct, Enum
 {
-    public TSprite Tile { get; }
-    public Dictionary<TRuleGroup, TileRuleCheck> Rules { get; }
-
     public TileRule(TSprite tile)
     {
         Tile = tile;
         Rules = new Dictionary<TRuleGroup, TileRuleCheck>();
     }
 
+    public TSprite Tile { get; }
+    public Dictionary<TRuleGroup, TileRuleCheck> Rules { get; }
+
     /// <summary>
-    /// A rule passes if, for every (group -> required neighbor offsets),
-    /// each required neighbor at (position + offset) is valid for that group.
+    ///     A rule passes if, for every (group -> required neighbor offsets),
+    ///     each required neighbor at (position + offset) is valid for that group.
     /// </summary>
     public bool Validate(TileRuleSettings<TRuleGroup> settings, PointInt position)
     {
@@ -195,16 +193,6 @@ public class TileRule<TSprite, TRuleGroup>
 
 public class TileRuleSettings<TGroup> where TGroup : struct, Enum
 {
-    public Rect Bounds { get; private set; }
-    public bool Wrap { get; private set; }
-    public bool UseBounds { get; private set; }
-    public IsAllowedDelegateEvent IsAllowedReceiver { get; private set; }
-
-    /// <summary>
-    /// Optional global neighbor stencil you can reuse elsewhere; not directly used by rules.
-    /// </summary>
-    public List<PointInt> Neighbors { get; }
-
     public delegate bool IsAllowedDelegateEvent(PointInt position, TGroup group);
 
     public TileRuleSettings()
@@ -215,6 +203,16 @@ public class TileRuleSettings<TGroup> where TGroup : struct, Enum
         IsAllowedReceiver = (_, _) => false; // safe default
         Neighbors = new List<PointInt>();
     }
+
+    public Rect Bounds { get; private set; }
+    public bool Wrap { get; private set; }
+    public bool UseBounds { get; private set; }
+    public IsAllowedDelegateEvent IsAllowedReceiver { get; private set; }
+
+    /// <summary>
+    ///     Optional global neighbor stencil you can reuse elsewhere; not directly used by rules.
+    /// </summary>
+    public List<PointInt> Neighbors { get; }
 
     public TileRuleSettings<TGroup> WithBounds(Rect bounds, bool wrap = false)
     {
@@ -279,16 +277,16 @@ public class TileRuleSettings<TGroup> where TGroup : struct, Enum
 // ------------------------------------------------------------------------
 
 /// <summary>
-/// Describes which neighbor offsets must be valid. Think "mask of required adjacencies".
+///     Describes which neighbor offsets must be valid. Think "mask of required adjacencies".
 /// </summary>
 public class TileRuleCheck
 {
-    public HashSet<PointInt> AllowedNeighbors { get; }
-
     private TileRuleCheck(HashSet<PointInt> allowed)
     {
         AllowedNeighbors = allowed;
     }
+
+    public HashSet<PointInt> AllowedNeighbors { get; }
 
     public static TileRuleCheck Create(params PointInt[] allowedNeighbors)
     {

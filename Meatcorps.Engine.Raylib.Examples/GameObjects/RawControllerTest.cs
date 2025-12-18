@@ -1,6 +1,5 @@
 using System.Numerics;
 using System.Text;
-using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.Controllers.Enums;
 using Meatcorps.Engine.Hardware.Controllers.Interfaces;
@@ -18,31 +17,28 @@ namespace Meatcorps.Engine.Raylib.Examples.GameObjects;
 
 public class RawControllerTest : BaseGameObject
 {
-    private ControllerInputMapper<ControllerInputEnum> _controllerInputMapper;
     private IControllerDeviceManager _controllerDeviceManager;
+    private ControllerInputMapper<ControllerInputEnum> _controllerInputMapper;
     private TextManager<DefaultFont> _fonts;
     private ILogger<RawControllerTest> _logger;
     private string _previousText = "";
+
     protected override void OnInitialize()
     {
-        
         _logger = LoggingService.GetLogger<RawControllerTest>();
         Camera = CameraLayer.UI;
-        
+
         //if (GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("Debug", "UseRayLibController", true))
-            //_controllerDeviceManager = new RayLibControllerDeviceManager();
+        //_controllerDeviceManager = new RayLibControllerDeviceManager();
         //else
-            _controllerDeviceManager = new SDLControllerDeviceManager();
-        
+        _controllerDeviceManager = new SDLControllerDeviceManager();
+
         _controllerInputMapper = new ControllerInputMapper<ControllerInputEnum>(_controllerDeviceManager);
         _fonts = GlobalObjectManager.ObjectManager.Get<TextManager<DefaultFont>>()!;
-        
+
         // Just everything :)
-        foreach (var type in Enum.GetValues<ControllerInputEnum>())
-        {
-            _controllerInputMapper.Map(type, type);
-        }
-        
+        foreach (var type in Enum.GetValues<ControllerInputEnum>()) _controllerInputMapper.Map(type, type);
+
         _controllerDeviceManager.AssignDevice(1, 0);
         _controllerDeviceManager.AssignDevice(2, 1);
         _controllerDeviceManager.AssignDevice(3, 2);
@@ -60,13 +56,9 @@ public class RawControllerTest : BaseGameObject
         for (var player = 1; player <= 4; player++)
         {
             if (_controllerInputMapper.GetState(player, ControllerInputEnum.AorCross).IsPressed)
-            {
                 _controllerInputMapper.Rumble(player, 1, 0, 1);
-            }
             if (_controllerInputMapper.GetState(player, ControllerInputEnum.BorCircle).IsPressed)
-            {
                 _controllerInputMapper.Rumble(player, 0, 1, 1);
-            }
         }
     }
 
@@ -79,8 +71,8 @@ public class RawControllerTest : BaseGameObject
             outputViewer.Clear();
             if (_controllerDeviceManager.IsDeviceAssigned(player))
             {
-                outputViewer.AppendLine("AXIS1: " + _controllerInputMapper.GetAxis(player, 1).ToString());
-                outputViewer.AppendLine("AXIS2: " + _controllerInputMapper.GetAxis(player, 2).ToString());
+                outputViewer.AppendLine("AXIS1: " + _controllerInputMapper.GetAxis(player));
+                outputViewer.AppendLine("AXIS2: " + _controllerInputMapper.GetAxis(player, 2));
                 var count = 0;
                 var type = _controllerDeviceManager.GetDevice(player)?.Type ?? ControllerType.Other;
                 foreach (var controllerType in Enum.GetValues<ControllerInputEnum>())
@@ -92,24 +84,26 @@ public class RawControllerTest : BaseGameObject
                         count++;
                     }
                 }
+
                 var text = _previousText;
 
                 text = "> " + player + " (" + type + ") " +
                        outputViewer.ToString().Replace("\n", ",").Replace("\r", "");
                 if (_previousText != text)
                 {
-                   // _logger.LogInformation(text);
+                    // _logger.LogInformation(text);
                 }
 
                 _previousText = text;
 
-                Raylib_cs.Raylib.DrawTextEx(_fonts.GetFont(), "> " + player + "(" + type + ")\n" + outputViewer.ToString(), new Vector2(16 + counter, 16), 16f, 1f, Color.White);
+                Raylib_cs.Raylib.DrawTextEx(_fonts.GetFont(), "> " + player + "(" + type + ")\n" + outputViewer,
+                    new Vector2(16 + counter, 16), 16f, 1f, Color.White);
             }
 
             counter += 400;
         }
-        
-        
+
+
         base.OnDraw();
     }
 
