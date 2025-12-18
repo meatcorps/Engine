@@ -1,4 +1,3 @@
-using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.UI.Data;
@@ -8,6 +7,26 @@ namespace Meatcorps.Engine.RayLib.UI;
 
 public class InlineRender : IDisposable
 {
+    private readonly Dictionary<string, PointInt> _cachedSizes = new();
+    private readonly Dictionary<string, Rectangle> _drawPositions = new();
+
+    private readonly List<InlineItem> _items = new();
+    private readonly Dictionary<int, List<InlineItem>> _lineItems = new();
+    private readonly Dictionary<int, PointInt> _lineSize = new();
+    private InlineItem? _currentItem;
+    private PointInt _currentPosition;
+    private PointInt _currentSize;
+
+    private bool _disposed;
+    private int _lineCount;
+    private int _linePosition;
+    private bool _newLine;
+
+    public InlineRender()
+    {
+        _lineItems[0] = new List<InlineItem>();
+    }
+
     public bool AutoWidth { get; set; }
     public bool AutoHeight { get; set; }
     public bool Wrap { get; set; }
@@ -16,26 +35,23 @@ public class InlineRender : IDisposable
     public Rect Bounds { get; set; }
     public VAlign VAlign { get; set; } = VAlign.Middle;
     public HAlign HAlign { get; set; } = HAlign.Left;
-    public int ItemSpacing { get; set; } = 0;   // extra space between items on the same line
-    public int LineSpacing { get; set; } = 0;   // extra pixels between lines
+    public int ItemSpacing { get; set; } = 0; // extra space between items on the same line
+    public int LineSpacing { get; set; } = 0; // extra pixels between lines
 
-    private bool _disposed;
-    private PointInt _currentPosition;
-    private PointInt _currentSize;
-    private bool _newLine;
-
-    private readonly List<InlineItem> _items = new();
-    private readonly Dictionary<string, PointInt> _cachedSizes = new();
-    private readonly Dictionary<string, Rectangle> _drawPositions = new();
-    private readonly Dictionary<int, PointInt> _lineSize = new();
-    private readonly Dictionary<int, List<InlineItem>> _lineItems = new();
-    private int _linePosition;
-    private int _lineCount;
-    private InlineItem? _currentItem;
-
-    public InlineRender()
+    public void Dispose()
     {
-        _lineItems[0] = new();
+        if (_disposed)
+            return;
+        _disposed = true;
+
+        foreach (var item in _items)
+            item.Destroy(this, item);
+
+        _items.Clear();
+        _cachedSizes.Clear();
+        _drawPositions.Clear();
+        _lineSize.Clear();
+        _lineItems.Clear();
     }
 
     public InlineRender Register(InlineItem item)
@@ -48,7 +64,9 @@ public class InlineRender : IDisposable
             _items.Insert(index, item);
         }
         else
+        {
             _items.Add(item);
+        }
 
         item.Initialize(this, item);
 
@@ -75,15 +93,17 @@ public class InlineRender : IDisposable
 
         return this;
     }
-    
+
     public bool TryGetItem(string id, out InlineItem? item)
     {
         item = _items.FirstOrDefault(x => x.Identifier == id);
         return item != null;
     }
 
-    public bool TryGetDrawRect(string id, out Rectangle rect) 
-        => _drawPositions.TryGetValue(id, out rect);
+    public bool TryGetDrawRect(string id, out Rectangle rect)
+    {
+        return _drawPositions.TryGetValue(id, out rect);
+    }
 
     public void Update(float deltaTime = 0)
     {
@@ -96,7 +116,7 @@ public class InlineRender : IDisposable
         _lineCount = 0;
 
         _lineItems.Clear();
-        _lineItems[0] = new();
+        _lineItems[0] = new List<InlineItem>();
         _lineSize.Clear();
         _drawPositions.Clear();
 
@@ -106,7 +126,7 @@ public class InlineRender : IDisposable
             _currentItem = item;
             if (!item.Enabled)
                 continue;
-            
+
             item.Update(this, item, deltaTime);
 
             if (!item.CacheSize)
@@ -157,14 +177,15 @@ public class InlineRender : IDisposable
             for (var i = 0; i < _lineCount; i++)
             {
                 // width of line i incl. item spacing (n-1 gaps)
-                var lineOuterW = _lineSize[i].X + (Math.Max(0, _lineItems[i].Count - 1) * ItemSpacing);
+                var lineOuterW = _lineSize[i].X + Math.Max(0, _lineItems[i].Count - 1) * ItemSpacing;
                 measured.X = Math.Max(measured.X, lineOuterW);
                 measured.Y += _lineSize[i].Y;
             }
+
             // add line spacing between lines
             if (_lineCount > 1) measured.Y += (_lineCount - 1) * LineSpacing;
 
-            if (AutoWidth)  Bounds = new Rect(Bounds.X, Bounds.Y, measured.X, Bounds.Height);
+            if (AutoWidth) Bounds = new Rect(Bounds.X, Bounds.Y, measured.X, Bounds.Height);
             if (AutoHeight) Bounds = new Rect(Bounds.X, Bounds.Y, Bounds.Width, measured.Y);
         }
 
@@ -175,14 +196,14 @@ public class InlineRender : IDisposable
         for (var i = 0; i < _lineCount; i++)
         {
             var totalSize = _lineSize[i];
-            
+
             var fillSize = CalculateFillSize(i, Bounds.Size);
 
             // Set starting position along the flow axis for this line
             if (NewLineOrientation == Orientation.Horizontal)
-                _currentPosition.X = GetLineStartX(i); 
+                _currentPosition.X = GetLineStartX(i);
             else
-                _currentPosition.Y = GetLineStartY(i);  
+                _currentPosition.Y = GetLineStartY(i);
 
             // --- place items in this line ---
             foreach (var item in _lineItems[i])
@@ -193,38 +214,41 @@ public class InlineRender : IDisposable
                 var slotX = _currentPosition.X;
                 var slotY = _currentPosition.Y;
                 if (NewLineOrientation == Orientation.Horizontal && Direction.X < 0) slotX -= outer.X;
-                if (NewLineOrientation == Orientation.Vertical   && Direction.Y < 0) slotY -= outer.Y;
+                if (NewLineOrientation == Orientation.Vertical && Direction.Y < 0) slotY -= outer.Y;
 
                 // start with OUTER rect
                 var rect = new Rectangle(slotX, slotY, outer.X, outer.Y);
 
                 // cross-axis fill works on OUTER first
                 if (NewLineOrientation == Orientation.Horizontal && item.FillHeight) rect.Height = _lineSize[i].Y;
-                if (NewLineOrientation == Orientation.Vertical   && item.FillWidth ) rect.Width  = _lineSize[i].X;
+                if (NewLineOrientation == Orientation.Vertical && item.FillWidth) rect.Width = _lineSize[i].X;
 
                 // now shrink by margins to get the INNER content box
-                rect.X      += item.Margin.Left;
-                rect.Y      += item.Margin.Top;
-                rect.Width  -= item.Margin.Horizontal;
+                rect.X += item.Margin.Left;
+                rect.Y += item.Margin.Top;
+                rect.Width -= item.Margin.Horizontal;
                 rect.Height -= item.Margin.Vertical;
 
                 // inner-align using RAW content size
                 switch (item.HAlign)
                 {
-                    case HAlign.Center: 
-                        rect.X += (rect.Width  - raw.X) / 2f; 
+                    case HAlign.Center:
+                        rect.X += (rect.Width - raw.X) / 2f;
                         break;
-                    case HAlign.Right:  
-                        rect.X +=  rect.Width  - raw.X;       
+                    case HAlign.Right:
+                        rect.X += rect.Width - raw.X;
                         break;
                 }
+
                 switch (item.VAlign)
                 {
-                    case 
-                        VAlign.Middle: rect.Y += (rect.Height - raw.Y) / 2f; 
+                    case
+                        VAlign.Middle:
+                        rect.Y += (rect.Height - raw.Y) / 2f;
                         break;
-                    case 
-                        VAlign.Bottom: rect.Y +=  rect.Height - raw.Y;       
+                    case
+                        VAlign.Bottom:
+                        rect.Y += rect.Height - raw.Y;
                         break;
                 }
 
@@ -255,10 +279,8 @@ public class InlineRender : IDisposable
             // Vertical flow: we pre-position Y for the whole block (sum of line heights)
             var totalHeights = 0;
             if (VAlign == VAlign.Middle)
-            {
                 foreach (var kv in _lineSize)
                     totalHeights += kv.Value.Y;
-            }
 
             if (VAlign == VAlign.Middle && Direction.Y > 0)
                 _currentPosition.Y = Bounds.Center.Y - (Bounds.Height - totalHeights) / 2;
@@ -277,10 +299,8 @@ public class InlineRender : IDisposable
             // Horizontal flow: we pre-position X for the whole block (sum of line widths)
             var totalWidths = 0;
             if (HAlign == HAlign.Center)
-            {
                 foreach (var kv in _lineSize)
                     totalWidths += kv.Value.X;
-            }
 
             if (HAlign == HAlign.Center && Direction.X > 0)
                 _currentPosition.X = Bounds.Center.X - (Bounds.Width - totalWidths) / 2;
@@ -371,17 +391,22 @@ public class InlineRender : IDisposable
         if (_lineItems.ContainsKey(_linePosition))
             _lineItems[_linePosition].Clear();
         else
-            _lineItems[_linePosition] = new();
+            _lineItems[_linePosition] = new List<InlineItem>();
 
         _currentSize = new PointInt(0, 0);
     }
 
     private int GetLineSpanX(int i)
-        => _lineSize[i].X + Math.Max(0, _lineItems[i].Count - 1) * ItemSpacing;
+    {
+        return _lineSize[i].X + Math.Max(0, _lineItems[i].Count - 1) * ItemSpacing;
+    }
 
     private int GetLineSpanY(int i)
-        => _lineSize[i].Y; // spacing between lines is applied when advancing, not here
-    
+    {
+        return _lineSize[i].Y;
+        // spacing between lines is applied when advancing, not here
+    }
+
     private int GetLineStartX(int i)
     {
         var span = GetLineSpanX(i);
@@ -389,10 +414,10 @@ public class InlineRender : IDisposable
         // anchor is determined ONLY by HAlign
         var anchor = HAlign switch
         {
-            HAlign.Left   => Bounds.Left,
+            HAlign.Left => Bounds.Left,
             HAlign.Center => Bounds.Center.X - span / 2,
-            HAlign.Right  => Bounds.Right - span,
-            _             => Bounds.Left
+            HAlign.Right => Bounds.Right - span,
+            _ => Bounds.Left
         };
 
         // cursor sits on the leading edge for the current direction
@@ -405,10 +430,10 @@ public class InlineRender : IDisposable
 
         var anchor = VAlign switch
         {
-            VAlign.Top    => Bounds.Top,
+            VAlign.Top => Bounds.Top,
             VAlign.Middle => Bounds.Center.Y - span / 2,
             VAlign.Bottom => Bounds.Bottom - span,
-            _             => Bounds.Top
+            _ => Bounds.Top
         };
 
         return Direction.Y > 0 ? anchor : anchor + span;
@@ -424,21 +449,5 @@ public class InlineRender : IDisposable
             if (_drawPositions.TryGetValue(item.Identifier, out var rect))
                 item.Draw(this, item, rect);
         }
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-            return;
-        _disposed = true;
-        
-        foreach (var item in _items)
-            item.Destroy(this, item);
-        
-        _items.Clear();
-        _cachedSizes.Clear();
-        _drawPositions.Clear();
-        _lineSize.Clear();
-        _lineItems.Clear();
     }
 }

@@ -4,12 +4,28 @@ using Meatcorps.Engine.RayLib.Game;
 
 namespace Meatcorps.Engine.RayLib.Abstractions;
 
-public abstract class BaseScene: IDisposable
+public abstract class BaseScene : IDisposable
 {
+    private readonly List<BaseGameObject> _gameObjectsToAdd = new();
+
+    private readonly List<BaseGameObject> _gameObjectsToDispose = new();
+    private readonly List<BaseScene> _subScenesToAdd = new();
+    private readonly List<BaseScene> _subScenesToDispose = new();
+    private bool _enabled = true;
+
+    public BaseScene()
+    {
+        SceneObjectManager.Register(this);
+        SceneObjectManager.RegisterSet<BaseScene>();
+        SceneObjectManager.RegisterList<BaseGameObject>();
+        SceneObjectManager.RegisterList<IBackgroundService>();
+    }
+
     public GameHost GameHost { get; private set; }
     public int Layer { get; set; } = 0;
-    public ObjectManager SceneObjectManager { get; } = new ObjectManager();
+    public ObjectManager SceneObjectManager { get; } = new();
     public bool Paused { get; set; }
+
     public bool Enabled
     {
         get => _enabled;
@@ -18,7 +34,7 @@ public abstract class BaseScene: IDisposable
             if (_enabled == value)
                 return;
             _enabled = value;
-            if (_enabled) 
+            if (_enabled)
                 OnEnabled();
             else
                 OnDisabled();
@@ -28,19 +44,13 @@ public abstract class BaseScene: IDisposable
     public bool Visible { get; set; } = true;
     public float UpdateTimeMultiplier { get; set; } = 1;
     protected bool IsDisposed { get; private set; }
-    
-    private List<BaseGameObject> _gameObjectsToDispose = new List<BaseGameObject>();
-    private List<BaseScene> _subScenesToDispose = new List<BaseScene>();
-    private List<BaseGameObject> _gameObjectsToAdd = new List<BaseGameObject>();
-    private List<BaseScene> _subScenesToAdd = new List<BaseScene>();
-    private bool _enabled = true;
 
-    public BaseScene()
+    public void Dispose()
     {
-        SceneObjectManager.Register(this);
-        SceneObjectManager.RegisterSet<BaseScene>();
-        SceneObjectManager.RegisterList<BaseGameObject>();
-        SceneObjectManager.RegisterList<IBackgroundService>();
+        if (IsDisposed) return;
+        OnDispose();
+        SceneObjectManager.Dispose();
+        IsDisposed = true;
     }
 
     public void SetGameHost(GameHost gameHost)
@@ -52,7 +62,7 @@ public abstract class BaseScene: IDisposable
     {
         _subScenesToAdd.Add(scene);
     }
-    
+
     public void RemoveScene<T>(T scene) where T : BaseScene
     {
         _subScenesToDispose.Add(scene);
@@ -79,16 +89,16 @@ public abstract class BaseScene: IDisposable
         return SceneObjectManager.GetList<BaseGameObject>()!.Where(x => x is T).Cast<T>();
     }
 
-    public BaseGameObject? GetGameObjectByName(string name) 
+    public BaseGameObject? GetGameObjectByName(string name)
     {
         return SceneObjectManager.GetList<BaseGameObject>()!.FirstOrDefault(x => x.Name.Equals(name));
     }
 
-    public IEnumerable<BaseGameObject>? GetGameObjectsByName(string name) 
+    public IEnumerable<BaseGameObject>? GetGameObjectsByName(string name)
     {
         return SceneObjectManager.GetList<BaseGameObject>()!.Where(x => x.Name.Equals(name));
     }
-    
+
     public void RemoveGameObject<T>(T gameObject) where T : BaseGameObject
     {
         _gameObjectsToDispose.Add(gameObject);
@@ -109,23 +119,23 @@ public abstract class BaseScene: IDisposable
 
     public void PreUpdate(float deltaTime)
     {
-        if (Paused || !Enabled) 
+        if (Paused || !Enabled)
             return;
-        
+
         GameHost.SetMultiplier(UpdateTimeMultiplier);
 
         foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
             backgroundService.PreUpdate(deltaTime);
-        
+
         foreach (var scene in _subScenesToDispose)
         {
             scene.Dispose();
             SceneObjectManager.GetSet<BaseScene>()!.Remove(scene);
         }
+
         _subScenesToDispose.Clear();
 
         if (_subScenesToAdd.Count > 0)
-        {
             foreach (var scene in _subScenesToAdd.ToArray())
             {
                 scene.SetGameHost(GameHost);
@@ -133,28 +143,26 @@ public abstract class BaseScene: IDisposable
                 SceneObjectManager.GetSet<BaseScene>()!.Add(scene);
                 _subScenesToAdd.Remove(scene);
             }
-        }
 
         foreach (var gameObject in _gameObjectsToDispose)
         {
             gameObject.Dispose();
             SceneObjectManager.GetList<BaseGameObject>()!.Remove(gameObject);
         }
+
         _gameObjectsToDispose.Clear();
 
         if (_gameObjectsToAdd.Count > 0)
-        {
             foreach (var gameObject in _gameObjectsToAdd.ToArray())
             {
                 gameObject.SetScene(this);
                 gameObject.Initialize();
-                SceneObjectManager.Add<BaseGameObject>(gameObject);
+                SceneObjectManager.Add(gameObject);
                 _gameObjectsToAdd.Remove(gameObject);
             }
-        }
 
         OnPreUpdate(deltaTime);
-        
+
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
             subScene.PreUpdate(deltaTime);
         foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
@@ -163,17 +171,17 @@ public abstract class BaseScene: IDisposable
 
     public void Update(float deltaTime)
     {
-        if (Paused || !Enabled) 
+        if (Paused || !Enabled)
             return;
-        
+
         foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
             backgroundService.Update(deltaTime);
-        
+
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
             subScene.Update(deltaTime);
         foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
             gameObject.Update(deltaTime);
-        
+
         OnUpdate(deltaTime);
     }
 
@@ -183,23 +191,23 @@ public abstract class BaseScene: IDisposable
             subScene.AlwaysUpdate(deltaTime);
         foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
             gameObject.AlwaysUpdate(deltaTime);
-        
+
         OnAlwaysUpdate(deltaTime);
     }
 
     public void LateUpdate(float deltaTime)
     {
-        if (Paused || !Enabled) 
+        if (Paused || !Enabled)
             return;
-        
+
         foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
             backgroundService.LateUpdate(deltaTime);
-        
+
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
             subScene.LateUpdate(deltaTime);
         foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
             gameObject.LateUpdate(deltaTime);
-        
+
         OnLateUpdate(deltaTime);
     }
 
@@ -216,15 +224,15 @@ public abstract class BaseScene: IDisposable
 
     public void Draw()
     {
-        if (!Visible || !Enabled) 
+        if (!Visible || !Enabled)
             return;
-        
+
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
             subScene.Draw();
-        
+
         OnDraw();
     }
-    
+
     protected abstract void OnInitialize();
 
     protected virtual void OnPreUpdate(float deltaTime)
@@ -243,16 +251,7 @@ public abstract class BaseScene: IDisposable
 
     protected virtual void OnDraw()
     {
-        
     }
-    
-    protected abstract void OnDispose();
 
-    public void Dispose()
-    {
-        if (IsDisposed) return;
-        OnDispose();
-        SceneObjectManager.Dispose();
-        IsDisposed = true;
-    }
+    protected abstract void OnDispose();
 }

@@ -13,9 +13,9 @@ public static class UIAnchorHelper
                            ?? throw new InvalidOperationException("IRenderTargetStrategy not registered.");
         return ResolveAnchorPixel(anchor, Vector2.Zero, renderTarget.RenderWidth, renderTarget.RenderHeight);
     }
-    
+
     /// <summary>
-    /// Resolve an anchor to pixel coordinates using the current IRenderTargetStrategy (screen-space).
+    ///     Resolve an anchor to pixel coordinates using the current IRenderTargetStrategy (screen-space).
     /// </summary>
     public static Vector2 ResolveAnchorPixel(Anchor anchor, Vector2 offsetPixels)
     {
@@ -23,14 +23,14 @@ public static class UIAnchorHelper
                            ?? throw new InvalidOperationException("IRenderTargetStrategy not registered.");
         return ResolveAnchorPixel(anchor, offsetPixels, renderTarget.RenderWidth, renderTarget.RenderHeight);
     }
-    
+
     public static Vector2 ResolveAnchorPixel(Anchor anchor, int width, int height)
     {
         return ResolveAnchorPixel(anchor, Vector2.Zero, width, height);
     }
 
     /// <summary>
-    /// Resolve an anchor to pixel coordinates using an explicit render width/height.
+    ///     Resolve an anchor to pixel coordinates using an explicit render width/height.
     /// </summary>
     public static Vector2 ResolveAnchorPixel(Anchor anchor, Vector2 offsetPixels, int width, int height)
     {
@@ -52,14 +52,14 @@ public static class UIAnchorHelper
 
         return new Vector2(x, y) + offsetPixels;
     }
-    
+
     public static Vector2 ResolveAnchorPixel(Anchor anchor, float width, float height)
     {
         return ResolveAnchorPixel(anchor, Vector2.Zero, width, height);
     }
 
     /// <summary>
-    /// Resolve an anchor to pixel coordinates using an explicit render width/height.
+    ///     Resolve an anchor to pixel coordinates using an explicit render width/height.
     /// </summary>
     public static Vector2 ResolveAnchorPixel(Anchor anchor, Vector2 offsetPixels, float width, float height)
     {
@@ -104,8 +104,9 @@ public static class UIAnchorHelper
     }
 
     /// <summary>
-    /// Given an element (rectangle) size, returns the TOP-LEFT position so the rectangle is aligned to the anchor.
-    /// For example: Center → the rect will be centered on the anchor; BottomRight → the rect's bottom-right will sit on the anchor.
+    ///     Given an element (rectangle) size, returns the TOP-LEFT position so the rectangle is aligned to the anchor.
+    ///     For example: Center → the rect will be centered on the anchor; BottomRight → the rect's bottom-right will sit on
+    ///     the anchor.
     /// </summary>
     public static Vector2 ResolveAlignedRectTopLeftPixel(Anchor anchor, Vector2 rectSizePixels, Vector2 offsetPixels)
     {
@@ -116,7 +117,7 @@ public static class UIAnchorHelper
     }
 
     /// <summary>
-    /// Same as ResolveAlignedRectTopLeftPx, but with explicit render width/height.
+    ///     Same as ResolveAlignedRectTopLeftPx, but with explicit render width/height.
     /// </summary>
     public static Vector2 ResolveAlignedRectTopLeftPixel(Anchor anchor, Vector2 rectSizePixels, Vector2 offsetPixels,
         int renderWidth, int renderHeight)
@@ -146,8 +147,8 @@ public static class UIAnchorHelper
     }
 
     /// <summary>
-    /// Resolve the alignment factors for an anchor:
-    /// Left/Top = 0, Center = 0.5, Right/Bottom = 1.
+    ///     Resolve the alignment factors for an anchor:
+    ///     Left/Top = 0, Center = 0.5, Right/Bottom = 1.
     /// </summary>
     private static Vector2 GetAlignmentFactors(Anchor anchor)
     {

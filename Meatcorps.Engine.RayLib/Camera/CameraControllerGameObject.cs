@@ -1,7 +1,6 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Enums;
-using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Interfaces;
@@ -10,51 +9,50 @@ namespace Meatcorps.Engine.RayLib.Camera;
 
 public class CameraControllerGameObject : BaseGameObject
 {
-    public float Zoom => _targetZoom;
-    
     private readonly ICamera _camera;
 
-    // --- Smooth Follow ---
-    private BaseGameObject? _target = null;
+    // --- Defaults & Bounds ---
+    private readonly Vector2 _defaultPosition;
+    private readonly float _defaultZoom;
+    private Rect? _bounds;
     private Vector2 _followOffset = Vector2.Zero;
     private float _followSpeed = 8f;
-
-    // --- Function-based Follow (alternative)
-    private Func<Vector2>? _targetGetter = null;
-
-    // --- Smooth Zoom ---
-    private float _targetZoom = 0f;
-    private float _zoomSpeed = 6f;
+    private float _shakeDecay = 6f;
 
     // --- Shake ---
-    private float _shakeIntensity = 0f;
-    private float _shakeDecay = 6f;
+    private float _shakeIntensity;
     private Vector2 _shakeOffset = Vector2.Zero;
 
-    // --- Defaults & Bounds ---
-    private Vector2 _defaultPosition;
-    private float _defaultZoom;
-    private Rect? _bounds = null;
+    // --- Smooth Follow ---
+    private BaseGameObject? _target;
+
+    // --- Function-based Follow (alternative)
+    private Func<Vector2>? _targetGetter;
+
+    // --- Smooth Zoom ---
+    private float _zoomSpeed = 6f;
 
     public CameraControllerGameObject(ICamera? camera)
     {
         Enabled = camera is not null;
         Visible = false;
-        
+
         if (camera is null)
             return;
-        
+
         _camera = camera;
 
         _defaultPosition = camera.Position;
         _defaultZoom = camera.Zoom;
     }
 
+    public float Zoom { get; private set; }
+
     public void SetPosition(Vector2 position)
     {
         Position = position;
     }
-    
+
     // ------------------- Public API -------------------
 
     public CameraControllerGameObject Follow(BaseGameObject target, Vector2? offset = null, float followSpeed = 8f)
@@ -76,7 +74,7 @@ public class CameraControllerGameObject : BaseGameObject
 
     public CameraControllerGameObject SetZoom(float zoom, float speed = 6f)
     {
-        _targetZoom = zoom;
+        Zoom = zoom;
         _zoomSpeed = speed;
         return this;
     }
@@ -98,7 +96,7 @@ public class CameraControllerGameObject : BaseGameObject
     {
         _camera.Position = _defaultPosition;
         _camera.Zoom = _defaultZoom;
-        _targetZoom = _defaultZoom;
+        Zoom = _defaultZoom;
         _shakeOffset = Vector2.Zero;
         _shakeIntensity = 0f;
         _target = null;
@@ -142,7 +140,7 @@ public class CameraControllerGameObject : BaseGameObject
                     cameraFixedWidthAndHeight.TargetWidth / (_camera.Zoom + 1),
                     cameraFixedWidthAndHeight.TargetHeight / (_camera.Zoom + 1)
                 ) / 2;
-                
+
                 var min = new Vector2(_bounds.Value.Left, _bounds.Value.Top) + viewSize;
                 var max = new Vector2(_bounds.Value.Right, _bounds.Value.Bottom) - viewSize;
 
@@ -157,7 +155,7 @@ public class CameraControllerGameObject : BaseGameObject
         }
 
         // Smooth zoom
-        _camera.Zoom = Tween.StepTo(_camera.Zoom, _targetZoom, _zoomSpeed, deltaTime);
+        _camera.Zoom = Tween.StepTo(_camera.Zoom, Zoom, _zoomSpeed, deltaTime);
 
         // Update shake
         if (_shakeIntensity > 0.01f)

@@ -7,19 +7,20 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Game.GameTasks;
 
-public class MouseTask: IGameLoopTask
+public class MouseTask : IGameLoopTask
 {
     private IUniversalConfig _config;
     private bool _disableMouseCursor;
-    public int Priority { get; }
-    public bool Enabled { get; set; } = true;
-    public bool IsInitialized { get; private set; }
 
     public MouseTask(int priority = 0)
     {
         Priority = priority;
     }
-    
+
+    public int Priority { get; }
+    public bool Enabled { get; set; } = true;
+    public bool IsInitialized { get; private set; }
+
     public void Initialize(GameHost host)
     {
         IsInitialized = true;

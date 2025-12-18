@@ -2,14 +2,15 @@ using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Raylib_cs;
 
-namespace Meatcorps.Engine.Raylib.Examples.GameObjects.Gui.Core;
+namespace Meatcorps.Engine.RayLib.UI.GuiComponent.Core;
 
 public abstract class BaseGuiItem
 {
-    public Vector2 Offset = Vector2.Zero;
-    public Color Color;
-    public RectF ContainerBound { get; set; }
     private RectF _elementBound;
+    public Color Color;
+    public Vector2 Offset = Vector2.Zero;
+    public RectF ContainerBound { get; set; }
+
     public RectF ElementBound
     {
         get => _elementBound;
@@ -20,8 +21,8 @@ public abstract class BaseGuiItem
         }
     }
 
-    public MarginF Margin { get; set; } = new MarginF(0);
-    public PaddingF Padding { get; set; } = new PaddingF(0);
+    public MarginF Margin { get; set; } = new(0);
+    public PaddingF Padding { get; set; } = new(0);
     protected GuiService GuiService { get; set; } = null!;
 
     public abstract bool IsContainer { get; }
@@ -42,14 +43,12 @@ public abstract class BaseGuiItem
 
     public virtual void UpdateChildren(BaseGuiItem parent)
     {
-        
     }
-    
+
     protected virtual void OnElementSizeChanged()
     {
-        
     }
-    
+
     protected virtual void OnContainerStart(GuiService service)
     {
     }
@@ -91,6 +90,7 @@ public abstract class BaseGuiItem
             var parentRect = GuiService.CurrentContainer.ElementBound + GuiService.CurrentContainer.Padding + Margin;
             rect.Position += parentRect.Position;
         }
+
         ElementBound = rect;
     }
 
@@ -105,13 +105,13 @@ public abstract class BaseGuiItem
         Padding = padding;
         return this;
     }
-    
+
     public BaseGuiItem SetColor(Color color)
     {
         Color = color;
         return this;
     }
-    
+
     public BaseGuiItem SetOffset(Vector2 offset)
     {
         Offset = offset;

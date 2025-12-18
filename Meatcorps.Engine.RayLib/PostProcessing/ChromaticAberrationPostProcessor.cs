@@ -5,10 +5,12 @@ namespace Meatcorps.Engine.RayLib.PostProcessing;
 
 public class ChromaticAberrationPostProcessor : BaseFinalPostProcessor
 {
-    public float Amount { get; set; } = 2f;
+    public ChromaticAberrationPostProcessor()
+        : base("Assets/Shaders/chromaticaberration.fx", new[] { "resolution", "amount" })
+    {
+    }
 
-    public ChromaticAberrationPostProcessor() 
-        : base("Assets/Shaders/chromaticaberration.fx", new[] { "resolution", "amount" }) { }
+    public float Amount { get; set; } = 2f;
 
     protected override void ApplyValues(Shader shader, Texture2D target)
     {

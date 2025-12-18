@@ -4,10 +4,10 @@ namespace Meatcorps.Engine.RayLib.Resources;
 
 public class ResourceManager
 {
-    private ConcurrentQueue<Tuple<Action, TaskCompletionSource>> _mainTaskRunner = new ();
-    
+    private readonly ConcurrentQueue<Tuple<Action, TaskCompletionSource>> _mainTaskRunner = new();
+
     public bool AllTaskDone => _mainTaskRunner.Count == 0;
-    
+
     public async Task AddTaskToMainThread(Action task)
     {
         Console.WriteLine("ADDING TASK: " + _mainTaskRunner.Count);
@@ -15,7 +15,7 @@ public class ResourceManager
         _mainTaskRunner.Enqueue(Tuple.Create(task, tcs));
         await tcs.Task;
     }
-    
+
     public void RunTasks()
     {
         while (_mainTaskRunner.TryDequeue(out var task))

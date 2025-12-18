@@ -4,51 +4,55 @@ using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
-using Meatcorps.Engine.Raylib.Examples.GameObjects.Gui.Core;
 using Meatcorps.Engine.RayLib.Interfaces;
+using Meatcorps.Engine.RayLib.UI.GuiComponent.Core;
+using Meatcorps.Engine.RayLib.UI.GuiComponent.GuiSettings;
 using Raylib_cs;
 
-namespace Meatcorps.Engine.Raylib.Examples.GameObjects.Gui.Components;
+namespace Meatcorps.Engine.RayLib.UI.GuiComponent.Components;
 
-public class GuiMenuComponent: IRaylibGameComponent
+public class GuiMenuComponent : IRaylibGameComponent
 {
-    public bool IsActive => true;
-    public MenuDirection MenuDirection { get; set; } = MenuDirection.LeftRight;
+    private readonly FixedTimer _animationTimer = new(50);
+    private readonly FixedTimer _focusAnimation = new(1000);
     private readonly IGuiSettings _guiSettings;
-    private BaseGameObject _owner = null!;
-    private readonly TimerOn _selectedTimer = new TimerOn(500);
-    private readonly FixedTimer _animationTimer = new FixedTimer(50);
-    private readonly FixedTimer _focusAnimation = new FixedTimer(1000);
-    private bool _selected = false;
-    private readonly SmoothValue _menuPositionSmooth = new SmoothValue(0, 0.5f);
-    private GuiServiceComponent  _gui = null!;
-    private int _menuPosition = 0;
-    private int _menuItemsCount = 0;
-    private SizeF _size = new SizeF(220, 32);
+    private readonly SmoothValue _menuPositionSmooth = new(0, 0.5f);
+    private readonly TimerOn _selectedTimer = new(250);
+    private Color _activeColor = Color.Magenta;
+    private float _borderRoundness;
+    private float _borderThickness = 2;
     private bool _disabledMenuItem;
     private int _fontSize = 12;
-    private Color _activeColor = Color.Magenta;
-    private Color _nonActiveColor = Color.Gray;
-    private Color _valueColor = Color.White;
-    private bool _useBorder = true;
-    private Vector2 _TextUv = UVHelper.Center;
-    private PaddingF _textPadding = new PaddingF(8, 8, 8, 8);
     private int _gap = 4;
+    private GuiServiceComponent _gui = null!;
+    private int _menuItemsCount;
+    private int _menuPosition;
+    private Color _nonActiveColor = Color.Gray;
+    private BaseGameObject _owner = null!;
+    private bool _selected;
+    private SizeF _size = new(220, 32);
+    private PaddingF _textPadding = new(8, 8, 8, 8);
+    private Vector2 _TextUv = UVHelper.Center;
+    private bool _useBorder = true;
     private bool _useSmoothCenter = true;
-    private float _borderRoundness = 0;
-    private float _borderThickness = 2;
+    private Color _valueColor = Color.White;
 
     public GuiMenuComponent(IGuiSettings guiSettings)
     {
         _guiSettings = guiSettings;
     }
-    
-    public void SetOwner(BaseGameObject owner) 
-        => _owner = owner;
-    
+
+    public bool IsActive => true;
+    public MenuDirection MenuDirection { get; set; } = MenuDirection.LeftRight;
+
+    public void SetOwner(BaseGameObject owner)
+    {
+        _owner = owner;
+    }
+
     public void Initialize()
     {
-        if (!_owner.TryGetComponent<GuiServiceComponent>(out _gui!))
+        if (!_owner.TryGetComponent(out _gui!))
             throw new Exception("Menu component requires the GuiServiceComponent to be registered first!");
     }
 
@@ -63,47 +67,118 @@ public class GuiMenuComponent: IRaylibGameComponent
         _animationTimer.Update(deltaTime);
         _menuPositionSmooth.Update(deltaTime);
         _focusAnimation.Update(deltaTime);
-        
+
         _menuPositionSmooth.RealValue = _useSmoothCenter ? _menuPosition : 0f;
     }
-    
-    public void SetSizeMenuItems(SizeF size) => _size = size;
+
+    public void LateUpdate(float deltaTime)
+    {
+        //
+    }
+
+    public void Draw()
+    {
+        //
+    }
+
+    public void SetSizeMenuItems(SizeF size)
+    {
+        _size = size;
+    }
 
     public void Start()
     {
-        var width = !_useSmoothCenter && MenuDirection == MenuDirection.LeftRight ? (_size.Width + _gap) * Math.Max(1, _menuItemsCount) : _size.Width;
-        var height = !_useSmoothCenter && MenuDirection == MenuDirection.UpDown ? (_size.Height + _gap) * Math.Max(1, _menuItemsCount) : _size.Height;
+        var width = !_useSmoothCenter && MenuDirection == MenuDirection.LeftRight
+            ? (_size.Width + _gap) * Math.Max(1, _menuItemsCount)
+            : _size.Width;
+        var height = !_useSmoothCenter && MenuDirection == MenuDirection.UpDown
+            ? (_size.Height + _gap) * Math.Max(1, _menuItemsCount)
+            : _size.Height;
         _gui.AddItem(new PanelElement(new RectF(0, 0, width, height), UVHelper.Center, false, false));
-        
+
         if (MenuDirection == MenuDirection.LeftRight)
         {
-            _gui.AddItem(new ScrollElement(new RectF(), new Vector2(-(_menuPositionSmooth.DisplayValue * (_size.Width + _gap + 1)), 0)));
-            _gui.AddItem(new StackElement(new RectF(32, 32, _size.Width, _size.Height), _gap, Direction.Right, UVHelper.Left));
+            _gui.AddItem(new ScrollElement(new RectF(),
+                new Vector2(-(_menuPositionSmooth.DisplayValue * (_size.Width + _gap + 1)), 0)));
+            _gui.AddItem(new StackElement(new RectF(32, 32, _size.Width, _size.Height), _gap, Direction.Right,
+                UVHelper.Left));
         }
         else
         {
-            _gui.AddItem(new ScrollElement(new RectF(), new Vector2(0, -(_menuPositionSmooth.DisplayValue * (_size.Height + _gap + 1)))));
-            _gui.AddItem(new StackElement(new RectF(32, 32, _size.Width, _size.Height), _gap, Direction.Bottom, UVHelper.Top));
+            _gui.AddItem(new ScrollElement(new RectF(),
+                new Vector2(0, -(_menuPositionSmooth.DisplayValue * (_size.Height + _gap + 1)))));
+            _gui.AddItem(new StackElement(new RectF(32, 32, _size.Width, _size.Height), _gap, Direction.Bottom,
+                UVHelper.Top));
         }
 
         _menuItemsCount = 0;
     }
-    
-    public void SetOrientation(MenuDirection direction) 
-        => MenuDirection = direction;
-    public void MenuNextItemIsDisabled() => _disabledMenuItem = true;
-    public void SetFontSize(int size) => _fontSize = size;
-    public void SetActiveColor(Color color) => _activeColor = color;
-    public void SetNonActiveColor(Color color) => _nonActiveColor = color;
-    public void SetValueColor(Color color) => _valueColor = color;
-    public void SetUseBorder(bool useBorder) => _useBorder = useBorder;
-    public void SetTextUv(Vector2 uv) => _TextUv = uv;
-    public void SetGap(int gap) => _gap = gap;
-    public void SetTextPadding(PaddingF padding) => _textPadding = padding;
-    public void SetUseSmoothCenter(bool useSmoothCenter) => _useSmoothCenter = useSmoothCenter;
-    public void SetBorderStyle(float roundness, float thickness) => (_borderRoundness, _borderThickness) = (roundness, thickness);
-    public void GetMenuPosition(out int position) => position = _menuPosition;
-   
+
+    public void SetOrientation(MenuDirection direction)
+    {
+        MenuDirection = direction;
+    }
+
+    public void MenuNextItemIsDisabled()
+    {
+        _disabledMenuItem = true;
+    }
+
+    public void SetFontSize(int size)
+    {
+        _fontSize = size;
+    }
+
+    public void SetActiveColor(Color color)
+    {
+        _activeColor = color;
+    }
+
+    public void SetNonActiveColor(Color color)
+    {
+        _nonActiveColor = color;
+    }
+
+    public void SetValueColor(Color color)
+    {
+        _valueColor = color;
+    }
+
+    public void SetUseBorder(bool useBorder)
+    {
+        _useBorder = useBorder;
+    }
+
+    public void SetTextUv(Vector2 uv)
+    {
+        _TextUv = uv;
+    }
+
+    public void SetGap(int gap)
+    {
+        _gap = gap;
+    }
+
+    public void SetTextPadding(PaddingF padding)
+    {
+        _textPadding = padding;
+    }
+
+    public void SetUseSmoothCenter(bool useSmoothCenter)
+    {
+        _useSmoothCenter = useSmoothCenter;
+    }
+
+    public void SetBorderStyle(float roundness, float thickness)
+    {
+        (_borderRoundness, _borderThickness) = (roundness, thickness);
+    }
+
+    public void GetMenuPosition(out int position)
+    {
+        position = _menuPosition;
+    }
+
     public bool MenuItem(string name)
     {
         if (_guiSettings.IsOnSelectionPressed && !_selected && _menuItemsCount == _menuPosition && !_disabledMenuItem)
@@ -111,25 +186,26 @@ public class GuiMenuComponent: IRaylibGameComponent
             _selected = true;
             _guiSettings.PlaySelectionSound();
         }
-        
+
         var isSelected = _menuItemsCount == _menuPosition && _selectedTimer.Output;
-        
+
         var color = DefaultComponentStart();
-        
+
         _gui.AddItem(new TextElement(color, _guiSettings.Font, name, _fontSize, 1, _TextUv).SetPadding(_textPadding));
         DefaultComponentStop();
 
         return isSelected;
     }
-    
-    
+
+
     public void MenuLabel(string name)
     {
         if (_menuItemsCount == _menuPosition)
             _menuPosition++;
-        
+
         _gui.AddItem(new PanelElement(new RectF(0, 0, _size.Width, _size.Height)));
-        _gui.AddItem(new TextElement(_valueColor, _guiSettings.Font, name, _fontSize, 1, _TextUv).SetPadding(_textPadding));
+        _gui.AddItem(
+            new TextElement(_valueColor, _guiSettings.Font, name, _fontSize, 1, _TextUv).SetPadding(_textPadding));
         DefaultComponentStop();
     }
 
@@ -157,12 +233,14 @@ public class GuiMenuComponent: IRaylibGameComponent
         }
 
         var color = DefaultComponentStart();
-        
-        _gui.AddItem(new TextElement(color, _guiSettings.Font, name, _fontSize, 1, UVHelper.Left).SetPadding(_textPadding));
-        _gui.AddItem(new TextElement(GetColor(value ? Color.Green : Color.Red), _guiSettings.Font, value? "ON" : "OFF", _fontSize, 1, UVHelper.Right).SetPadding(_textPadding));
+
+        _gui.AddItem(
+            new TextElement(color, _guiSettings.Font, name, _fontSize, 1, UVHelper.Left).SetPadding(_textPadding));
+        _gui.AddItem(new TextElement(GetColor(value ? Color.Green : Color.Red), _guiSettings.Font, value ? "ON" : "OFF",
+            _fontSize, 1, UVHelper.Right).SetPadding(_textPadding));
         DefaultComponentStop();
     }
-    
+
     public void MenuNormalSlider(string name, ref float value, float step = 0.05f, bool playSoundBasedOnNormal = false)
     {
         if (_menuItemsCount == _menuPosition && !_disabledMenuItem)
@@ -185,7 +263,7 @@ public class GuiMenuComponent: IRaylibGameComponent
                 _guiSettings.PlayNavigationSound(playSoundBasedOnNormal ? value : 1);
             }
         }
-        
+
         value = MathHelper.Clamp(value, 0, 1);
 
         var color = DefaultComponentStart();
@@ -198,9 +276,11 @@ public class GuiMenuComponent: IRaylibGameComponent
             if (value < 0.99f)
                 sliderText = sliderText + ">";
         }
-        
-        _gui.AddItem(new TextElement(color, _guiSettings.Font, name, _fontSize, 1, UVHelper.Left).SetPadding(_textPadding));
-        _gui.AddItem(new TextElement(GetColor(Raylib_cs.Raylib.ColorLerp(Color.Red, Color.Green, value)), _guiSettings.Font,  sliderText, _fontSize, 1, UVHelper.Right).SetPadding(_textPadding));
+
+        _gui.AddItem(
+            new TextElement(color, _guiSettings.Font, name, _fontSize, 1, UVHelper.Left).SetPadding(_textPadding));
+        _gui.AddItem(new TextElement(GetColor(Raylib_cs.Raylib.ColorLerp(Color.Red, Color.Green, value)),
+            _guiSettings.Font, sliderText, _fontSize, 1, UVHelper.Right).SetPadding(_textPadding));
         DefaultComponentStop();
     }
 
@@ -210,7 +290,7 @@ public class GuiMenuComponent: IRaylibGameComponent
         {
             if (_guiSettings.IsOnSelectionPressed)
             {
-                value = value > ((maxValue - minValue) / 2) ? minValue : maxValue;
+                value = value > (maxValue - minValue) / 2 ? minValue : maxValue;
                 _guiSettings.PlayNavigationSound();
             }
 
@@ -226,6 +306,7 @@ public class GuiMenuComponent: IRaylibGameComponent
                 _guiSettings.PlayNavigationSound();
             }
         }
+
         value = Math.Clamp(value, minValue, maxValue);
 
         var color = DefaultComponentStart();
@@ -238,9 +319,11 @@ public class GuiMenuComponent: IRaylibGameComponent
             if (value < maxValue)
                 sliderText = sliderText + ">";
         }
-        
-        _gui.AddItem(new TextElement(color, _guiSettings.Font, name, _fontSize, 1, UVHelper.Left).SetPadding(_textPadding));
-        _gui.AddItem(new TextElement(GetColor(_valueColor), _guiSettings.Font,  sliderText, _fontSize, 1, UVHelper.Right).SetPadding(_textPadding));
+
+        _gui.AddItem(
+            new TextElement(color, _guiSettings.Font, name, _fontSize, 1, UVHelper.Left).SetPadding(_textPadding));
+        _gui.AddItem(new TextElement(GetColor(_valueColor), _guiSettings.Font, sliderText, _fontSize, 1, UVHelper.Right)
+            .SetPadding(_textPadding));
         DefaultComponentStop();
     }
 
@@ -266,11 +349,11 @@ public class GuiMenuComponent: IRaylibGameComponent
                 _guiSettings.PlayNavigationSound();
             }
         }
-        
+
         value = Math.Clamp(value, 0, options.Length - 1);
-        
+
         var optionName = options[value];
-        
+
         if (_menuItemsCount == _menuPosition && !_disabledMenuItem)
         {
             if (value > 0)
@@ -278,10 +361,12 @@ public class GuiMenuComponent: IRaylibGameComponent
             if (value < options.Length - 1)
                 optionName = optionName + ">";
         }
-        
+
         var color = DefaultComponentStart();
-        _gui.AddItem(new TextElement(color, _guiSettings.Font, name, _fontSize, 1, UVHelper.Left).SetPadding(_textPadding));
-        _gui.AddItem(new TextElement(GetColor(_valueColor), _guiSettings.Font, optionName, _fontSize, 1, UVHelper.Right).SetPadding(_textPadding));
+        _gui.AddItem(
+            new TextElement(color, _guiSettings.Font, name, _fontSize, 1, UVHelper.Left).SetPadding(_textPadding));
+        _gui.AddItem(new TextElement(GetColor(_valueColor), _guiSettings.Font, optionName, _fontSize, 1, UVHelper.Right)
+            .SetPadding(_textPadding));
         DefaultComponentStop();
     }
 
@@ -294,7 +379,11 @@ public class GuiMenuComponent: IRaylibGameComponent
             if (_selected)
                 color = _animationTimer.Output ? _activeColor : Color.Blank;
             else
-                color = GetColor(IsActive! ? _activeColor : Raylib_cs.Raylib.ColorLerp(Raylib_cs.Raylib.ColorAlpha(_activeColor, 0.2f), _activeColor, Tween.ApplyEasing(Tween.NormalToUpDown(_focusAnimation.NormalizedElapsed), EaseType.EaseInOut)));
+                color = GetColor(IsActive!
+                    ? _activeColor
+                    : Raylib_cs.Raylib.ColorLerp(Raylib_cs.Raylib.ColorAlpha(_activeColor, 0.2f), _activeColor,
+                        Tween.ApplyEasing(Tween.NormalToUpDown(_focusAnimation.NormalizedElapsed),
+                            EaseType.EaseInOut)));
 
             if (_selectedTimer.Output)
                 _selected = false;
@@ -308,13 +397,13 @@ public class GuiMenuComponent: IRaylibGameComponent
 
     private Color GetColor(Color color)
     {
-        return _disabledMenuItem? Raylib_cs.Raylib.ColorAlpha(color, 0.5f) : color;
+        return _disabledMenuItem ? Raylib_cs.Raylib.ColorAlpha(color, 0.5f) : color;
     }
 
     private void DefaultComponentStop()
     {
         _menuItemsCount++;
-        
+
         _disabledMenuItem = false;
         _gui.CloseItem();
     }
@@ -323,14 +412,13 @@ public class GuiMenuComponent: IRaylibGameComponent
     {
         _menuPosition = 0;
     }
-    
+
     public void Stop()
     {
-        
         _gui.CloseItem();
         _gui.CloseItem();
         _gui.CloseItem();
-        
+
         if (!_selected && IsActive)
         {
             if (IsPreviousPressed() && _menuPosition > 0)
@@ -353,37 +441,27 @@ public class GuiMenuComponent: IRaylibGameComponent
             return _guiSettings.IsLeftPressed;
         return _guiSettings.IsUpPressed;
     }
-    
+
     private bool IsNextPressed()
     {
         if (MenuDirection == MenuDirection.LeftRight)
             return _guiSettings.IsRightPressed;
         return _guiSettings.IsDownPressed;
     }
-    
-    
+
+
     private bool IsValueChangeDownPressed()
     {
         if (MenuDirection == MenuDirection.LeftRight)
             return _guiSettings.IsDownPressed;
         return _guiSettings.IsLeftPressed;
     }
-    
+
     private bool IsValueChangeUpPressed()
     {
         if (MenuDirection == MenuDirection.LeftRight)
             return _guiSettings.IsUpPressed;
         return _guiSettings.IsRightPressed;
-    }
-    
-    public void LateUpdate(float deltaTime)
-    {
-        //
-    }
-
-    public void Draw()
-    {
-        //
     }
 }
 

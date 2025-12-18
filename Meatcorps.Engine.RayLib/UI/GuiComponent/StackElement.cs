@@ -2,24 +2,13 @@ using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Utilities;
-using Meatcorps.Engine.Raylib.Examples.GameObjects.Gui.Core;
-using Meatcorps.Engine.RayLib.Extensions;
-using Raylib_cs;
+using Meatcorps.Engine.RayLib.UI.GuiComponent.Core;
 
-namespace Meatcorps.Engine.Raylib.Examples.GameObjects.Gui;
+namespace Meatcorps.Engine.RayLib.UI.GuiComponent;
 
-public class StackElement: BaseGuiItem
+public class StackElement : BaseGuiItem
 {
-    public override bool IsContainer => true;
-    private List<BaseGuiItem> _items = new List<BaseGuiItem>();
-    public int Gap { get; set; } = 4;
-    public Vector2 Direction { get; set; } = Vector2.UnitY;
-    public Vector2 Uv { get; set; } = UVHelper.Top;
-
-    protected override void OnInitialize()
-    {
-        _items = GuiService.Pool.Rent();
-    }
+    private List<BaseGuiItem> _items = new();
 
     public StackElement(RectF bounds, int gap = 4, Vector2? direction = null, Vector2? uv = null)
     {
@@ -31,6 +20,16 @@ public class StackElement: BaseGuiItem
         ElementBound = bounds;
     }
 
+    public override bool IsContainer => true;
+    public int Gap { get; set; } = 4;
+    public Vector2 Direction { get; set; } = Vector2.UnitY;
+    public Vector2 Uv { get; set; } = UVHelper.Top;
+
+    protected override void OnInitialize()
+    {
+        _items = GuiService.Pool.Rent();
+    }
+
     public override void ChildGuiItemAdded(BaseGuiItem item)
     {
         if (_items.Count == 0)
@@ -38,6 +37,7 @@ public class StackElement: BaseGuiItem
             item.ElementBound = new RectF(ElementBound.Position, item.ElementBound.Size);
             ElementBound = item.ElementBound;
         }
+
         _items.Add(item);
         UpdateBounds();
         base.ChildGuiItemAdded(item);
@@ -61,8 +61,9 @@ public class StackElement: BaseGuiItem
             ElementBound = ElementBound.Union(next.ElementBound);
             first = next;
         }
+
         var offset = start - ElementBound.Position;
-        foreach (var item in _items) 
+        foreach (var item in _items)
             item.ElementBound = new RectF(item.ElementBound.Position + offset, item.ElementBound.Size);
 
         ElementBound = new RectF(ElementBound.Position + offset, ElementBound.Size);
@@ -72,7 +73,7 @@ public class StackElement: BaseGuiItem
     {
         foreach (var item in _items)
             item.UpdateChildren(this);
-        
+
         base.OnContainerStop(service);
     }
 
@@ -80,12 +81,12 @@ public class StackElement: BaseGuiItem
     {
         if (_items.Count == 0)
             return;
-        
+
         var first = _items[0];
         first.ElementBound = new RectF(ElementBound.Position, first.ElementBound.Size);
-        
+
         UpdateBounds();
-        
+
         foreach (var item in _items)
             item.UpdateChildren(this);
     }

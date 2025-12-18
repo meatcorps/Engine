@@ -2,7 +2,7 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Interfaces;
 
-public interface IPostProcessor: IResourceLoadOnInit
+public interface IPostProcessor : IResourceLoadOnInit
 {
     bool Enabled { get; set; }
     bool IncludeUI { get; set; }

@@ -19,28 +19,25 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         Enabled = enabled;
         IncludeUI = includeUI;
         _fxFilename = fxFilename;
-        foreach (var shaderValue in shaderValues)
-        {
-            ShaderLocations.Add(shaderValue, 0);
-        }
+        foreach (var shaderValue in shaderValues) ShaderLocations.Add(shaderValue, 0);
     }
 
     public bool Enabled { get; set; }
     public bool IncludeUI { get; set; }
-    
+
     private bool _isDisposed;
-    private bool _shaderLocationsLoaded = false;
+    private bool _shaderLocationsLoaded;
 
     public int TotalResources { get; protected set; } = 1;
     public int ResourcesLoaded { get; protected set; }
 
     public async Task Load()
     {
-        if (_isLoaded) 
+        if (_isLoaded)
             return;
-        
+
         _isLoaded = true;
-        
+
         _shader = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadShader(null, _fxFilename);
         ResourcesLoaded++;
         await OnLoad();
@@ -57,7 +54,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         {
             foreach (var shaderLocation in ShaderLocations)
                 ShaderLocations[shaderLocation.Key] = Raylib.GetShaderLocation(_shader, shaderLocation.Key);
-            
+
             _shaderLocationsLoaded = true;
         }
 
@@ -73,10 +70,11 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
             Color.White
         );
         Raylib.EndShaderMode();
-        DoOverlayRender(new PointInt(target.Texture.Width, target.Texture.Height));;
+        DoOverlayRender(new PointInt(target.Texture.Width, target.Texture.Height));
+        ;
         Raylib.EndTextureMode();
     }
-    
+
     public virtual void BeginFrame(float deltaTime)
     {
     }
@@ -87,14 +85,12 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
 
     protected virtual void DoOverlayRender(PointInt size)
     {
-        
     }
 
     protected virtual void ApplyValues(Shader shader, Texture2D source)
     {
-        
     }
-    
+
     private bool TryLoc(string name, out int loc)
     {
         if (!ShaderLocations.TryGetValue(name, out loc)) return false;
@@ -111,20 +107,20 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
     protected unsafe void SetValue(string name, float value)
     {
         if (!TryLoc(name, out var loc)) return;
-        
+
         var buffer = stackalloc float[1];
         buffer[0] = value;
-        
+
         Raylib.SetShaderValue(_shader, loc, buffer, ShaderUniformDataType.Float);
     }
 
     protected unsafe void SetValue(string name, int value)
     {
         if (!TryLoc(name, out var loc)) return;
-        
+
         var buffer = stackalloc int[1];
         buffer[0] = value;
-        
+
         Raylib.SetShaderValue(_shader, loc, buffer, ShaderUniformDataType.Int);
     }
 
@@ -139,7 +135,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         if (!TryLoc(name, out var loc)) return;
         Raylib.SetShaderValue(_shader, loc, value, ShaderUniformDataType.Vec3);
     }
-    
+
     protected void SetValue(string name, Color color)
     {
         if (!TryLoc(name, out var loc)) return;
@@ -147,13 +143,13 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         var rgb = new Vector3(color.R / 255f, color.G / 255f, color.B / 255f);
         Raylib.SetShaderValue(_shader, ShaderLocations[name], rgb, ShaderUniformDataType.Vec3);
     }
-    
+
     protected void SetValue(string name, Color color, bool includeAlpha)
     {
         if (includeAlpha)
         {
             // RGBA (vec4)
-            float[] rgba = new float[]
+            var rgba = new[]
             {
                 color.R / 255f,
                 color.G / 255f,
@@ -168,7 +164,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
             SetValue(name, color);
         }
     }
-    
+
     protected unsafe Color GetColor(string name, bool hasAlpha = false)
     {
         var location = ShaderLocations[name];
@@ -180,6 +176,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
             {
                 GetShaderValue(_shader, location, ptr, (int)ShaderUniformDataType.Vec4);
             }
+
             return new Color(
                 (byte)(rgba[0] * 255),
                 (byte)(rgba[1] * 255),
@@ -187,22 +184,21 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
                 (byte)(rgba[3] * 255)
             );
         }
-        else
+
+        var rgb = new float[3];
+        fixed (float* ptr = rgb)
         {
-            var rgb = new float[3];
-            fixed (float* ptr = rgb)
-            {
-                GetShaderValue(_shader, location, ptr, (int)ShaderUniformDataType.Vec3);
-            }
-            return new Color(
-                (byte)(rgb[0] * 255),
-                (byte)(rgb[1] * 255),
-                (byte)(rgb[2] * 255),
-                (byte)255
-            );
+            GetShaderValue(_shader, location, ptr, (int)ShaderUniformDataType.Vec3);
         }
+
+        return new Color(
+            (byte)(rgb[0] * 255),
+            (byte)(rgb[1] * 255),
+            (byte)(rgb[2] * 255),
+            (byte)255
+        );
     }
-    
+
     protected unsafe float GetFloat(string name)
     {
         var value = new float[1];
@@ -210,6 +206,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         {
             GetShaderValue(_shader, ShaderLocations[name], ptr, (int)ShaderUniformDataType.Float);
         }
+
         return value[0];
     }
 
@@ -220,6 +217,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         {
             GetShaderValue(_shader, ShaderLocations[name], ptr, (int)ShaderUniformDataType.Int);
         }
+
         return value[0];
     }
 
@@ -230,6 +228,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         {
             GetShaderValue(_shader, ShaderLocations[name], ptr, (int)ShaderUniformDataType.Vec2);
         }
+
         return new Vector2(value[0], value[1]);
     }
 
@@ -240,6 +239,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         {
             GetShaderValue(_shader, ShaderLocations[name], ptr, (int)ShaderUniformDataType.Vec3);
         }
+
         return new Vector3(value[0], value[1], value[2]);
     }
 
@@ -250,6 +250,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         {
             GetShaderValue(_shader, ShaderLocations[name], ptr, (int)ShaderUniformDataType.Vec4);
         }
+
         return new Vector4(value[0], value[1], value[2], value[3]);
     }
 
@@ -258,8 +259,11 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         if (!TryLoc(name, out var loc)) return;
         Raylib.SetShaderValue(_shader, loc, new Vector2(value.Width, value.Height), ShaderUniformDataType.Vec2);
     }
-    
-    protected Vector2 GetResolution(Texture2D tex) => new(tex.Width, tex.Height);
+
+    protected Vector2 GetResolution(Texture2D tex)
+    {
+        return new Vector2(tex.Width, tex.Height);
+    }
 
     public void Dispose()
     {
@@ -271,9 +275,8 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
 
     protected virtual void OnDispose()
     {
-        
     }
-    
+
 #if WINDOWS
     const string RaylibLib = "raylib.dll";
 #elif LINUX
@@ -281,9 +284,9 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
 #elif OSX
     const string RaylibLib = "libraylib.dylib";
 #else
-    const string RaylibLib = "raylib"; // fallback
+    private const string RaylibLib = "raylib"; // fallback
 #endif
-    
+
     [DllImport(RaylibLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern unsafe void GetShaderValue(Shader shader, int locIndex, void* value, int uniformType);
 }

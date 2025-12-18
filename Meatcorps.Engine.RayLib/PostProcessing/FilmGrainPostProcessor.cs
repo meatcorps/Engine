@@ -6,10 +6,13 @@ namespace Meatcorps.Engine.RayLib.PostProcessing;
 public class FilmGrainPostProcessor : BasePostProcessor
 {
     private float _time;
-    public float Strength { get; set; } = 0.05f;
 
-    public FilmGrainPostProcessor() 
-        : base("Assets/Shaders/filmgrain.fx", new[] { "resolution", "time", "strength" }) { }
+    public FilmGrainPostProcessor()
+        : base("Assets/Shaders/filmgrain.fx", new[] { "resolution", "time", "strength" })
+    {
+    }
+
+    public float Strength { get; set; } = 0.05f;
 
     protected override void ApplyValues(Shader shader, Texture2D target)
     {

@@ -6,7 +6,7 @@ namespace Meatcorps.Engine.RayLib.PostProcessing.Extensions;
 public static class BloomGameModeExtension
 {
     /// <summary>
-    /// This should be the first Final PostProcess. 
+    ///     This should be the first Final PostProcess.
     /// </summary>
     /// <param name="module"></param>
     /// <param name="threshold">Threshold: 0.75–0.85 usually feels natural.</param>
@@ -19,7 +19,7 @@ public static class BloomGameModeExtension
         float threshold = 0.8f,
         float knee = 0.1f,
         float intensity = 0.6f,
-        float spread = 1.0f) 
+        float spread = 1.0f)
     {
         module.SetProcessing(new BloomThresholdPostProcessor
         {

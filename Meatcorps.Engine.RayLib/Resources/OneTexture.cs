@@ -4,13 +4,12 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public class OneTexture: IResourceLoadOnInit, IDisposable
+public class OneTexture : IResourceLoadOnInit, IDisposable
 {
-    private readonly string _path;
     private readonly TextureFilter _filter;
+    private readonly Action<Texture2D> _onLoaded = _ => { };
+    private readonly string _path;
     private readonly TextureWrap _wrap;
-    private readonly Action<Texture2D> _onLoaded = (_) => { };
-    public Texture2D Texture { get; private set; }
     private bool _isDisposed;
 
     public OneTexture(string path, TextureFilter filter = TextureFilter.Point, TextureWrap wrap = TextureWrap.Repeat)
@@ -19,11 +18,22 @@ public class OneTexture: IResourceLoadOnInit, IDisposable
         _filter = filter;
         _wrap = wrap;
     }
-    
+
     public OneTexture(string path, Action<Texture2D> onLoaded)
     {
         _path = path;
         _onLoaded = onLoaded;
+    }
+
+    public Texture2D Texture { get; private set; }
+
+    public void Dispose()
+    {
+        if (_isDisposed)
+            return;
+        Raylib.UnloadTexture(Texture);
+        Texture = default;
+        _isDisposed = true;
     }
 
     public int TotalResources => 1;
@@ -39,14 +49,5 @@ public class OneTexture: IResourceLoadOnInit, IDisposable
         });
         ResourcesLoaded = 1;
         _onLoaded(Texture);
-    }
-
-    public void Dispose()
-    {
-        if (_isDisposed)
-            return;
-        Raylib.UnloadTexture(Texture);
-        Texture = default;
-        _isDisposed = true;
     }
 }

@@ -11,7 +11,12 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
     private Dictionary<int, Dictionary<int, GenericAxisInput<T>>> _inputAxisMap = new();
     private Dictionary<int, int> _indexProfile = new();
     private GenericInput _defaultInput = new GenericInput(() => 0, "UNKNOWN");
-    
+    private IGenericInputMapSaver<T>? _loaderAndSaver;
+
+    public GenericMapper(IGenericInputMapSaver<T>? loaderAndSaver = null)
+    {
+        _loaderAndSaver = loaderAndSaver;
+    }
     
     public IReadOnlyDictionary<T, GenericInput> GetInputs(int player)
     {
@@ -24,8 +29,18 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
     {
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
             _inputMap[profileId] = playerInputs = new Dictionary<T, GenericInput>();
-        playerInputs[input] = inputState;
+        CheckIfAlreadyAssigned(profileId, inputState); 
+        playerInputs[input] = _loaderAndSaver?.LoadFromConfig(profileId, input, inputState) ?? inputState;
         return this;
+    }
+
+    public void SetInput(int profileId, T input, GenericInput inputState)
+    {
+        if (!_inputMap.TryGetValue(profileId, out var playerInputs))
+            _inputMap[profileId] = playerInputs = new Dictionary<T, GenericInput>();
+        CheckIfAlreadyAssigned(profileId, inputState); 
+        playerInputs[input] = inputState;
+        _loaderAndSaver?.SaveToConfig(profileId, input, inputState);
     }
     
     public GenericMapper<T> AddInput(int profileId, T input, string label, Func<float> pressedFunc)
@@ -46,6 +61,19 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
             _inputAxisMap[profileId] = playerIndexSet = new Dictionary<int, GenericAxisInput<T>>();
         playerIndexSet[axis] = new GenericAxisInput<T>(this, left, right, up, down);
         return this;
+    }
+
+    public void Reset(int profileId, T input)
+    {
+        if (!_inputMap.TryGetValue(profileId, out var playerInputs))
+            _inputMap[profileId] = playerInputs = new Dictionary<T, GenericInput>();
+
+        var mapping = _loaderAndSaver?.DefaultMap(profileId, input);
+
+        if (mapping is null) 
+            return;
+        
+        playerInputs[input] = mapping;
     }
     
     public IInput GetState(int player, T input)
@@ -162,5 +190,17 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
 
     public void LateUpdate(float deltaTime)
     {
+    }
+
+    private void CheckIfAlreadyAssigned(int profileId, GenericInput inputState)
+    {
+        if (!_inputMap.TryGetValue(profileId, out var playerInputs))
+            _inputMap[profileId] = playerInputs = new Dictionary<T, GenericInput>();
+
+        foreach (var (key, binding) in playerInputs.ToArray())
+        {
+            if (binding.Label == inputState.Label)
+                playerInputs[key] = _defaultInput;
+        }
     }
 }

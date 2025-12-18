@@ -1,29 +1,37 @@
-using System;
 using System.Numerics;
 using Meatcorps.Engine.RayLib.PostProcessing.Abstractions;
 using Raylib_cs;
 
 public class FixedPalettePostProcessorTex : BasePostProcessor
 {
-    public Vector3[] Palette { get; set; } = new Vector3[32]; // 0..1 RGB
-    public int PaletteCount { get; set; } = 32;               // <= Palette.Length
-
-    public float DitherStrength { get; set; } = 1f / 255f;
-    public float DitherScale { get; set; } = 2f;
-    public bool UsePerceptual { get; set; } = false;           // exact sprite colors? keep false
-    public float ExactEpsilon { get; set; } = 1f / 255f;     // one LSB wiggle
-
-    private Texture2D _paletteTex;
-    private bool _paletteTexReady;
     private readonly Color[] _palettePixels = new Color[32];
     private int _frame;
 
+    private Texture2D _paletteTex;
+    private bool _paletteTexReady;
+
     public FixedPalettePostProcessorTex()
         : base("Assets/Shaders/fixedpalette_tex.fx",
-               new[] { "paletteTex", "paletteSize", "ditherStrength", "ditherScale", "ditherOffset", "exactEpsilon", "usePerceptual" })
-    { }
+            new[]
+            {
+                "paletteTex", "paletteSize", "ditherStrength", "ditherScale", "ditherOffset", "exactEpsilon",
+                "usePerceptual"
+            })
+    {
+    }
 
-    public override void BeginFrame(float dt) => _frame++;
+    public Vector3[] Palette { get; set; } = new Vector3[32]; // 0..1 RGB
+    public int PaletteCount { get; set; } = 32; // <= Palette.Length
+
+    public float DitherStrength { get; set; } = 1f / 255f;
+    public float DitherScale { get; set; } = 2f;
+    public bool UsePerceptual { get; set; } = false; // exact sprite colors? keep false
+    public float ExactEpsilon { get; set; } = 1f / 255f; // one LSB wiggle
+
+    public override void BeginFrame(float dt)
+    {
+        _frame++;
+    }
 
     protected override void ApplyValues(Shader shader, Texture2D target)
     {
@@ -38,7 +46,7 @@ public class FixedPalettePostProcessorTex : BasePostProcessor
             // *** Force nearest sampling so texelFetch and any UV fallback are crisp ***
             Raylib.SetTextureFilter(_paletteTex, TextureFilter.Point);
         }
-        
+
         // 1) upload palette to texture each frame (cheap)
         BuildOrUpdatePaletteTexture();
 
@@ -53,8 +61,8 @@ public class FixedPalettePostProcessorTex : BasePostProcessor
         SetValue("usePerceptual", UsePerceptual ? 1 : 0);
 
         // tiny temporal jitter to reduce static patterns
-        var ox = (float)((_frame * 0.6180339887) % 4.0);
-        var oy = (float)((_frame * 1.3247179572) % 4.0);
+        var ox = (float)(_frame * 0.6180339887 % 4.0);
+        var oy = (float)(_frame * 1.3247179572 % 4.0);
         SetValue("ditherOffset", new Vector2(ox, oy));
     }
 
@@ -62,9 +70,9 @@ public class FixedPalettePostProcessorTex : BasePostProcessor
     {
         var count = Math.Clamp(PaletteCount, 1, _palettePixels.Length);
 
-        for (int i = 0; i < _palettePixels.Length; i++)
+        for (var i = 0; i < _palettePixels.Length; i++)
         {
-            var v = (i < count) ? Palette[i] : Palette[count - 1];
+            var v = i < count ? Palette[i] : Palette[count - 1];
             _palettePixels[i] = new Color(
                 (byte)Math.Clamp((int)MathF.Round(v.X * 255f), 0, 255),
                 (byte)Math.Clamp((int)MathF.Round(v.Y * 255f), 0, 255),

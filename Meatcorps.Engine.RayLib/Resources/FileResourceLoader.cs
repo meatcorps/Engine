@@ -1,25 +1,14 @@
-using System.Runtime.InteropServices;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public class FileResourceLoader: IRaylibResource
+public class FileResourceLoader : IRaylibResource
 {
-    private ResourceManager _resourceManager = null!;
     private bool _isResourceManagerLoaded;
+    private ResourceManager _resourceManager = null!;
 
-    private void LoadResourceManager()
-    {
-        if (_isResourceManagerLoaded)
-            return;
-
-        _isResourceManagerLoaded = true;
-        
-        _resourceManager = GlobalObjectManager.ObjectManager.Get<ResourceManager>()!;
-    }
-    
     public bool Exists(string path)
     {
         return File.Exists(path);
@@ -55,7 +44,8 @@ public class FileResourceLoader: IRaylibResource
     {
         LoadResourceManager();
         Font font = default;
-        await _resourceManager.AddTaskToMainThread(() => font = Raylib.LoadFontEx(fileName, fontSize, codepoints, codepointCount));
+        await _resourceManager.AddTaskToMainThread(() =>
+            font = Raylib.LoadFontEx(fileName, fontSize, codepoints, codepointCount));
         return font;
     }
 
@@ -110,5 +100,15 @@ public class FileResourceLoader: IRaylibResource
     public byte[] LoadBytes(string path)
     {
         return File.ReadAllBytes(path);
+    }
+
+    private void LoadResourceManager()
+    {
+        if (_isResourceManagerLoaded)
+            return;
+
+        _isResourceManagerLoaded = true;
+
+        _resourceManager = GlobalObjectManager.ObjectManager.Get<ResourceManager>()!;
     }
 }

@@ -7,23 +7,37 @@ using Rectangle = Raylib_cs.Rectangle;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T : Enum
+public sealed class Texture2DItem<T> : IResourceLoadOnInit, IDisposable where T : Enum
 {
-    public string Name { get; private set; }
-    private bool _isDisposed;
-    
-    public Texture2D Texture { get; private set; }
-    private string _path;
+    private readonly string _path;
+    private readonly Dictionary<T, List<Rectangle>> _spriteAnimations = new();
+    private readonly Dictionary<T, Rectangle> _sprites = new();
     private TextureFilter _filter = TextureFilter.Point;
     private Point _gridSize = new(1, 1);
-    private Dictionary<T, Rectangle> _sprites = new();
-    private Dictionary<T, List<Rectangle>> _spriteAnimations = new();
+    private bool _isDisposed;
     private bool _isLoaded;
-    public Rectangle TextureRect { get; private set; } = new();
 
     public Texture2DItem(string path)
     {
         _path = path;
+    }
+
+    public string Name { get; private set; }
+
+    public Texture2D Texture { get; private set; }
+    public Rectangle TextureRect { get; private set; }
+
+    public void Dispose()
+    {
+        if (_isDisposed)
+            return;
+
+        Raylib.UnloadTexture(Texture);
+        Texture = default;
+        _sprites.Clear();
+        _spriteAnimations.Clear();
+
+        _isDisposed = true;
     }
 
     public int TotalResources => 1;
@@ -43,7 +57,7 @@ public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T :
         ResourcesLoaded = 1;
         TextureRect = new Rectangle(0, 0, Texture.Width, Texture.Height);
     }
-    
+
     public Texture2DItem<T> WithFilter(TextureFilter filter)
     {
         _filter = filter;
@@ -61,22 +75,24 @@ public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T :
         _sprites.Add(key, rect);
         return this;
     }
-    
-    
+
+
     public Texture2DItem<T> WithSpriteFromGrid(T key, PointInt position)
     {
         _sprites.Add(key, new Rectangle(position.X * _gridSize.X, position.Y * _gridSize.Y, _gridSize.X, _gridSize.Y));
         return this;
     }
-    
-    
+
+
     public Texture2DItem<T> WithSpriteFromGrid(T key, Rect rect)
     {
-        _sprites.Add(key, new Rectangle(rect.X * _gridSize.X, rect.Y * _gridSize.Y, rect.Width * _gridSize.X, rect.Height * _gridSize.Y));
+        _sprites.Add(key,
+            new Rectangle(rect.X * _gridSize.X, rect.Y * _gridSize.Y, rect.Width * _gridSize.X,
+                rect.Height * _gridSize.Y));
         return this;
     }
 
-    
+
     public Texture2DItem<T> WithSpriteAnimation(T key, IEnumerable<T> rect)
     {
         _spriteAnimations.Add(key, rect.Select(x => _sprites[x]).ToList());
@@ -87,12 +103,12 @@ public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T :
     {
         return _sprites[key];
     }
-    
+
     public IEnumerable<Rectangle> GetAnimation(T key)
     {
         return _spriteAnimations[key];
     }
-    
+
     public Rectangle GetAnimation(T key, int index)
     {
         return _spriteAnimations[key][Math.Clamp(index, 0, _spriteAnimations[key].Count - 1)];
@@ -101,18 +117,5 @@ public sealed class Texture2DItem<T>: IResourceLoadOnInit, IDisposable where T :
     public int GetAnimationCount(T key)
     {
         return _spriteAnimations[key].Count;
-    }
-    
-    public void Dispose()
-    {
-        if (_isDisposed)
-            return;
-        
-        Raylib.UnloadTexture(Texture);
-        Texture = default;
-        _sprites.Clear();
-        _spriteAnimations.Clear();
-        
-        _isDisposed = true;
     }
 }

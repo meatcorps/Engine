@@ -8,18 +8,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="HidSharp" Version="2.6.4" />
-      <PackageReference Include="Raylib-cs" Version="7.0.1" />
+        <PackageReference Include="HidSharp" Version="2.6.4"/>
+        <PackageReference Include="Raylib-cs" Version="7.0.1"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj" />
-      <ProjectReference Include="..\Meatcorps.Engine.Hardware.Controllers\Meatcorps.Engine.Hardware.Controllers.csproj" />
-      <ProjectReference Include="..\Meatcorps.Engine.Logging\Meatcorps.Engine.Logging.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="UI\Enums\" />
+        <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj"/>
+        <ProjectReference Include="..\Meatcorps.Engine.Hardware.Controllers\Meatcorps.Engine.Hardware.Controllers.csproj"/>
+        <ProjectReference Include="..\Meatcorps.Engine.Logging\Meatcorps.Engine.Logging.csproj"/>
     </ItemGroup>
 
 </Project>

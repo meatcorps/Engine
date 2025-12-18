@@ -7,29 +7,23 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Game.GameTasks;
 
-public class SceneTask: IGameLoopTask
+public class SceneTask : IGameLoopTask
 {
-    private Guid _instanceId = Guid.NewGuid();
-    public int Priority { get; } = 50;
-    public bool Enabled { get; set; } = false;
-    public bool IsInitialized { get; private set; }
-    
-    private BaseScene _scene;
     private GameHost _host;
+    private Guid _instanceId = Guid.NewGuid();
     private BaseScene? _newSceneToLoad;
+
+    private BaseScene _scene;
 
     public SceneTask(int priority = 50)
     {
         priority = 50;
     }
-    
-    public void SwitchScene(BaseScene scene)
-    {
-        _newSceneToLoad = scene;
-        foreach (var service in GlobalObjectManager.ObjectManager.GetList<ISceneSwitchTracker>()!)
-            service.OnActiveSceneSwitch(_newSceneToLoad);
-    }
-    
+
+    public int Priority { get; } = 50;
+    public bool Enabled { get; set; } = false;
+    public bool IsInitialized { get; private set; }
+
     public void Initialize(GameHost host)
     {
         IsInitialized = true;
@@ -48,20 +42,24 @@ public class SceneTask: IGameLoopTask
                 {
                     currentScene.Dispose();
                     GlobalObjectManager.ObjectManager.Remove<BaseScene>();
-                } else 
+                }
+                else
+                {
                     _scene = currentScene!;
-                
+                }
+
                 GlobalObjectManager.ObjectManager.Register(_newSceneToLoad);
-        
+
                 _newSceneToLoad.Initialize();
 
                 _newSceneToLoad = null;
             }
+
             return;
         }
-        
+
         var activeScene = GlobalObjectManager.ObjectManager.Get<BaseScene>()!;
-        
+
         if (type == GameLoopType.PreUpdate)
             activeScene.PreUpdate(deltaTime);
 
@@ -77,26 +75,27 @@ public class SceneTask: IGameLoopTask
             _host.RenderService.Update(deltaTime);
         }
 
-        if (type == GameLoopType.AfterUpdate)
-        {
+        if (type == GameLoopType.AfterUpdate) 
             activeScene.RegisterForRender();
-        }
 
-        if (type == GameLoopType.PreRender)
-        {
+        if (type == GameLoopType.PreRender) 
             Raylib.BeginDrawing();
-        } 
-        
+
         if (type == GameLoopType.Render)
         {
             activeScene.Draw();
             _host.RenderService.Render();
         }
-        
-        
-        if (type == GameLoopType.PostRender)
-        {
+
+
+        if (type == GameLoopType.PostRender) 
             Raylib.EndDrawing();
-        } 
+    }
+
+    public void SwitchScene(BaseScene scene)
+    {
+        _newSceneToLoad = scene;
+        foreach (var service in GlobalObjectManager.ObjectManager.GetList<ISceneSwitchTracker>()!)
+            service.OnActiveSceneSwitch(_newSceneToLoad);
     }
 }

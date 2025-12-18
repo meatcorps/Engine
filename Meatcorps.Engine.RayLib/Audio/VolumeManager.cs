@@ -6,16 +6,24 @@ namespace Meatcorps.Engine.RayLib.Audio;
 
 public sealed class VolumeManager : IBackgroundService
 {
-    private bool _initialized;
     private readonly Dictionary<string, IMasterVolume> _buses =
         new(StringComparer.OrdinalIgnoreCase);
+
     private readonly Dictionary<string, float> _cache =
         new(StringComparer.OrdinalIgnoreCase);
+
     private readonly Dictionary<string, bool> _muted =
         new(StringComparer.OrdinalIgnoreCase);
 
+    private bool _initialized;
+
     private bool _muteAll;
     private bool _muteAllCache;
+
+    public VolumeManager(bool muteAll = false)
+    {
+        _muteAllCache = muteAll;
+    }
 
     public bool MuteAll
     {
@@ -38,13 +46,6 @@ public sealed class VolumeManager : IBackgroundService
         }
     }
 
-    public VolumeManager(bool muteAll = false)
-    {
-        _muteAllCache = muteAll;
-    }
-
-    public void ToggleMuteAll() => MuteAll = !MuteAll;
-
     public void PreUpdate(float deltaTime)
     {
         if (_initialized)
@@ -52,7 +53,6 @@ public sealed class VolumeManager : IBackgroundService
 
         var buses = GlobalObjectManager.ObjectManager.GetList<IMasterVolume>();
         if (buses != null)
-        {
             foreach (var bus in buses)
             {
                 if (!_buses.TryAdd(bus.Name, bus))
@@ -61,10 +61,22 @@ public sealed class VolumeManager : IBackgroundService
                 _muted[bus.Name] = false;
                 _cache[bus.Name] = Math.Clamp(bus.MasterVolume, 0f, 1f);
             }
-        }
 
         _initialized = true;
         MuteAll = _muteAllCache; // apply cached global mute once
+    }
+
+    public void Update(float deltaTime)
+    {
+    }
+
+    public void LateUpdate(float deltaTime)
+    {
+    }
+
+    public void ToggleMuteAll()
+    {
+        MuteAll = !MuteAll;
     }
 
     public IEnumerable<(string name, float volume, bool muted)> Enumerate()
@@ -116,7 +128,10 @@ public sealed class VolumeManager : IBackgroundService
         return m;
     }
 
-    public void ToggleMute(string name) => MuteMasterVolume(name, !IsMuted(name));
+    public void ToggleMute(string name)
+    {
+        MuteMasterVolume(name, !IsMuted(name));
+    }
 
     // Convenience Try* helpers
     public bool TrySetMasterVolume(string name, float volume)
@@ -125,26 +140,26 @@ public sealed class VolumeManager : IBackgroundService
         SetMasterVolume(name, volume);
         return true;
     }
-    
+
     public bool TryGetMasterVolume(string name, out float volume)
     {
         if (!_cache.TryGetValue(name, out volume)) return false;
         return true;
     }
-    
+
     public bool TryMuteMasterVolume(string name, bool mute)
     {
         if (!_buses.ContainsKey(name)) return false;
         MuteMasterVolume(name, mute);
         return true;
     }
-    
+
     public bool TryIsMuted(string name, out bool isMuted)
     {
         if (!_muted.TryGetValue(name, out isMuted)) return false;
         return true;
     }
-    
+
     public bool TryToggleMute(string name)
     {
         if (!_muted.ContainsKey(name)) return false;
@@ -160,13 +175,19 @@ public sealed class VolumeManager : IBackgroundService
         return new Scope(() => SetMasterVolume(name, prev));
     }
 
-    public void Update(float deltaTime) { }
-    public void LateUpdate(float deltaTime) { }
-
     private sealed class Scope : IDisposable
     {
         private Action? _onDispose;
-        public Scope(Action onDispose) { _onDispose = onDispose; }
-        public void Dispose() { _onDispose?.Invoke(); _onDispose = null; }
+
+        public Scope(Action onDispose)
+        {
+            _onDispose = onDispose;
+        }
+
+        public void Dispose()
+        {
+            _onDispose?.Invoke();
+            _onDispose = null;
+        }
     }
 }

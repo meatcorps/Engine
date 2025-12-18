@@ -13,7 +13,8 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
     
     [NonSerialized]
     private Dictionary<string, ConfigValueType> _valueType = new();
-
+    private Dictionary<string, bool> _expose = new();
+    
     private bool _dirty;
     protected BaseConfig()
     {
@@ -23,6 +24,7 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
             SystemSettings = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(File.ReadAllText("Config.json")) ?? new();
         
         GlobalObjectManager.ObjectManager.Register<IUniversalConfig>(this);
+        GlobalObjectManager.ObjectManager.RegisterList<IConfigChangeTracker>();
         GlobalObjectManager.ObjectManager.Register<T>(Instance);
         DoRegisterDefaultValues();
     }
@@ -31,7 +33,7 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
     
     protected abstract T Instance { get; }
 
-    public string GetOrDefault(string group, string key, string defaultValue)
+    public string GetOrDefault(string group, string key, string defaultValue, bool expose = true)
     {
         if (!SystemSettings.ContainsKey(group))
             SystemSettings.Add(group, new Dictionary<string, string>());
@@ -40,7 +42,11 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
             Set(group, key, defaultValue);
 
         _valueType.TryAdd(group + ":" + key, ConfigValueType.IsString);
+        _expose.TryAdd(group + ":" + key, expose);
 
+        if (expose)
+            _expose.TryAdd(group, expose);
+        
         return SystemSettings[group][key];
     }
 
@@ -50,14 +56,22 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
             throw new InvalidOperationException("Group does not exist");
         if (!SystemSettings[group].ContainsKey(key))
             throw new InvalidOperationException("Key does not exist");
+        
+        if (value == SystemSettings[group][key]) 
+            return;
+        
         SystemSettings[group][key] = value;
+        
+        foreach (var tracker in GlobalObjectManager.ObjectManager.GetList<IConfigChangeTracker>()!)
+            tracker.ConfigChanged(group, key, value);
+        
         _dirty = true;
     }
 
-    public int GetOrDefault(string group, string key, int defaultValue)
+    public int GetOrDefault(string group, string key, int defaultValue, bool expose = true)
     {
         _valueType.TryAdd(group + ":" + key, ConfigValueType.IsInt);
-        if (int.TryParse(GetOrDefault(group, key, defaultValue.ToString(CultureInfo.InvariantCulture)), CultureInfo.InvariantCulture, out var result)) 
+        if (int.TryParse(GetOrDefault(group, key, defaultValue.ToString(CultureInfo.InvariantCulture), expose), CultureInfo.InvariantCulture, out var result)) 
             return result;
         return defaultValue;
     }
@@ -67,10 +81,10 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
         Set(group, key, value.ToString(CultureInfo.InvariantCulture));
     }
 
-    public float GetOrDefault(string group, string key, float defaultValue)
+    public float GetOrDefault(string group, string key, float defaultValue, bool expose = true)
     {
         _valueType.TryAdd(group + ":" + key, ConfigValueType.IsFloat);
-        if (float.TryParse(GetOrDefault(group, key, defaultValue.ToString(CultureInfo.InvariantCulture)), CultureInfo.InvariantCulture, out var result)) 
+        if (float.TryParse(GetOrDefault(group, key, defaultValue.ToString(CultureInfo.InvariantCulture), expose), CultureInfo.InvariantCulture, out var result)) 
             return result;
         return defaultValue;
     }
@@ -80,10 +94,10 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
         Set(group, key, value.ToString(CultureInfo.InvariantCulture));
     }
 
-    public bool GetOrDefault(string group, string key, bool defaultValue)
+    public bool GetOrDefault(string group, string key, bool defaultValue, bool expose = true)
     {
         _valueType.TryAdd(group + ":" + key, ConfigValueType.IsBool);
-        if (bool.TryParse(GetOrDefault(group, key, defaultValue.ToString()), out var result)) 
+        if (bool.TryParse(GetOrDefault(group, key, defaultValue.ToString(), expose), out var result)) 
             return result;
         return defaultValue;
     }
@@ -95,16 +109,22 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
 
     public IEnumerable<string> GetGroups()
     {
-        foreach (var key in SystemSettings.Keys)
+        foreach (var key in SystemSettings.Keys.ToArray())
+        {
+            if (!_expose.TryGetValue(key, out var value) || !value) 
+                continue;
             yield return key;
+        }
     }
 
     public IEnumerable<(string key, string value, ConfigValueType type)> GetKeys(string group)
     {
         if (!SystemSettings.ContainsKey(group))
             throw new InvalidOperationException("Group does not exist");
-        foreach (var key in SystemSettings[group].Keys)
+        foreach (var key in SystemSettings[group].Keys.ToArray())
         {
+            if (!_expose.TryGetValue(group + ":" + key, out var value) || !value) 
+                continue;
             var type = ConfigValueType.IsString;
             if (_valueType.ContainsKey(group + ":" + key))
                 type = _valueType[group + ":" + key];
