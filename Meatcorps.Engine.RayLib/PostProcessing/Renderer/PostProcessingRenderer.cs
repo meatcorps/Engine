@@ -34,7 +34,13 @@ public sealed class PostProcessingRenderer : IDisposable
 
     public RenderTexture2D Render(IEnumerable<IPostProcessor> postProcessors, RenderTexture2D sourceTexture)
     {
-        if (postProcessors.Count() == 0)
+        var totalEnabled = 0;
+        
+        foreach (var postProcessor in postProcessors)
+            if (postProcessor.Enabled) 
+                totalEnabled++;
+
+        if (totalEnabled == 0)
             return sourceTexture;
 
         _swapped = false;

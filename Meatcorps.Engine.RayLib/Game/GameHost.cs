@@ -61,7 +61,8 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
     public void ConfigChanged(string group, string key, object value)
     {
         Width = _config.GetOrDefault("Graphics", "WindowWidth", Width);
-        Width = _config.GetOrDefault("Graphics", "WindowHeight", Height);
+        Height = _config.GetOrDefault("Graphics", "WindowHeight", Height);
+        SetWindowSize(Width, Height);
         _borderLessPosX = _config.GetOrDefault("Graphics", "BorderlessWindowPositionX", -1);
         _borderLessPosY = _config.GetOrDefault("Graphics", "BorderlessWindowPositionY", -1);
         SetBorderlessWindow(_config.GetOrDefault("Graphics", "Borderless", false));
@@ -162,17 +163,18 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
         RunGameLoopTask(GameLoopType.PreRaylibInit, true);
 
         _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new BasicConfig();
-        _borderLessPosX = _config.GetOrDefault("Graphics", "BorderlessWindowPositionX", -1);
-        _borderLessPosY = _config.GetOrDefault("Graphics", "BorderlessWindowPositionY", -1);
+        _config.GetOrDefault("Graphics", "Monitor", -1, false);
+        _borderLessPosX = _config.GetOrDefault("Graphics", "BorderlessWindowPositionX", -1, false);
+        _borderLessPosY = _config.GetOrDefault("Graphics", "BorderlessWindowPositionY", -1, false);
 
         Raylib.InitWindow(Width, Height, _title);
         Raylib.SetExitKey(_exitKey);
         Raylib.SetTargetFPS(_targetFps);
 
-        if (_config.GetOrDefault("Graphics", "Borderless", false))
+        if (_config.GetOrDefault("Graphics", "Borderless", false, false))
             SetBorderlessWindow();
 
-        if (_config.GetOrDefault("Graphics", "FullScreen", false))
+        if (_config.GetOrDefault("Graphics", "FullScreen", false, false))
             SetFullscreen();
 
         RunGameLoopTask(GameLoopType.PostRaylibInit, true);

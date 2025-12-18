@@ -57,8 +57,8 @@ public class RayLibModule
 
     public RayLibModule SetInitialSize(int width, int height)
     {
-        _initialWidth = _config.GetOrDefault("Graphics", "WindowWidth", width);
-        _initialHeight = _config.GetOrDefault("Graphics", "WindowHeight", height);
+        _initialWidth = _config.GetOrDefault("Graphics", "WindowWidth", width, false);
+        _initialHeight = _config.GetOrDefault("Graphics", "WindowHeight", height, false);
         return this;
     }
 
@@ -124,6 +124,10 @@ public class RayLibModule
 #endif
         GlobalObjectManager.ObjectManager.Add<IPostProcessor>(postProcessor);
         GlobalObjectManager.ObjectManager.Add<IResourceLoadOnInit>(postProcessor);
+        
+        if (postProcessor is IConfigChangeTracker tracker)
+            GlobalObjectManager.ObjectManager.Add<IConfigChangeTracker>(tracker);
+        
         GlobalObjectManager.ObjectManager.Register<T>(postProcessor);
         return this;
     }

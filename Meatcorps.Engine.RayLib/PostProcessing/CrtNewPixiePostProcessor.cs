@@ -1,9 +1,11 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
+using Meatcorps.Engine.Core.Interfaces.Config;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.PostProcessing.Abstractions;
 using Raylib_cs;
 
-public class CrtNewPixiePostProcessor : BaseFinalPostProcessor
+public class CrtNewPixiePostProcessor : BaseFinalPostProcessor, IConfigChangeTracker
 {
     private static Texture2D? _fallback1x1;
     private Texture2D? _frameTex;
@@ -17,6 +19,8 @@ public class CrtNewPixiePostProcessor : BaseFinalPostProcessor
                 "frameTex"
             })
     {
+        
+        Enabled = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("Graphics", "CRT Effect", true); 
     }
 
     public float Curvature { get; set; } = 2f;
@@ -67,5 +71,11 @@ public class CrtNewPixiePostProcessor : BaseFinalPostProcessor
         }
 
         return _fallback1x1.Value;
+    }
+
+    public void ConfigChanged(string group, string key, object value)
+    {
+        if (group == "Graphics" && key == "CRT Effect")
+            Enabled = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("Graphics", "CRT Effect", true); 
     }
 }
