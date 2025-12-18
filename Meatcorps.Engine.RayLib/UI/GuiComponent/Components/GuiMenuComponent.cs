@@ -1,6 +1,7 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Enums;
+using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
@@ -209,8 +210,9 @@ public class GuiMenuComponent : IRaylibGameComponent
         DefaultComponentStop();
     }
 
-    public void MenuBoolSwitch(string name, ref bool value)
+    public bool MenuBoolSwitch(string name, ref bool value)
     {
+        var oldValue = value;
         if (_menuItemsCount == _menuPosition && !_disabledMenuItem)
         {
             if (_guiSettings.IsOnSelectionPressed)
@@ -239,10 +241,12 @@ public class GuiMenuComponent : IRaylibGameComponent
         _gui.AddItem(new TextElement(GetColor(value ? Color.Green : Color.Red), _guiSettings.Font, value ? "ON" : "OFF",
             _fontSize, 1, UVHelper.Right).SetPadding(_textPadding));
         DefaultComponentStop();
+        return oldValue != value;
     }
 
-    public void MenuNormalSlider(string name, ref float value, float step = 0.05f, bool playSoundBasedOnNormal = false)
+    public bool MenuNormalSlider(string name, ref float value, float step = 0.05f, bool playSoundBasedOnNormal = false)
     {
+        var oldValue = value;
         if (_menuItemsCount == _menuPosition && !_disabledMenuItem)
         {
             if (_guiSettings.IsOnSelectionPressed)
@@ -282,10 +286,13 @@ public class GuiMenuComponent : IRaylibGameComponent
         _gui.AddItem(new TextElement(GetColor(Raylib_cs.Raylib.ColorLerp(Color.Red, Color.Green, value)),
             _guiSettings.Font, sliderText, _fontSize, 1, UVHelper.Right).SetPadding(_textPadding));
         DefaultComponentStop();
+        
+        return !oldValue.EqualsSafe(value);
     }
 
-    public void MenuIntSlider(string name, ref int value, int step = 1, int minValue = 0, int maxValue = 10)
+    public bool MenuIntSlider(string name, ref int value, int step = 1, int minValue = 0, int maxValue = 10)
     {
+        var oldValue = value;
         if (_menuItemsCount == _menuPosition && !_disabledMenuItem)
         {
             if (_guiSettings.IsOnSelectionPressed)
@@ -325,10 +332,12 @@ public class GuiMenuComponent : IRaylibGameComponent
         _gui.AddItem(new TextElement(GetColor(_valueColor), _guiSettings.Font, sliderText, _fontSize, 1, UVHelper.Right)
             .SetPadding(_textPadding));
         DefaultComponentStop();
+        return oldValue != value;
     }
 
-    public void MenuOptions(string name, string[] options, ref int value)
+    public bool MenuOptions(string name, string[] options, ref int value)
     {
+        var oldValue = value;
         if (_menuItemsCount == _menuPosition && !_disabledMenuItem)
         {
             if (_guiSettings.IsOnSelectionPressed)
@@ -368,6 +377,7 @@ public class GuiMenuComponent : IRaylibGameComponent
         _gui.AddItem(new TextElement(GetColor(_valueColor), _guiSettings.Font, optionName, _fontSize, 1, UVHelper.Right)
             .SetPadding(_textPadding));
         DefaultComponentStop();
+        return oldValue != value;
     }
 
     private Color DefaultComponentStart(bool IsSelectable = false)

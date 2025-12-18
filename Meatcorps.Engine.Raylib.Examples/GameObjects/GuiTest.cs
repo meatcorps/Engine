@@ -13,6 +13,7 @@ using Meatcorps.Engine.RayLib.UI.GuiComponent;
 using Meatcorps.Engine.RayLib.UI.GuiComponent.Components;
 using Meatcorps.Engine.RayLib.UI.GuiComponent.Core;
 using Meatcorps.Engine.RayLib.UI.GuiComponent.GuiSettings;
+using Meatcorps.Engine.RayLib.Utilities;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.Raylib.Examples.GameObjects;
@@ -31,13 +32,27 @@ public class GuiTest : BaseGameObject
     private IUniversalConfig _config = null!;
     
     private string? _currentGroup;
+    private ScreenResolutionIterator _screenResolutionIterator = null!;
 
+    private int _resolutionIndex = 0;
+    private int _monitor;
+    private int _modeIndex = 0;
+    private string[] _modes = { "Windowed", "Fullscreen", "Borderless" };
+    
     protected override void OnInitialize()
     {
+        _screenResolutionIterator = new ScreenResolutionIterator(["16:9"]);
+        _screenResolutionIterator.Load();
+        _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!;
+        LoadCurrentConfigurationData();
         _guiService = new GuiService();
         Scene.SceneObjectManager.Register(_guiService);
         Scene.SceneObjectManager.Add<IBackgroundService>(_guiService);
         _textManager = GlobalObjectManager.ObjectManager.Get<TextManager<DefaultFont>>()!;
+
+        if (Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix)
+            _modes = ["Windowed", "Fullscreen"];
+        
         var uiSettings = new DefaultGuiSettings<GameInput, GameSounds>
         {
             Font = _textManager.GetFont(),
@@ -57,9 +72,20 @@ public class GuiTest : BaseGameObject
         _gui = AddComponent(new GuiServiceComponent(Scene.SceneObjectManager));
         _guiMenu = AddComponent(new GuiMenuComponent(uiSettings));
 
-        _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!;
-
         Camera = CameraLayer.UI;
+    }
+
+    private void LoadCurrentConfigurationData()
+    {
+        _resolutionIndex = _screenResolutionIterator.GetModeIndex(Scene.GameHost.Width, Scene.GameHost.Height);
+        _monitor = _config.GetOrDefault("Graphics", "Monitor", -1);
+        
+        if (Raylib_cs.Raylib.IsWindowFullscreen())
+            _modeIndex = 1;
+        else if (Raylib_cs.Raylib.GetScreenWidth() == Raylib_cs.Raylib.GetMonitorWidth(_monitor) && Raylib_cs.Raylib.GetScreenHeight() == Raylib_cs.Raylib.GetMonitorHeight(_monitor))
+            _modeIndex = 2;
+        else
+            _modeIndex = 0;
     }
 
     protected override void OnUpdate(float deltaTime)
@@ -90,6 +116,35 @@ public class GuiTest : BaseGameObject
         }
         else
         {
+            if (_currentGroup == "Graphics")
+            {
+                var resolutions = _screenResolutionIterator.GetModes().ToArray();
+                
+                _guiMenu.MenuOptions("Mode", _modes, ref _modeIndex);
+                if (_modeIndex != 2)
+                    _guiMenu.MenuOptions("Resolution", resolutions.Select(x => x.ToString()).ToArray(), ref _resolutionIndex);
+
+                if (_guiMenu.MenuIntSlider("Monitor", ref _monitor, minValue: -1,
+                        maxValue: Raylib_cs.Raylib.GetMonitorCount() - 1))
+                {
+                    _screenResolutionIterator.Load(_monitor);
+                    _resolutionIndex = _screenResolutionIterator.GetModeIndex(Scene.GameHost.Width, Scene.GameHost.Height);
+                    if (_resolutionIndex == -1) 
+                        _resolutionIndex = _screenResolutionIterator.GetModes().Count() - 1;
+                }
+
+                if (_guiMenu.MenuItem("Apply"))
+                {
+                    _config.Set("Graphics", "Monitor", _monitor);
+                    _config.Set("Graphics", "WindowWidth", resolutions[_resolutionIndex].Width);
+                    _config.Set("Graphics", "WindowHeight", resolutions[_resolutionIndex].Height);
+                    _config.Set("Graphics", "FullScreen", false);
+                    _config.Set("Graphics", "Borderless", false);
+                    _config.Set("Graphics", "FullScreen", _modeIndex == 1);
+                    _config.Set("Graphics", "Borderless", _modeIndex == 2);
+                }
+            }
+            
             foreach (var item in _config.GetKeys(_currentGroup))
             {
                 var name = item.key.Replace("_", " ").Replace("SetProcessing ", "");
@@ -119,6 +174,8 @@ public class GuiTest : BaseGameObject
             }
             if (_guiMenu.MenuItem("Back"))
             {
+                if (_currentGroup == "Graphics")
+                    LoadCurrentConfigurationData();
                 _currentGroup = null;
                 _guiMenu.Reset();
             }

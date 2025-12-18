@@ -53,9 +53,9 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
     public void Set(string group, string key, string value)
     {
         if (!SystemSettings.ContainsKey(group))
-            throw new InvalidOperationException("Group does not exist");
+            throw new InvalidOperationException("Group does not exist " + group);
         if (!SystemSettings[group].ContainsKey(key))
-            throw new InvalidOperationException("Key does not exist");
+            throw new InvalidOperationException("Key does not exist " + group + ":" + key);
         
         if (value == SystemSettings[group][key]) 
             return;
