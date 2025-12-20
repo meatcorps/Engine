@@ -10,7 +10,7 @@ public abstract class BaseGuiItem
     public Color Color;
     public Vector2 Offset = Vector2.Zero;
     public RectF ContainerBound { get; set; }
-
+    public GuiServiceComponent Owner { get; set; } = null!;
     public RectF ElementBound
     {
         get => _elementBound;
@@ -80,7 +80,7 @@ public abstract class BaseGuiItem
 
     protected void RegisterDraw(Action draw)
     {
-        GuiService.RegisterDraw(draw);
+        Owner.RegisterDraw(draw);
     }
 
     public void SetRect(RectF rect)

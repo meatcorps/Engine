@@ -14,6 +14,8 @@ public class RaylibKeyboardBinder<T> : IGenericInputMapSaver<T> where T : Enum
     private readonly Dictionary<string, KeyboardKey> _keyToString = new();
     private readonly Dictionary<string, GenericInput> _originalMappings = new();
 
+    public int TotalProfiles { get; private set; }
+
     public RaylibKeyboardBinder()
     {
         foreach (var key in Enum.GetValues<KeyboardKey>())
@@ -27,13 +29,14 @@ public class RaylibKeyboardBinder<T> : IGenericInputMapSaver<T> where T : Enum
 
     public GenericInput LoadFromConfig(int profile, T input, GenericInput map)
     {
+        TotalProfiles = Math.Max(profile + 1, TotalProfiles);
         _originalMappings[input.ToString() + profile.ToString()] = map;
-        var configBinding = _config.GetOrDefault("KeyboardBindings", input.ToString() + "_" + profile.ToString(), map.Label);
-
+        var configBinding = _config.GetOrDefault("KeyboardBindings", input.ToString() + "_" + profile.ToString(), map.Label, false);
+        
         if (configBinding == map.Label)
             return map;
 
-        return new GenericInput(GetKeyBind(configBinding), map.Label);
+        return new GenericInput(GetKeyBind(configBinding), configBinding);
     }
 
     public void SaveToConfig(int profile, T input, GenericInput map)

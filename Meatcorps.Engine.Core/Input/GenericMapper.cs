@@ -18,18 +18,25 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
         _loaderAndSaver = loaderAndSaver;
     }
     
-    public IReadOnlyDictionary<T, GenericInput> GetInputs(int player)
+    public IReadOnlyDictionary<T, GenericInput> GetInputs(int profileId)
     {
-        if (!_inputMap.TryGetValue(player, out var playerInputs))
-            throw new InvalidOperationException($"No input map for player {player}");
+        if (!_inputMap.TryGetValue(profileId, out var playerInputs))
+            throw new InvalidOperationException($"No input map for profile {profileId}");
         return playerInputs;
+    }
+
+    public IInput GetStateByProfile(int profileId, T input)
+    {
+        if (!_inputMap.TryGetValue(profileId, out var playerInputs))
+            return _defaultInput;
+        return playerInputs.GetValueOrDefault(input, _defaultInput);
     }
     
     public GenericMapper<T> AddInput(int profileId, T input, GenericInput inputState)
     {
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
             _inputMap[profileId] = playerInputs = new Dictionary<T, GenericInput>();
-        CheckIfAlreadyAssigned(profileId, inputState); 
+        //CheckIfAlreadyAssigned(profileId, inputState); 
         playerInputs[input] = _loaderAndSaver?.LoadFromConfig(profileId, input, inputState) ?? inputState;
         return this;
     }
@@ -84,9 +91,11 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
         }
         
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
-            throw new InvalidOperationException($"No input map for profile {profileId}");
+            return _defaultInput;
+            //throw new InvalidOperationException($"No input map for profile {profileId}");
         if (!playerInputs.TryGetValue(input, out var inputState))
-            throw new InvalidOperationException($"No input state for input {input} on profile {profileId}");
+            return _defaultInput;
+            //throw new InvalidOperationException($"No input state for input {input} on profile {profileId}");
         return inputState;
     }
 

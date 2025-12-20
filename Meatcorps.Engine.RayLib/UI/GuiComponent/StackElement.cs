@@ -2,6 +2,7 @@ using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Utilities;
+using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.UI.GuiComponent.Core;
 
 namespace Meatcorps.Engine.RayLib.UI.GuiComponent;
@@ -93,6 +94,6 @@ public class StackElement : BaseGuiItem
 
     public override void FinalizeLayout()
     {
-        //RegisterDraw(() => ElementBound.DrawLines(Color.DarkPurple, 4)); 
+        //RegisterDraw(() => ElementBound.DrawLines(Raylib_cs.Color.DarkPurple, 4)); 
     }
 }

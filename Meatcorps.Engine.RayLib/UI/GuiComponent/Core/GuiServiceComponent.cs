@@ -41,6 +41,7 @@ public class GuiServiceComponent : IGameComponent
 
     public void AddItem(BaseGuiItem item)
     {
+        item.Owner = this;
         _guiService.AddItem(item);
     }
 
