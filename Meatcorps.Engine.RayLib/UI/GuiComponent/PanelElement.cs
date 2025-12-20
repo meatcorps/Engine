@@ -22,8 +22,6 @@ public class PanelElement : BaseGuiItem
     }
 
     public override bool IsContainer => true;
-    public bool ResizeElementX { get; }
-    public bool ResizeElementY { get; }
 
     protected override void OnInitialize()
     {
@@ -44,7 +42,8 @@ public class PanelElement : BaseGuiItem
 
     public override void UpdateChildren(BaseGuiItem parent)
     {
-        foreach (var item in _items) item.UpdateChildren(this);
+        foreach (var item in _items) 
+            item.UpdateChildren(this);
     }
 
     protected override void OnContainerStop(GuiService service)

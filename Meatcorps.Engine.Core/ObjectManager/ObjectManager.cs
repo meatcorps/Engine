@@ -7,17 +7,20 @@ public class ObjectManager : IDisposable
     private readonly Dictionary<(Type, string), object> _registry = new();
     private bool _disposed;
 
-    public void Register<T>(T instance, string tag = "default") where T : class
+    public T Register<T>(T instance, string tag = "default") where T : class
     {
         var key = (typeof(T), tag);
         _registry[key] = instance;
+        
+        return instance;
     }
     
-    public void RegisterOnce<T>(T instance, string tag = "default") where T : class
+    public T RegisterOnce<T>(T instance, string tag = "default") where T : class
     {
         if (_registry.ContainsKey((typeof(T), tag)))
-            return;
+            return Get<T>()!;
         Register(instance, tag);
+        return instance;
     }
 
     public void RegisterList<T>(string tag = "default") where T : class

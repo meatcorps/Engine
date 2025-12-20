@@ -6,16 +6,14 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.UI.GuiComponent;
 
-public class RectangleLinesElement : BaseGuiItem
+public class RectangleElement : BaseGuiItem
 {
     private readonly float _radius;
     private readonly int _segments;
-    private readonly float _thickness;
 
-    public RectangleLinesElement(Color color, float thickness = 1, int segments = 4, float radius = 0)
+    public RectangleElement(Color color, int segments = 4, float radius = 0)
     {
         Color = color;
-        _thickness = thickness;
         _segments = segments;
         _radius = radius;
     }
@@ -37,6 +35,6 @@ public class RectangleLinesElement : BaseGuiItem
     {
         var rect = ElementBound;
         rect.Position += Offset;
-        RegisterDraw(() => rect.DrawLines(Color, _thickness, _radius, _segments));
+        RegisterDraw(() => rect.DrawFilled(Color, _radius, _segments));
     }
 }

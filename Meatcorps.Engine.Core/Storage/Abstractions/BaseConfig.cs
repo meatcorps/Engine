@@ -66,6 +66,7 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
             tracker.ConfigChanged(group, key, value);
         
         _dirty = true;
+        Save();
     }
 
     public int GetOrDefault(string group, string key, int defaultValue, bool expose = true)

@@ -23,12 +23,14 @@ using var _ = RayLibModule.Setup()
     .SetFps(120)
     .SetInitialSize(1920, 1080)
     .SetFixedSizeCamera(640, 360)
-    .SetupProcessingBloom(0.6f, 0.2f, 0.8f, 4f)
+    .SetupProcessingBloom(0.2f, 0.2f, 0.8f, 4f)
+    .SetExitKey()
     .SetProcessing(new CrtNewPixiePostProcessor())
     .SetResource(new OneTexture("Assets/CRTSidePanels.png", texture2D =>
         GlobalObjectManager.ObjectManager.Get<CrtNewPixiePostProcessor>()!.SetFrameTexture(texture2D)
     ))
     .SetResource(TextManager.OnlyOneFont("PressStart2P-Regular.ttf"))
+    //.SetResource(TextManager.OnlyOneFont("Assets/gnf.regular.ttf", 16))
     .SetResource(AudioEnumBinder.BindAllSounds(
         SoundFxResource<GameSounds>
             .Create(6)

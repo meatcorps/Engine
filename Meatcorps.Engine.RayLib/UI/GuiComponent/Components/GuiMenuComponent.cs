@@ -198,6 +198,24 @@ public class GuiMenuComponent : IRaylibGameComponent
         return isSelected;
     }
 
+    public bool MenuStringValue(string name, string value)
+    {
+        if (_guiSettings.IsOnSelectionPressed && !_selected && _menuItemsCount == _menuPosition && !_disabledMenuItem)
+        {
+            _selected = true;
+            _guiSettings.PlaySelectionSound();
+        }
+
+        var isSelected = _menuItemsCount == _menuPosition && _selectedTimer.Output;
+
+        var color = DefaultComponentStart();
+
+        _gui.AddItem(new TextElement(color, _guiSettings.Font, name, _fontSize, 1, UVHelper.Left).SetPadding(_textPadding));
+        _gui.AddItem(new TextElement(_valueColor, _guiSettings.Font, value, _fontSize, 1, UVHelper.Right).SetPadding(_textPadding));
+        DefaultComponentStop();
+
+        return isSelected;
+    }
 
     public void MenuLabel(string name)
     {

@@ -14,6 +14,7 @@ public class TextElement : BaseGuiItem
     private readonly float _spacing;
     private readonly string _text;
     private readonly Vector2 _uv;
+    private bool _sizeBasedOnParent = true;
 
     public TextElement(Color color, Font font, string text, float size = 16, float spacing = 1, Vector2? uv = null)
     {
@@ -25,12 +26,21 @@ public class TextElement : BaseGuiItem
         Color = color;
     }
 
+    public TextElement SetSizeBasedOnText(Vector2? position = null)
+    {
+        _sizeBasedOnParent = false;
+        position ??= ElementBound.Position;
+        ElementBound = new RectF(position.Value, TextSize());
+        return this;
+    }
+    
     public override bool IsContainer => false;
 
     protected override void OnInitialize()
     {
-        SetRect(new RectF(Vector2.Zero,
-            (GuiService.CurrentContainer!.ElementBound + GuiService.CurrentContainer!.Padding).Size));
+        if (_sizeBasedOnParent)
+            SetRect(new RectF(Vector2.Zero,
+                (GuiService.CurrentContainer!.ElementBound + GuiService.CurrentContainer!.Padding).Size));
     }
 
     private Vector2 TextSize()
@@ -40,15 +50,25 @@ public class TextElement : BaseGuiItem
 
     public override void UpdateChildren(BaseGuiItem parent)
     {
-        ElementBound = parent.ElementBound;
+        if (_sizeBasedOnParent)
+            ElementBound = parent.ElementBound;
     }
 
     public override void FinalizeLayout()
     {
         RegisterDraw(() =>
         {
-            var textBound = new RectF(Vector2.Zero, TextSize());
-            textBound = (ElementBound + Padding).Align(textBound, _uv);
+            RectF textBound;
+            if (!_sizeBasedOnParent)
+            {
+                textBound = ElementBound + Padding;
+            }
+            else
+            {
+                textBound = new RectF(Vector2.Zero, TextSize());
+                textBound = (ElementBound + Padding).Align(textBound, _uv);
+            }
+
             Raylib_cs.Raylib.DrawTextEx(_font, _text, textBound.Position + Offset, _size, _spacing, Color);
         });
     }
