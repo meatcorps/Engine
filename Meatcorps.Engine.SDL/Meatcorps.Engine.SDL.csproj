@@ -4,14 +4,34 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <PackageId>Meatcorps.Engine.SDL</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Dennis Steffen</Authors>
+        <Company>Meatcorps</Company>
+        <Product>Meatcorps Engine SDL</Product>
+        <Description>
+            Meatcorps.Engine is a lightweight, code-first game framework built on top of Raylib. This is the SDL package
+        </Description>
+        <RepositoryUrl>https://github.com/meatcorps/Engine</RepositoryUrl>
+        <PackageProjectUrl>https://www.meatcorps.nl/engine/</PackageProjectUrl>
+        <PackageTags>game-engine;engine-core;gamedev;cross-platform;sdl;controller;game-controller</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Meatcorps.Engine.Hardware.Controllers\Meatcorps.Engine.Hardware.Controllers.csproj" />
+        <PackageReference Include="Meatcorps.Engine.Hardware.Controllers" Version="[0.1.0,)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+        <None Include="README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" />
         <PackageReference Include="Sdl2.Native" Version="1.0.0.1" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Meatcorps.Engine.Hardware.Controllers\Meatcorps.Engine.Hardware.Controllers.csproj" />
     </ItemGroup>
 </Project>
