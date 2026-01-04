@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Meatcorps.Engine.Assets.Packager</RootNamespace>
         <PackageId>Meatcorps.Engine.Assets.Packager</PackageId>
-        <Version>0.1.0</Version>
         <Authors>Dennis Steffen</Authors>
         <Company>Meatcorps</Company>
         <Product>Meatcorps Engine Assets Packager</Product>

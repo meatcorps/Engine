@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackageId>Meatcorps.Engine.Collision</PackageId>
-        <Version>0.1.0</Version>
         <Authors>Dennis Steffen</Authors>
         <Company>Meatcorps</Company>
         <Product>Meatcorps Engine Collision</Product>
