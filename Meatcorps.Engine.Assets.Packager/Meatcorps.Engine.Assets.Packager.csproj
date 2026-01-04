@@ -5,9 +5,29 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Meatcorps.Engine.Assets.Packager</RootNamespace>
+        <PackageId>Meatcorps.Engine.Assets.Packager</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Dennis Steffen</Authors>
+        <Company>Meatcorps</Company>
+        <Product>Meatcorps Engine Assets Packager</Product>
+        <Description>
+            Meatcorps.Engine is a lightweight, code-first game framework built on top of Raylib. This is the packager that will convert any setup folder to an asset pack.
+        </Description>
+        <RepositoryUrl>https://github.com/meatcorps/Engine</RepositoryUrl>
+        <PackageProjectUrl>https://www.meatcorps.nl/engine/</PackageProjectUrl>
+        <PackageTags>game-engine;engine-core;gamedev;cross-platform;asset;asset-packaging</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+        <None Include="README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Meatcorps.Engine.Assets" Version="[0.1.0,)" />
         <ProjectReference Include="..\Meatcorps.Engine.Assets\Meatcorps.Engine.Assets.csproj"/>
     </ItemGroup>
 

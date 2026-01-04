@@ -4,17 +4,38 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <PackageId>Meatcorps.Engine.MQTT</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Dennis Steffen</Authors>
+        <Company>Meatcorps</Company>
+        <Product>Meatcorps Engine MQTT</Product>
+        <Description>
+            Meatcorps.Engine is a lightweight, code-first game framework built on top of Raylib. This is the Logging package
+        </Description>
+        <RepositoryUrl>https://github.com/meatcorps/Engine</RepositoryUrl>
+        <PackageProjectUrl>https://www.meatcorps.nl/engine/</PackageProjectUrl>
+        <PackageTags>game-engine;engine-core;gamedev;cross-platform;communication;mqtt;signals;sync</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+        <None Include="README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj" />
+        <PackageReference Include="Meatcorps.Engine.Core" Version="[0.1.0,)" />
+        <ProjectReference Include="..\Meatcorps.Engine.Signals\Meatcorps.Engine.Signals.csproj" />
+        <PackageReference Include="Meatcorps.Engine.Signals" Version="[0.1.0,)" />
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="MQTTnet" Version="4.3.7.1207" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
       <PackageReference Include="System.Reactive" Version="6.0.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj" />
-      <ProjectReference Include="..\Meatcorps.Engine.Signals\Meatcorps.Engine.Signals.csproj" />
     </ItemGroup>
 
 </Project>

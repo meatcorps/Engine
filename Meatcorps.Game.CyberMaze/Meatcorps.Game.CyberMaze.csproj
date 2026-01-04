@@ -7,6 +7,7 @@
         <Nullable>enable</Nullable>
         <RootNamespace>Meatcorps.Game.CyberMaze</RootNamespace>
         <PackageIcon>icon.ico</PackageIcon>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
@@ -46,7 +47,7 @@
     <UsingTask TaskName="AssetPackageTask"
                AssemblyFile="$(ProjectDir)\bin\$(Configuration)\net8.0\Meatcorps.Engine.Assets.Packager.dll" />
 
-    <!--<Target Name="AssetPackageTask"
+    <Target Name="AssetPackageTask"
             AfterTargets="Build"
             Condition="'$(Configuration)' == 'Release'">
 
@@ -54,5 +55,5 @@
                 GameAssemblyPath="$(TargetPath)"
                 ProjectDirectory="$(ProjectDir)"
                 OutputPath="$(OutputPath)" />
-    </Target>-->
+    </Target>
 </Project>

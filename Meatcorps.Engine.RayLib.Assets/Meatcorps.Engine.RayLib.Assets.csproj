@@ -5,11 +5,32 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PackageId>Meatcorps.Engine.RayLib.Assets</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Dennis Steffen</Authors>
+        <Company>Meatcorps</Company>
+        <Product>Meatcorps Engine RayLib Assets</Product>
+        <Description>
+            Meatcorps.Engine is a lightweight, code-first game framework built on top of Raylib. This is the RayLib Assets package
+        </Description>
+        <RepositoryUrl>https://github.com/meatcorps/Engine</RepositoryUrl>
+        <PackageProjectUrl>https://www.meatcorps.nl/engine/</PackageProjectUrl>
+        <PackageTags>game-engine;engine-core;gamedev;cross-platform;assets;raylib</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Meatcorps.Engine.Assets\Meatcorps.Engine.Assets.csproj" />
-      <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
+        <ProjectReference Include="..\Meatcorps.Engine.Assets\Meatcorps.Engine.Assets.csproj" />
+        <PackageReference Include="Meatcorps.Engine.Assets" Version="[0.1.0,)" />
+        <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
+        <PackageReference Include="Meatcorps.Engine.RayLib" Version="[0.1.0,)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+        <None Include="README.md" Pack="true" PackagePath=""/>
     </ItemGroup>
 
 </Project>
