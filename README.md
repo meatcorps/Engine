@@ -1,5 +1,9 @@
 # Meatcorps.Engine – A Code-First Arcade Game Engine
 
+[![Publish NuGet](https://github.com/meatcorps/Engine/actions/workflows/nugetpublish.yml/badge.svg)](https://github.com/meatcorps/Engine/actions/workflows/nugetpublish.yml)
+
+(Click here for the documentation / wiki!)[https://github.com/meatcorps/Engine/wiki]
+
 **Meatcorps.Engine** is a lightweight, code-first game framework built on top of **Raylib**.  
 It’s designed for speed, clarity, and arcade-style projects — no heavy IDE tools, no scene editors, just code.  
 
