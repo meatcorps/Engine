@@ -1,5 +1,7 @@
 using Meatcorps.Engine.Core.Input;
+using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.Modules;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.Controllers.Enums;
 using Meatcorps.Engine.Hardware.Controllers.Mapper;
 using Meatcorps.Engine.RayLib.Extensions;
@@ -32,7 +34,7 @@ public static class GameFallbackInput
            InputModule<GameInput>.CreateOnlyKeyboardMouseMapper(mapper, 2);*/
         
         InputModule<GameInput>.Create()
-            .AddInputMapper(new GenericMapper<GameInput>()
+            .AddInputMapper(new GenericMapper<GameInput>(GlobalObjectManager.ObjectManager.Register(new RaylibKeyboardBinder<GameInput>()))
                 .AddInputKeyboard(0, GameInput.Up, KeyboardKey.Up)
                 .AddInputKeyboard(0, GameInput.Down, KeyboardKey.Down)
                 .AddInputKeyboard(0, GameInput.Left, KeyboardKey.Left)
@@ -48,8 +50,8 @@ public static class GameFallbackInput
                 .AddInputKeyboard(1, GameInput.Action, KeyboardKey.F)
                 .AddAxis(1, 1, GameInput.Left, GameInput.Right, GameInput.Up, GameInput.Down))
             .AddInputMapper(new ControllerInputMapper<GameInput>(new SDLControllerDeviceManager())
-                .Map(GameInput.Start, ControllerInputEnum.BorCircle)
-                .Map(GameInput.Action, ControllerInputEnum.AorCross)
+                .Map(GameInput.Start, ControllerInputEnum.AorCross)
+                .Map(GameInput.Action, ControllerInputEnum.Start)
                 .Map(GameInput.Down, ControllerInputEnum.DPadDown)
                 .Map(GameInput.Left, ControllerInputEnum.DPadLeft)
                 .Map(GameInput.Up, ControllerInputEnum.DPadUp)

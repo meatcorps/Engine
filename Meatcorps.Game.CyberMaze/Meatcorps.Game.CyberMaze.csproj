@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
+        <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Meatcorps.Game.CyberMaze</RootNamespace>
+        <PackageIcon>icon.ico</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -32,6 +33,9 @@
         <Content Include="Assets/**/*.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+        <Content Update="icon.ico">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
     
     <PropertyGroup>
@@ -42,7 +46,7 @@
     <UsingTask TaskName="AssetPackageTask"
                AssemblyFile="$(ProjectDir)\bin\$(Configuration)\net8.0\Meatcorps.Engine.Assets.Packager.dll" />
 
-    <Target Name="AssetPackageTask"
+    <!--<Target Name="AssetPackageTask"
             AfterTargets="Build"
             Condition="'$(Configuration)' == 'Release'">
 
@@ -50,5 +54,5 @@
                 GameAssemblyPath="$(TargetPath)"
                 ProjectDirectory="$(ProjectDir)"
                 OutputPath="$(OutputPath)" />
-    </Target>
+    </Target>-->
 </Project>

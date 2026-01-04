@@ -24,7 +24,6 @@ namespace Meatcorps.Engine.Raylib.Examples.GameObjects;
 public class GuiTest : BaseGameObject
 {
     private GuiServiceComponent _gui = null!;
-    private GuiMenuComponent _guiMenu = null!;
     private GuiService _guiService = null!;
     private List<RectF> _rains = new();
     private DefaultGuiSettings<GameInput, GameSounds> _uiSettings;
@@ -49,16 +48,15 @@ public class GuiTest : BaseGameObject
             SelectionSound = GameSounds.PowerUpScore,
             NotificationSound = GameSounds.Backgroundplaced,
             PlayerInputId = 1,
-            TextColorActive = Color.Gold,
-            FontScaleSize = 2
+            FontScaleSize = 1
         };
         
         _uiSettings.Load();
         _gui = AddComponent(new GuiServiceComponent(Scene.SceneObjectManager));
-        _guiMenu = AddComponent(new GuiMenuComponent(_uiSettings));
 
-        Scene.AddGameObject(new GameSettingsGameObject<GameInput>(_uiSettings, ["16:9"]));
-        
+        //Scene.AddGameObject(new GameSettingsGameObject<GameInput>(_uiSettings, ["16:9"]));
+        Scene.AddGameObject(new MainMenuGameObject<GameInput>(_uiSettings));
+
         Camera = CameraLayer.UI;
 
         for (var i = 0; i < 200; i++)

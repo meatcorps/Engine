@@ -62,6 +62,26 @@ public class RayLibModule
         return this;
     }
 
+    public RayLibModule AutoSize()
+    {
+        
+        _initialWidth = _config.GetOrDefault("Graphics", "WindowWidth", 0, false);
+        _initialHeight = _config.GetOrDefault("Graphics", "WindowHeight", 0, false);
+        if (_initialWidth == 0 || _initialHeight == 0)
+        {
+            _initialWidth = Raylib.GetScreenWidth();
+            _initialHeight = Raylib.GetScreenHeight();
+        }
+        
+        return this;
+    }
+
+    public RayLibModule StartInFullscreen()
+    {
+        _config.GetOrDefault("Graphics", "FullScreen", true, false);
+        return this;
+    }
+
     public RayLibModule SetTitle(string title)
     {
         _title = title;

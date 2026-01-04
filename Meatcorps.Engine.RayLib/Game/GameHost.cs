@@ -60,8 +60,14 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
 
     public void ConfigChanged(string group, string key, object value)
     {
-        Width = _config.GetOrDefault("Graphics", "WindowWidth", Width);
-        Height = _config.GetOrDefault("Graphics", "WindowHeight", Height);
+        var width = _config.GetOrDefault("Graphics", "WindowWidth", Width);
+        if (width > 0)
+            Width = width;
+        
+        var height = _config.GetOrDefault("Graphics", "WindowHeight", Height);
+        if (height > 0)
+            Height = height;
+        
         SetWindowSize(Width, Height);
         _borderLessPosX = _config.GetOrDefault("Graphics", "BorderlessWindowPositionX", -1);
         _borderLessPosY = _config.GetOrDefault("Graphics", "BorderlessWindowPositionY", -1);

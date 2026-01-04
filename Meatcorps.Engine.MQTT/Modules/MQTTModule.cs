@@ -18,7 +18,7 @@ public class MQTTModule
     public static MQTTModule Load()
     {
         var settings = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>();
-        var client = new MQTTClient(settings.GetOrDefault(GROUP, "host", "localhost"));
+        var client = new MQTTClient(settings.GetOrDefault(GROUP, "host", "localhost", false));
         GlobalObjectManager.ObjectManager.Register(client);
         return new MQTTModule(client);
     }
@@ -58,6 +58,6 @@ public class MQTTModule
     public void Create()
     {
         _ = _client.Connect(
-            _settings.GetOrDefault(GROUP, "user", "user"), _settings.GetOrDefault(GROUP, "password", "admin"));
+            _settings.GetOrDefault(GROUP, "user", "user", false), _settings.GetOrDefault(GROUP, "password", "admin", false));
     }
 }
