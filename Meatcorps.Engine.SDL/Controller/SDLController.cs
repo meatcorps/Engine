@@ -50,12 +50,12 @@ internal sealed class SDLController : IDisposable
         if (!IsActive || _isJoystick)
             return;
         
-        if (_hapticSupported)
+        /*if (_hapticSupported)
         {
             ApplyMagnitude(leftRumble, rightRumble);
             UseHapticRumble(leftRumble, rightRumble);
             return;
-        }
+        }*/
         
         UseDefaultRumble(leftRumble, rightRumble, duration);
     }

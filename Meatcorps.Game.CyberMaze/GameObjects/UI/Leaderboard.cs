@@ -29,7 +29,7 @@ public class Leaderboard : ResourceGameObject, IIntroSlide
         Camera = CameraLayer.UI;
         _iterateTimer = new TimerOn(2000);
         _renderer = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
-        var scores = GlobalObjectManager.ObjectManager.Get<HighScoreService>()!.GetLeaderboard(9);
+        var scores = GlobalObjectManager.ObjectManager.Get<HighScoreService>()!.GetLeaderboard(7);
         var bounds = new Rect(48, 32, _renderer.RenderWidth - 96, _renderer.RenderHeight - 128);
         _scoreRenderer = new InlineRender
             {
@@ -99,7 +99,7 @@ public class Leaderboard : ResourceGameObject, IIntroSlide
     protected override void OnDraw()
     {
         Raylib.DrawRectangle(32, 32, _renderer.RenderWidth - 64, _renderer.RenderHeight - 80,
-            Raylib.ColorAlpha(Color.Black, 0.5f));
+            Raylib.ColorAlpha(Color.Black, 0.8f));
         _scoreRenderer.Draw();
     }
 

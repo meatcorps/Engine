@@ -43,7 +43,7 @@ public class GuiMenuComponent : IRaylibGameComponent
         _guiSettings = guiSettings;
     }
 
-    public bool IsActive => true;
+    public bool IsActive { get; set; } = true;
     public MenuDirection MenuDirection { get; set; } = MenuDirection.LeftRight;
 
     public void SetOwner(BaseGameObject owner)

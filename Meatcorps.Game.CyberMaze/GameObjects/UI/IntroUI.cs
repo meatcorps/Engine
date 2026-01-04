@@ -117,7 +117,7 @@ public class IntroUI : ResourceGameObject, IIntroSlide
 
         var colorTitle = Raylib.ColorFromHSV(_messageTimer.NormalizedElapsed * 360, 1, 1);
 
-        Raylib.DrawRectangle(startPosX, startPosY, targetWidth, targetHeight, Raylib.ColorAlpha(Color.Black, 0.5f));
+        Raylib.DrawRectangle(startPosX, startPosY, targetWidth, targetHeight, Raylib.ColorAlpha(Color.Black, 0.8f));
         if (_introScene.TotalPlayersReady == 0)
         {
             Raylib.DrawTextEx(Fonts.GetFont(), "MEATCORPS PROUDLY PRESENTS:",
@@ -127,28 +127,33 @@ public class IntroUI : ResourceGameObject, IIntroSlide
         Raylib.DrawTextEx(Fonts.GetFont(), _introScene.TotalPlayersReady > 0 ? "READY?" : _game.Name,
             new Vector2(startPosX + 8, startPosY + 80), 44, 0, colorTitle);
 
-        if (_introScene.TotalPlayersReady == 0 || _fastTimer.NormalizedElapsed > 0.5f)
+        if (!_introScene.StandAloneMode)
         {
-            Sprites.DrawAnimationWithNormal(GameSprites.ArcadeButtonPlayerOneAnimation, _buttonTimer.NormalizedElapsed,
-                new Vector2(startPosX + 16, startPosY + 172), Color.LightGray);
-            Raylib.DrawTextEx(Fonts.GetFont(), "START 1 PLAYER", new Vector2(startPosX + 64, startPosY + 180), 16, 0,
-                Color.Red);
+            if (_introScene.TotalPlayersReady == 0 || _fastTimer.NormalizedElapsed > 0.5f)
+            {
+                Sprites.DrawAnimationWithNormal(GameSprites.ArcadeButtonPlayerOneAnimation,
+                    _buttonTimer.NormalizedElapsed,
+                    new Vector2(startPosX + 16, startPosY + 172), Color.LightGray);
+                Raylib.DrawTextEx(Fonts.GetFont(), "START 1 PLAYER", new Vector2(startPosX + 64, startPosY + 180), 16,
+                    0,
+                    Color.Red);
+            }
+
+            if ((_introScene.TotalPlayersReady == 0 ||
+                 _fastTimer.NormalizedElapsed > 0.5f && _introScene.TotalPlayersReady == 2) &&
+                _introScene.TotalPlayersReady != 1)
+            {
+                Raylib.DrawTextEx(Fonts.GetFont(), "START 2 PLAYERS",
+                    new Vector2(startPosX + targetWidth - 298, startPosY + 204), 16, 0, Color.Blue);
+                Sprites.DrawAnimationWithNormal(GameSprites.ArcadeButtonPlayerTwoAnimation,
+                    _buttonTimer.NormalizedElapsed,
+                    new Vector2(startPosX + targetWidth - 48, startPosY + 196), Color.LightGray);
+            }
+            
+            Raylib.DrawRectangleGradientV(0, _renderer.RenderHeight - 64, _renderer.RenderWidth, 80,
+                Raylib.ColorAlpha(Color.Black, 0f), Color.Black);
         }
 
-        if ((_introScene.TotalPlayersReady == 0 ||
-             _fastTimer.NormalizedElapsed > 0.5f && _introScene.TotalPlayersReady == 2) &&
-            _introScene.TotalPlayersReady != 1)
-        {
-            Raylib.DrawTextEx(Fonts.GetFont(), "START 2 PLAYERS",
-                new Vector2(startPosX + targetWidth - 298, startPosY + 204), 16, 0, Color.Blue);
-            Sprites.DrawAnimationWithNormal(GameSprites.ArcadeButtonPlayerTwoAnimation, _buttonTimer.NormalizedElapsed,
-                new Vector2(startPosX + targetWidth - 48, startPosY + 196), Color.LightGray);
-        }
-
-
-        Raylib.DrawRectangleGradientV(0, _renderer.RenderHeight - 64, _renderer.RenderWidth, 80,
-            Raylib.ColorAlpha(Color.Black, 0f), Color.Black);
-        
         //Sprites.Draw(GameSprites.ShoutOut, new Vector2(32, 32), Color.White);
     }
 

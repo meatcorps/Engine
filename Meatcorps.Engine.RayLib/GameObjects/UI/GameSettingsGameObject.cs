@@ -62,6 +62,7 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
         _input = GlobalObjectManager.ObjectManager.Get<GenericMapper<TInput>>()!;
         _playerInput = GlobalObjectManager.ObjectManager.Get<PlayerInputRouter<TInput>>()!;
         Camera = CameraLayer.UI;
+        Layer = 11;
         var groupItems = _config.GetGroups().ToList();
         if (!groupItems.Contains("Input"))
             groupItems.Add("Input");
@@ -214,6 +215,14 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
                     _toRebind.Enqueue(item.Key);
                 }
             }
+            
+            if (_guiMenu.MenuItem("Reset"))
+            {
+                foreach (var item in _input.GetInputs(_currentKeyboardProfile))
+                {
+                    _input.Reset(_currentKeyboardProfile, item.Key);
+                }
+            }
 
             foreach (var input in _input.GetInputs(_currentKeyboardProfile))
             {
@@ -326,7 +335,7 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
 
     protected override void OnDraw()
     {
-        Raylib.DrawRectangle(0, 0, RenderTarget!.RenderWidth, RenderTarget!.RenderHeight, new Color(0,0,0,200));
+        Raylib.DrawRectangle(0, 0, RenderTarget!.RenderWidth, RenderTarget!.RenderHeight, new Color(0,0,0,230));
         base.OnDraw();
     }
 

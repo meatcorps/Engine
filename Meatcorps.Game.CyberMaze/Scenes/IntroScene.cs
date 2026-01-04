@@ -1,5 +1,6 @@
 using Meatcorps.Engine.Arcade.RayLib.GameObjects;
 using Meatcorps.Engine.Core.Input;
+using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;
@@ -9,6 +10,8 @@ using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Engine.RayLib.Text;
+using Meatcorps.Engine.RayLib.UI.GuiComponent.Core;
+using Meatcorps.Engine.RayLib.UI.GuiComponent.GuiSettings;
 using Meatcorps.Engine.Session;
 using Meatcorps.Game.CyberMaze.Data;
 using Meatcorps.Game.CyberMaze.GameEnums;
@@ -32,10 +35,15 @@ public class IntroScene : BaseScene
     public int TotalPlayersReady { get; set; } = 0;
     private bool _waitingForPlayers = false;
     private GameConfig<GameSettings> _config;
+    public bool StandAloneMode { get; private set; }
+    private DefaultGuiSettings<GameInput, GameSounds>? _guiSettings = null;
 
     protected override void OnInitialize()
     {
         
+        SceneObjectManager.Register(new GuiService());
+        StandAloneMode = GlobalObjectManager.ObjectManager.Get<IGuiSettings>() != null;
+        AddGameObject(new VersionUI());
         _config = GlobalObjectManager.ObjectManager.Get<GameConfig<GameSettings>>()!;
         _font = GlobalObjectManager.ObjectManager.Get<TextManager<DefaultFont>>()!.GetFont();
         _uiMessage = new UIMessageEmitter(TextKitStyles.HudDefault(_font));
@@ -60,6 +68,25 @@ public class IntroScene : BaseScene
         _fontManager = GlobalObjectManager.ObjectManager.Get<TextManager<DefaultFont>>()!;
         _musicManager.Play(GameMusic.IntroOutro);
         _sessionService.StartSession();
+
+        if (StandAloneMode)
+        {
+            GlobalObjectManager.ObjectManager.Get<IGuiSettings>()!.Font = _fontManager.GetFont();
+            
+            var guiService = new GuiService();
+            SceneObjectManager.Register(guiService);
+            SceneObjectManager.Add<IBackgroundService>(guiService);
+            
+            if (GlobalObjectManager.ObjectManager.Get<IGuiSettings>()! is DefaultGuiSettings<GameInput, GameSounds>
+                guiSettings)
+            {
+                _guiSettings = guiSettings;
+                _guiSettings.Load();
+                var menu = AddGameObject(new MainMenuGameObject<GameInput>(_guiSettings));
+                menu.Layer = 10;
+                menu.AddMenuAction("Start Game", () => TotalPlayersReady = 1);
+            }
+        }
     }
 
     protected override void OnPreUpdate(float deltaTime)
@@ -69,6 +96,20 @@ public class IntroScene : BaseScene
 
     protected override void OnUpdate(float deltaTime)
     {
+
+        _guiSettings?.Update(deltaTime);
+
+        if (GetGameObject<MainMenuGameObject<GameInput>>() != null)
+            GetGameObject<MainMenuGameObject<GameInput>>()!.Enabled = TotalPlayersReady == 0;
+        
+        if (_sliderTimer.Output)
+        {
+            ShowSlide(currentSlide);
+            currentSlide++;
+            if (currentSlide > 2)
+                currentSlide = 0;
+        }
+        
 #if DEBUG
         if (_config.GetOrDefault("Debug", "AutoStartPlayer1", false))
         {
@@ -100,12 +141,12 @@ public class IntroScene : BaseScene
             return;
         }
         
-        if (_controller.GetState(1, GameInput.Action).IsPressed)
+        if (_controller.GetState(1, GameInput.Action).IsPressed && !StandAloneMode)
         {
             TotalPlayersReady = 1;
         }
 
-        if (_controller.GetState(2, GameInput.Action).IsPressed)
+        if (_controller.GetState(2, GameInput.Action).IsPressed && !StandAloneMode)
         {
             TotalPlayersReady = 2;
         }
@@ -125,14 +166,6 @@ public class IntroScene : BaseScene
             _uiMessage.ClearAll();
             GetScene<LevelScene>()!.Enabled = false;
             ShowSlide(0);
-        }
-
-        if (_sliderTimer.Output)
-        {
-            ShowSlide(currentSlide);
-            currentSlide++;
-            if (currentSlide > 2)
-                currentSlide = 0;
         }
     }
 

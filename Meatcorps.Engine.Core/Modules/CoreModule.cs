@@ -9,6 +9,7 @@ public static class CoreModule
 {
     public static void Load()
     {
+        Directory.SetCurrentDirectory(AppContext.BaseDirectory);
         StorageModule.Load(GlobalObjectManager.ObjectManager);
         GlobalObjectManager.ObjectManager.RegisterList<IBackgroundService>();
         GlobalObjectManager.ObjectManager.RegisterList<ISceneSwitchTracker>();
