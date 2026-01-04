@@ -26,7 +26,7 @@ public class MQTTClient: IDisposable
         _host = host;
         var factory = new MqttFactory();
         _client = factory.CreateMqttClient();
-        _verboseTrafficLogging = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("MQTT", "VerboseTrafficLogging", false);
+        _verboseTrafficLogging = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("MQTT", "VerboseTrafficLogging", false, false);
     }
 
     public async Task Connect(string username = "user", string password = "admin", int port = 1883)

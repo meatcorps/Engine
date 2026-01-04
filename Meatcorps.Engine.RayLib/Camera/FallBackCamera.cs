@@ -8,11 +8,7 @@ public class FallBackCamera : ICamera
 {
     public Vector2 Position { get; set; }
     public float Zoom { get; set; }
-    
-    public void SetGameHost(GameHost gameHost)
-    {
-    }
-    
+
     public void StartCamera()
     {
     }
@@ -22,6 +18,10 @@ public class FallBackCamera : ICamera
     }
 
     public void Update(float deltaTime, IRenderTargetStrategy renderTargetStrategy)
+    {
+    }
+
+    public void SetGameHost(GameHost gameHost)
     {
     }
 }

@@ -4,10 +4,29 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <PackageId>Meatcorps.Engine.Collision</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Dennis Steffen</Authors>
+        <Company>Meatcorps</Company>
+        <Product>Meatcorps Engine Collision</Product>
+        <Description>
+            Meatcorps.Engine is a lightweight, code-first game framework built on top of Raylib. This is the Collision package
+        </Description>
+        <RepositoryUrl>https://github.com/meatcorps/Engine</RepositoryUrl>
+        <PackageProjectUrl>https://www.meatcorps.nl/engine/</PackageProjectUrl>
+        <PackageTags>game-engine;engine-collision;gamedev;grid-system;collision;math;utilities;cross-platform</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>Meatcorps.Engine.Collision.md</PackageReadmeFile>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
+    <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+        <None Include="Meatcorps.Engine.Collision.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj" />
+        <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj" />
+        <PackageReference Include="Meatcorps.Engine.Core" Version="[0.1.0,)" />
     </ItemGroup>
 
 </Project>

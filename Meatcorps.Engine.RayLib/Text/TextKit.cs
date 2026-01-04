@@ -10,7 +10,9 @@ public static class TextKit
     // -------- Measure --------
 
     public static Vector2 MeasureLine(ref TextStyle s, string line)
-        => Raylib.MeasureTextEx(s.Font, line, s.Size, s.Spacing);
+    {
+        return Raylib.MeasureTextEx(s.Font, line, s.Size, s.Spacing);
+    }
 
     public static Vector2 Measure(TextStyle s, string text)
     {
@@ -22,7 +24,7 @@ public static class TextKit
         {
             var sz = MeasureLine(ref s, ln);
             if (sz.X > w) w = sz.X;
-            h += (lines.Length == 1) ? sz.Y : advance;
+            h += lines.Length == 1 ? sz.Y : advance;
         }
 
         return new Vector2(w, h <= 0 ? s.Size : h);
@@ -47,7 +49,10 @@ public static class TextKit
             {
                 var test = line + " " + words[i];
                 var size = Raylib.MeasureTextEx(s.Font, test, s.Size, s.Spacing);
-                if (size.X <= maxWidth) line = test;
+                if (size.X <= maxWidth)
+                {
+                    line = test;
+                }
                 else
                 {
                     result.Add(line);
@@ -95,7 +100,8 @@ public static class TextKit
     }
 
     // -------- Draw (single/multi-line) --------
-    public static void Draw(ref TextStyle s, string text, Vector2 position, Anchor anchor = Anchor.TopLeft, bool pixelSnap = true)
+    public static void Draw(ref TextStyle s, string text, Vector2 position, Anchor anchor = Anchor.TopLeft,
+        bool pixelSnap = true)
     {
         if (pixelSnap) position = new Vector2(MathF.Round(position.X), MathF.Round(position.Y));
 
@@ -104,14 +110,14 @@ public static class TextKit
             var size = Measure(s, text);
             position -= UIAnchorHelper.ResolveAnchorPixel(anchor, Vector2.Zero, (int)size.X, (int)size.Y);
         }
-        
+
         var lines = text.Split('\n');
-        float y = position.Y;
-        float advance = s.Size * s.LineHeight;
+        var y = position.Y;
+        var advance = s.Size * s.LineHeight;
 
         foreach (var ln in lines)
         {
-            Vector2 pos = new Vector2(position.X, y);
+            var pos = new Vector2(position.X, y);
 
             if (s.UseShadow)
                 Raylib.DrawTextEx(s.Font, ln, pos + s.ShadowOffset, s.Size, s.Spacing, s.ShadowColor);
@@ -120,7 +126,7 @@ public static class TextKit
                 DrawOutlineText(ref s, ln, pos);
 
             Raylib.DrawTextEx(s.Font, ln, pos, s.Size, s.Spacing, s.Color);
-            y += (lines.Length == 1) ? MeasureLine(ref s, ln).Y : advance;
+            y += lines.Length == 1 ? MeasureLine(ref s, ln).Y : advance;
         }
     }
 
@@ -131,11 +137,13 @@ public static class TextKit
         var advance = s.Size * s.LineHeight;
         var totalH = lines.Count == 0
             ? 0
-            : (lines.Count == 1 ? MeasureLine(ref s, lines[0]).Y : lines.Count * advance);
+            : lines.Count == 1
+                ? MeasureLine(ref s, lines[0]).Y
+                : lines.Count * advance;
 
         var blockW = 0f;
         foreach (var ln in lines) blockW = MathF.Max(blockW, MeasureLine(ref s, ln).X);
-        Vector2 origin = AlignPosition(rect, new Vector2(blockW, totalH), h, v, pixelSnap);
+        var origin = AlignPosition(rect, new Vector2(blockW, totalH), h, v, pixelSnap);
 
         var y = origin.Y;
         foreach (var ln in lines)
@@ -163,7 +171,7 @@ public static class TextKit
                 DrawOutlineText(ref s, ln, pos);
 
             Raylib.DrawTextEx(s.Font, ln, pos, s.Size, s.Spacing, s.Color);
-            y += (lines.Count == 1) ? lineSize.Y : advance;
+            y += lines.Count == 1 ? lineSize.Y : advance;
         }
     }
 
@@ -204,11 +212,7 @@ public static class TextKit
 
         // Diagonals for square-cornered look
         for (var dx = -size; dx <= size; dx += size * 2)
-        {
-            for (var dy = -size; dy <= size; dy += size * 2)
-            {
-                Raylib.DrawTextEx(s.Font, line, pos + new Vector2(dx, dy), s.Size, s.Spacing, s.OutlineColor);
-            }
-        }
+        for (var dy = -size; dy <= size; dy += size * 2)
+            Raylib.DrawTextEx(s.Font, line, pos + new Vector2(dx, dy), s.Size, s.Spacing, s.OutlineColor);
     }
 }

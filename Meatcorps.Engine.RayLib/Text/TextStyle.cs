@@ -1,9 +1,7 @@
-using Meatcorps.Engine.RayLib.Resources;
-
-namespace Meatcorps.Engine.RayLib.Text;
-
 using System.Numerics;
 using Raylib_cs;
+
+namespace Meatcorps.Engine.RayLib.Text;
 
 public struct TextStyle
 {
@@ -20,12 +18,14 @@ public struct TextStyle
 
     // Outline
     public bool UseOutline;
-    public int OutlineSize;     // in pixels
+    public int OutlineSize; // in pixels
     public Color OutlineColor;
-    public bool PixelOutline;   // NEW: true = chunky arcade border, false = smooth
+    public bool PixelOutline; // NEW: true = chunky arcade border, false = smooth
 
-    public static TextStyle Create(Font font, float size, float spacing = 0f, float lineHeight = 1.2f, Color? color = null)
-        => new TextStyle
+    public static TextStyle Create(Font font, float size, float spacing = 0f, float lineHeight = 1.2f,
+        Color? color = null)
+    {
+        return new TextStyle
         {
             Font = font,
             Size = size,
@@ -40,4 +40,5 @@ public struct TextStyle
             OutlineColor = new Color(0, 0, 0, 255),
             PixelOutline = false
         };
+    }
 }

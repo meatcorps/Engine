@@ -157,6 +157,9 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
 
     public PlayerInputType InputType(int player)
     {
+        if (AutoAssign)
+            return _inputMappers[_useAutoMapper].InputType(1);
+        
         if (_playerMappers.TryGetValue(player, out var mapper))
         {
             return mapper.InputType(player);

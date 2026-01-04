@@ -34,7 +34,7 @@ public class GuidePage : ResourceGameObject, IIntroSlide
     protected override void OnDraw()
     {
         Raylib.DrawRectangle(0, 0, _renderer.RenderWidth, _renderer.RenderHeight,
-            Raylib.ColorAlpha(Color.DarkGray, 0.5f));
+            Raylib.ColorAlpha(Color.Black, 0.8f));
 
         Raylib.DrawTextEx(Fonts.GetFont(), "HOW TO PLAY THIS GAME", new Vector2(16, 16), 24, 0, Color.Magenta);
 

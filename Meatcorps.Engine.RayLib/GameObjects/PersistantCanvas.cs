@@ -5,14 +5,12 @@ namespace Meatcorps.Engine.RayLib.GameObjects;
 
 public class PersistentCanvas : BaseGameObject
 {
-    private RenderTexture2D _renderTexture;
-    private readonly List<Action> _drawQueue = new();
-    private bool _dirty = false;
-    private readonly int _width;
-    private readonly int _height;
     private readonly bool _clearOnStart;
-
-    public Texture2D Texture => _renderTexture.Texture;
+    private readonly List<Action> _drawQueue = new();
+    private readonly int _height;
+    private readonly int _width;
+    private bool _dirty;
+    private RenderTexture2D _renderTexture;
 
     public PersistentCanvas(int width, int height, bool clearOnStart = true)
     {
@@ -21,6 +19,8 @@ public class PersistentCanvas : BaseGameObject
         _clearOnStart = clearOnStart;
     }
 
+    public Texture2D Texture => _renderTexture.Texture;
+
     protected override void OnInitialize()
     {
         _renderTexture = Raylib.LoadRenderTexture(_width, _height);
@@ -28,13 +28,13 @@ public class PersistentCanvas : BaseGameObject
         if (_clearOnStart)
         {
             Raylib.BeginTextureMode(_renderTexture);
-            Raylib.ClearBackground(new Color(0,0,0,0)); // transparent
+            Raylib.ClearBackground(new Color(0, 0, 0, 0)); // transparent
             Raylib.EndTextureMode();
         }
     }
 
     /// <summary>
-    /// Queue a drawing action that will be stamped onto the texture.
+    ///     Queue a drawing action that will be stamped onto the texture.
     /// </summary>
     public void AddDrawAction(Action draw)
     {
@@ -43,14 +43,11 @@ public class PersistentCanvas : BaseGameObject
     }
 
     /// <summary>
-    /// Optional fade-out or aging effect (use sparingly)
+    ///     Optional fade-out or aging effect (use sparingly)
     /// </summary>
     public void FadeOut(float alpha = 0.01f)
     {
-        AddDrawAction(() =>
-        {
-            Raylib.DrawRectangle(0, 0, _width, _height, Raylib.ColorAlpha(Color.Black, alpha));
-        });
+        AddDrawAction(() => { Raylib.DrawRectangle(0, 0, _width, _height, Raylib.ColorAlpha(Color.Black, alpha)); });
     }
 
     protected override void OnUpdate(float deltaTime)

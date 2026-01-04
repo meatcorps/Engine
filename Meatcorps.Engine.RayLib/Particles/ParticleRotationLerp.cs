@@ -3,7 +3,7 @@ using Meatcorps.Engine.RayLib.Particles.Abstractions;
 
 namespace Meatcorps.Engine.RayLib.Particles;
 
-public class ParticleRotationLerp: EaseParticleMutator<float>
+public class ParticleRotationLerp : EaseParticleMutator<float>
 {
     public ParticleRotationLerp(EaseType easeType) : base(easeType)
     {

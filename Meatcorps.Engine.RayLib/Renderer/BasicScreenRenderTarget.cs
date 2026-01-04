@@ -7,10 +7,36 @@ namespace Meatcorps.Engine.RayLib.Renderer;
 
 public class BasicScreenRenderTarget : BaseRenderTarget, IDisposable
 {
-    private RenderTexture2D? _renderTexture; 
     private readonly PostProcessingRenderer _postProcessingRenderer = new();
-    private bool _useRenderTexture = true;
-    
+    private readonly bool _useRenderTexture = true;
+    private RenderTexture2D? _renderTexture;
+
+    public override int RenderWidth
+    {
+        get
+        {
+            var screenSize = GetScreenSize();
+            return screenSize.X;
+        }
+    }
+
+    public override int RenderHeight
+    {
+        get
+        {
+            var screenSize = GetScreenSize();
+            return screenSize.Y;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_renderTexture is not null)
+            Raylib.UnloadRenderTexture(_renderTexture.Value);
+
+        _postProcessingRenderer.Dispose();
+    }
+
     public override void BeginRender(Color clearColor)
     {
         if (_useRenderTexture)
@@ -27,21 +53,20 @@ public class BasicScreenRenderTarget : BaseRenderTarget, IDisposable
         }
 
         Camera?.StartCamera();
-        
+
         if (_useRenderTexture)
             Raylib.BeginTextureMode(_renderTexture!.Value);
-        
-        Raylib.ClearBackground(new Color(0,0,0,0));
+
+        Raylib.ClearBackground(new Color(0, 0, 0, 0));
     }
 
     public override void EndRender(RenderTexture2D? targetTexture = null)
     {
-
-        if (_useRenderTexture) 
+        if (_useRenderTexture)
             Raylib.EndTextureMode();
-        
+
         Camera?.EndCamera();
-        
+
         if (_useRenderTexture)
         {
             var deltaTime = Raylib.GetFrameTime();
@@ -69,34 +94,8 @@ public class BasicScreenRenderTarget : BaseRenderTarget, IDisposable
                 Raylib.EndTextureMode();
             }
         }
-        
+
         if (_useRenderTexture)
             _postProcessingRenderer.End(PostProcessors!);
-    }
-
-    public override int RenderWidth
-    {
-        get
-        {
-            var screenSize = GetScreenSize();
-            return screenSize.X;
-        }
-    }
-
-    public override int RenderHeight
-    {
-        get
-        {
-            var screenSize = GetScreenSize();
-            return screenSize.Y;
-        }
-    }
-
-    public void Dispose()
-    {
-        if (_renderTexture is not null)
-            Raylib.UnloadRenderTexture(_renderTexture.Value);
-        
-        _postProcessingRenderer.Dispose();
     }
 }

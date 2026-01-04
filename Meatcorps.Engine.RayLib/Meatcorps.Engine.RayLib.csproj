@@ -5,21 +5,39 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PackageId>Meatcorps.Engine.RayLib</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Dennis Steffen</Authors>
+        <Company>Meatcorps</Company>
+        <Product>Meatcorps Engine RayLib</Product>
+        <Description>
+            Meatcorps.Engine is a lightweight, code-first game framework built on top of Raylib. This is the primary Meatcorps Engine RayLib package
+        </Description>
+        <RepositoryUrl>https://github.com/meatcorps/Engine</RepositoryUrl>
+        <PackageProjectUrl>https://www.meatcorps.nl/engine/</PackageProjectUrl>
+        <PackageTags>game-engine;engine-core;gamedev;cross-platform;raylib;camera;audio;music;particles;postprocessing;textures;sprites;ui;gui</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="HidSharp" Version="2.6.4" />
-      <PackageReference Include="Raylib-cs" Version="7.0.1" />
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+        <None Include="README.md" Pack="true" PackagePath=""/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj" />
-      <ProjectReference Include="..\Meatcorps.Engine.Hardware.Controllers\Meatcorps.Engine.Hardware.Controllers.csproj" />
-      <ProjectReference Include="..\Meatcorps.Engine.Logging\Meatcorps.Engine.Logging.csproj" />
+        <PackageReference Include="Meatcorps.Engine.Core" Version="[0.1.0,)" />
+        <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj"/>
+        <PackageReference Include="Meatcorps.Engine.Hardware.Controllers" Version="[0.1.0,)" />
+        <ProjectReference Include="..\Meatcorps.Engine.Hardware.Controllers\Meatcorps.Engine.Hardware.Controllers.csproj"/>
+        <PackageReference Include="Meatcorps.Engine.Logging" Version="[0.1.0,)" />
+        <ProjectReference Include="..\Meatcorps.Engine.Logging\Meatcorps.Engine.Logging.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="UI\Enums\" />
+        <PackageReference Include="HidSharp" Version="2.6.4"/>
+        <PackageReference Include="Raylib-cs" Version="7.0.1"/>
     </ItemGroup>
 
 </Project>

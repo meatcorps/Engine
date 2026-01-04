@@ -1,28 +1,39 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
+using Meatcorps.Engine.Core.Interfaces.Config;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.PostProcessing.Abstractions;
 using Raylib_cs;
 
-public class CrtNewPixiePostProcessor : BaseFinalPostProcessor
+public class CrtNewPixiePostProcessor : BaseFinalPostProcessor, IConfigChangeTracker
 {
-    private float _time;
-    private Texture2D? _frameTex;
     private static Texture2D? _fallback1x1;
+    private Texture2D? _frameTex;
+    private float _time;
+
+    public CrtNewPixiePostProcessor()
+        : base("Assets/Shaders/crt_newpixie.fx",
+            new[]
+            {
+                "resolution", "time", "curvature", "wiggleToggle", "scanroll", "vignette", "ghosting", "useFrame",
+                "frameTex"
+            })
+    {
+        
+        Enabled = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("Graphics", "CRT Effect", true); 
+    }
 
     public float Curvature { get; set; } = 2f;
     public float WiggleToggle { get; set; } = 0.0f;
     public float Scanroll { get; set; } = 1.5f;
     public float Vignette { get; set; } = 1.01f;
     public float Ghosting { get; set; } = 0.5f;
-    public bool UseFrame { get; set; } = false;
-
-    public CrtNewPixiePostProcessor()
-        : base("Assets/Shaders/crt_newpixie.fx",
-            new[] { "resolution","time","curvature","wiggleToggle","scanroll","vignette","ghosting","useFrame","frameTex" }) {}
+    public bool UseFrame { get; set; }
 
     public void SetFrameTexture(Texture2D tex)
     {
-        _frameTex = tex; UseFrame = true;
+        _frameTex = tex;
+        UseFrame = true;
     }
 
     protected override void ApplyValues(Shader shader, Texture2D target)
@@ -45,8 +56,8 @@ public class CrtNewPixiePostProcessor : BaseFinalPostProcessor
     {
         if (_frameTex is not null)
             Raylib.DrawTexturePro(
-                _frameTex.Value, 
-                new Rectangle(0, 0,  _frameTex.Value.Width, _frameTex.Value.Height), 
+                _frameTex.Value,
+                new Rectangle(0, 0, _frameTex.Value.Width, _frameTex.Value.Height),
                 new Rectangle(0, 0, size.X, size.Y), Vector2.Zero, 0, Color.White);
     }
 
@@ -54,10 +65,17 @@ public class CrtNewPixiePostProcessor : BaseFinalPostProcessor
     {
         if (_fallback1x1 is null)
         {
-            var img = Raylib.GenImageColor(1, 1, new Color(0,0,0,0));
+            var img = Raylib.GenImageColor(1, 1, new Color(0, 0, 0, 0));
             _fallback1x1 = Raylib.LoadTextureFromImage(img);
             Raylib.UnloadImage(img);
         }
+
         return _fallback1x1.Value;
+    }
+
+    public void ConfigChanged(string group, string key, object value)
+    {
+        if (group == "Graphics" && key == "CRT Effect")
+            Enabled = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("Graphics", "CRT Effect", true); 
     }
 }

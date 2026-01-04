@@ -17,7 +17,8 @@ public static class Texture2DExtensions
         return new NineSliceRenderer(item.Texture, left, top, right, bottom, rect);
     }
 
-    public static void Draw<T>(this Texture2DItem<T> item, T spriteKey, Vector2 position, Color? color = null, float rotation = 0,
+    public static void Draw<T>(this Texture2DItem<T> item, T spriteKey, Vector2 position, Color? color = null,
+        float rotation = 0,
         Vector2 origin = default, float scale = 1, bool flippedX = false, bool flippedY = false) where T : Enum
     {
         var rect = item.GetSprite(spriteKey);
@@ -26,24 +27,31 @@ public static class Texture2DExtensions
             src.Width = -src.Width;
         if (flippedY)
             src.Height = -src.Height;
-        Raylib.DrawTexturePro(item.Texture, src, new Rectangle(position, rect.Size * scale), origin, rotation, color ?? Color.White);
+        Raylib.DrawTexturePro(item.Texture, src, new Rectangle(position, rect.Size * scale), origin, rotation,
+            color ?? Color.White);
     }
-    
-    public static void DrawAnimation<T>(this Texture2DItem<T> item, T animationKey, int animationPosition, Vector2 position, Color? color = null, float rotation = 0,
+
+    public static void DrawAnimation<T>(this Texture2DItem<T> item, T animationKey, int animationPosition,
+        Vector2 position, Color? color = null, float rotation = 0,
         Vector2 origin = default, float scale = 1) where T : Enum
     {
         var rect = item.GetAnimation(animationKey, animationPosition);
-        Raylib.DrawTexturePro(item.Texture, rect, new Rectangle(position, rect.Size * scale), origin, rotation, color ?? Color.White);
+        Raylib.DrawTexturePro(item.Texture, rect, new Rectangle(position, rect.Size * scale), origin, rotation,
+            color ?? Color.White);
     }
-    
-    public static void DrawAnimationWithNormal<T>(this Texture2DItem<T> item, T animationKey, float normalPosition, Vector2 position, Color? color = null, float rotation = 0,
+
+    public static void DrawAnimationWithNormal<T>(this Texture2DItem<T> item, T animationKey, float normalPosition,
+        Vector2 position, Color? color = null, float rotation = 0,
         Vector2 origin = default, float scale = 1) where T : Enum
     {
         var animationPosition = (int)(item.GetAnimationCount(animationKey) * normalPosition);
         var rect = item.GetAnimation(animationKey, animationPosition);
-        Raylib.DrawTexturePro(item.Texture, rect, new Rectangle(position, rect.Size * scale), origin, rotation, color ?? Color.White);
+        Raylib.DrawTexturePro(item.Texture, rect, new Rectangle(position, rect.Size * scale), origin, rotation,
+            color ?? Color.White);
     }
-    public static void DrawAnimationWithNormal<T>(this Texture2DItem<T> item, T animationKey, float normalPosition, Rectangle destRect, Color? color = null, float rotation = 0,
+
+    public static void DrawAnimationWithNormal<T>(this Texture2DItem<T> item, T animationKey, float normalPosition,
+        Rectangle destRect, Color? color = null, float rotation = 0,
         Vector2 origin = default) where T : Enum
     {
         var animationPosition = (int)(item.GetAnimationCount(animationKey) * normalPosition);

@@ -5,10 +5,12 @@ namespace Meatcorps.Engine.RayLib.PostProcessing;
 
 public class ScanlinesPostProcessor : BasePostProcessor
 {
-    public float Intensity { get; set; } = 0.2f;
+    public ScanlinesPostProcessor()
+        : base("Assets/Shaders/scanlines.fx", new[] { "resolution", "intensity" })
+    {
+    }
 
-    public ScanlinesPostProcessor() 
-        : base("Assets/Shaders/scanlines.fx", new[] { "resolution", "intensity" }) { }
+    public float Intensity { get; set; } = 0.2f;
 
     protected override void ApplyValues(Shader shader, Texture2D target)
     {

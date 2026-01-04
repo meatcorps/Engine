@@ -7,42 +7,19 @@ using Meatcorps.Engine.RayLib.Interfaces;
 
 namespace Meatcorps.Engine.RayLib.Resources;
 
-public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : struct, Enum
+public class MusicResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T : struct, Enum
 {
-    private float _masterVolume;
     private readonly Dictionary<T, (string path, float volume)> _music = new();
-
-    public int TotalResources => _music.Count;
-    public int ResourcesLoaded { get; private set; }
+    private float _masterVolume;
 
     public MusicResource()
     {
         var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new BasicConfig();
         _masterVolume = config.GetOrDefault("Audio", "MusicVolume", 1f);
     }
-    
-    public MusicResource<T> AddMusic(T k, string path, float volume = 1f)
-    {
-        _music[k] = (path, volume);
-        return this;
-    }
 
-    public MusicResource<T> SetMasterVolume(float volume)
-    {
-        _masterVolume = volume;
-        return this;   
-    }
-
-    public MusicResource<T> UsePlaceHoldersForMissingFiles(string path = "Assets/PlaceHolders/music.mp3")
-    {
-        foreach (var e in Enum.GetValues<T>())
-        {
-            if (!_music.ContainsKey(e))
-                _music.Add(e, (path, 0f));
-        }
-
-        return this;
-    }
+    public int TotalResources => _music.Count;
+    public int ResourcesLoaded { get; private set; }
 
     public async Task Load()
     {
@@ -50,7 +27,6 @@ public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : s
         var nonExisting = new List<string>();
         var manager = new MusicManager<T>();
         foreach (var (k, v) in _music)
-        {
             if (resource.Exists(v.path))
             {
                 await manager.Load(k, v.path);
@@ -58,18 +34,17 @@ public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : s
                 manager.SetMasterVolume(v.volume);
             }
             else
+            {
                 nonExisting.Add($"{k} -> {v.path} does not map to a file");
-        }
+            }
 
         foreach (var e in Enum.GetValues<T>())
-        {
             if (!_music.ContainsKey(e))
                 nonExisting.Add($"{e} is not mapped!");
-        }
-        
+
         if (nonExisting.Any())
             throw new Exception("Missing music files: \n" + string.Join("\n ", nonExisting));
-        
+
         _music.Clear();
         GlobalObjectManager.ObjectManager.RegisterList<IMasterVolume>();
         GlobalObjectManager.ObjectManager.Register(manager);
@@ -79,7 +54,28 @@ public class MusicResource<T>: IResourceLoadOnInit, IAudioInitNeeded where T : s
 
         GlobalObjectManager.ObjectManager.Register(new VolumeManager());
     }
-    
+
+    public MusicResource<T> AddMusic(T k, string path, float volume = 1f)
+    {
+        _music[k] = (path, volume);
+        return this;
+    }
+
+    public MusicResource<T> SetMasterVolume(float volume)
+    {
+        _masterVolume = volume;
+        return this;
+    }
+
+    public MusicResource<T> UsePlaceHoldersForMissingFiles(string path = "Assets/PlaceHolders/music.mp3")
+    {
+        foreach (var e in Enum.GetValues<T>())
+            if (!_music.ContainsKey(e))
+                _music.Add(e, (path, 0f));
+
+        return this;
+    }
+
     public static MusicResource<T> Create()
     {
         return new MusicResource<T>();

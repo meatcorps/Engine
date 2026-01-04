@@ -10,20 +10,19 @@ public static class AudioEnumBinder
     private static readonly string[] MusicExt = { ".ogg", ".mp3", ".wav" };
 
     public static SoundFxResource<T> BindAllSounds<T>(SoundFxResource<T> res, string baseDir, bool strict = false)
-        where T : struct, System.Enum
+        where T : struct, Enum
     {
-        
         var resourceLoader = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
-        
+
         var files = resourceLoader.DirectoryExists(baseDir)
             ? resourceLoader.GetFiles(baseDir, "*.*", SearchOption.TopDirectoryOnly)
-            : System.Array.Empty<string>();
+            : Array.Empty<string>();
 
         var map = files.ToLookup(f => Path.GetFileName(f)!.ToLowerInvariant());
 
         var nonExistent = new List<string>();
 
-        foreach (var value in System.Enum.GetValues(typeof(T)).Cast<T>())
+        foreach (var value in Enum.GetValues(typeof(T)).Cast<T>())
         {
             var name = value.ToString()!;
             var candidates = Variants(name, SoundExt);
@@ -32,13 +31,11 @@ public static class AudioEnumBinder
             if (match != null)
             {
                 var full = files.First(f =>
-                    Path.GetFileName(f)!.Equals(match, System.StringComparison.OrdinalIgnoreCase));
+                    Path.GetFileName(f)!.Equals(match, StringComparison.OrdinalIgnoreCase));
 
                 if (resourceLoader.Exists(full) == false)
-                {
                     if (strict)
                         nonExistent.Add($"{value} -> {full} does not map to a file");
-                }
 
                 res.AddSound(value, full);
             }
@@ -51,18 +48,19 @@ public static class AudioEnumBinder
         return res;
     }
 
-    public static MusicResource<T> BindAllMusic<T>(MusicResource<T> res, string baseDir, bool strict = false) where T : struct, System.Enum
+    public static MusicResource<T> BindAllMusic<T>(MusicResource<T> res, string baseDir, bool strict = false)
+        where T : struct, Enum
     {
         var resourceLoader = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
-        
+
         var files = resourceLoader.DirectoryExists(baseDir)
             ? resourceLoader.GetFiles(baseDir, "*.*", SearchOption.TopDirectoryOnly)
-            : System.Array.Empty<string>();
+            : Array.Empty<string>();
 
         var map = files.ToLookup(f => Path.GetFileName(f)!.ToLowerInvariant());
 
         var nonExistent = new List<string>();
-        foreach (var value in System.Enum.GetValues(typeof(T)).Cast<T>())
+        foreach (var value in Enum.GetValues(typeof(T)).Cast<T>())
         {
             var name = value.ToString()!;
             var candidates = Variants(name, MusicExt);
@@ -71,14 +69,12 @@ public static class AudioEnumBinder
             if (match != null)
             {
                 var full = files.First(f =>
-                    Path.GetFileName(f)!.Equals(match, System.StringComparison.OrdinalIgnoreCase));
-                
+                    Path.GetFileName(f)!.Equals(match, StringComparison.OrdinalIgnoreCase));
+
                 if (resourceLoader.Exists(full) == false)
-                {
                     if (strict)
                         nonExistent.Add($"{value} -> {full} does not map to a file");
-                }
-                
+
                 res.AddMusic(value, full);
             }
         }
@@ -112,9 +108,7 @@ public static class AudioEnumBinder
             var ch = pascal[i];
             if (i > 0 && char.IsUpper(ch) &&
                 (char.IsLower(pascal[i - 1]) || (i + 1 < pascal.Length && char.IsLower(pascal[i + 1]))))
-            {
                 sb.Append(sep);
-            }
 
             sb.Append(char.ToLowerInvariant(ch));
         }

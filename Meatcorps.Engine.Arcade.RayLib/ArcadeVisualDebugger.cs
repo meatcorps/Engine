@@ -91,8 +91,6 @@ public class ArcadeVisualDebugger : BaseGameObject, IBackgroundService
             _fallbackMutator.RequestPoints(2, 100);
         if (_inputMap[KeyboardKey.F4].IsPressed)
             Visible = !Visible;
-        if (_inputMap[KeyboardKey.F11].IsPressed)
-            GlobalObjectManager.ObjectManager.Get<GameHost>()!.ToggleFullscreen();
     }
 
     protected override void OnDraw()
@@ -109,7 +107,6 @@ public class ArcadeVisualDebugger : BaseGameObject, IBackgroundService
         
         if (_playerCheckin.TotalPlayers == 0)
             Raylib_cs.Raylib.DrawTextEx(Raylib_cs.Raylib.GetFontDefault(), "NOBODY CHECKED IN YET", new Vector2(16, currentY), 10f, 1, Color.White);
-            
         
         base.OnDraw();
     }

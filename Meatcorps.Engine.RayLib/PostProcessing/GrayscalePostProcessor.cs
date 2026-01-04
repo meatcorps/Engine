@@ -4,6 +4,8 @@ namespace Meatcorps.Engine.RayLib.PostProcessing;
 
 public class GrayscalePostProcessor : BasePostProcessor
 {
-    public GrayscalePostProcessor() 
-        : base("Assets/Shaders/grayscale.fx", Array.Empty<string>()) { }
+    public GrayscalePostProcessor()
+        : base("Assets/Shaders/grayscale.fx", Array.Empty<string>())
+    {
+    }
 }

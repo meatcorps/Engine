@@ -25,6 +25,7 @@ using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Engine.RayLib.Text;
 using Meatcorps.Engine.RayLib.UI.Data;
+using Meatcorps.Engine.RayLib.UI.GuiComponent.GuiSettings;
 using Meatcorps.Engine.Session;
 using Meatcorps.Game.CyberMaze.Data;
 using Meatcorps.Game.CyberMaze.GameEnums;
@@ -56,6 +57,7 @@ public class LevelScene : BaseScene
     private TimerOn _demoModeResetTimer = new(40000);
     private CameraControllerGameObject _cameraManager;
     private string _nextLevel = "";
+    private DefaultGuiSettings<GameInput, GameSounds>? _guiSettings = null;
 
     public LevelScene(string levelPath = "Assets/Level1.txt", bool demoMode = false)
     {
@@ -66,6 +68,12 @@ public class LevelScene : BaseScene
 
     protected override void OnInitialize()
     {
+        if (!DemoMode)
+        {
+            var settings = GlobalObjectManager.ObjectManager.Get<IGuiSettings>();
+            if (settings is DefaultGuiSettings<GameInput, GameSounds> guiSettings)
+                _guiSettings = guiSettings;
+        }
         _worldService = CollisionModule.Setup(SceneObjectManager)
             .SetGridSpatialGridSize(16)
             .Load();
@@ -386,6 +394,7 @@ public class LevelScene : BaseScene
 
     protected override void OnPreUpdate(float deltaTime)
     {
+        _guiSettings?.Update(deltaTime);
         _level.TotalGhostEaten = 0;
         _level.GhostScaredResetTimer = false;
 
@@ -402,6 +411,15 @@ public class LevelScene : BaseScene
 
     protected override void OnUpdate(float deltaTime)
     {
+        if (_guiSettings is not null)
+        {
+            if (_guiSettings.IsBackPressed && !DemoMode)
+            {
+                _nextLevel = "";
+                EndGame();
+            }
+        }
+        
         _parser.Update(deltaTime);
         _demoModeResetTimer.Update(DemoMode, deltaTime);
         if (_demoModeResetTimer.Output)

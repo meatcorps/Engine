@@ -3,23 +3,23 @@ using Meatcorps.Engine.RayLib.Interfaces;
 
 namespace Meatcorps.Engine.RayLib.Particles;
 
-public class ParticleGravity: IParticleMutator
+public class ParticleGravity : IParticleMutator
 {
-    private Vector2 _gravity;
     private readonly Func<Vector2>? _gravityFunc;
-    
+    private Vector2 _gravity;
+
     public ParticleGravity(Vector2 gravity)
     {
         _gravity = gravity;
     }
-    
+
     public ParticleGravity(Func<Vector2> gravity)
     {
         _gravity = gravity();
         _gravityFunc = gravity;
     }
-    
-    
+
+
     public void Start(Particle particle)
     {
         if (_gravityFunc != null)

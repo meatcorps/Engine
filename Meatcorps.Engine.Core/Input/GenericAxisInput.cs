@@ -1,13 +1,14 @@
 using System.Numerics;
+using Meatcorps.Engine.Core.Interfaces.Input;
 
 namespace Meatcorps.Engine.Core.Input;
 
 public class GenericAxisInput<T> where T : Enum
 {
-    private readonly GenericMapper<T> _mapper;
+    private readonly IInputMapper<T> _mapper;
     private Dictionary<T, Vector2> _axisDirection = new();
 
-    public GenericAxisInput(GenericMapper<T> mapper, T left, T right, T top, T bottom)
+    public GenericAxisInput(IInputMapper<T> mapper, T left, T right, T top, T bottom)
     {
         _axisDirection[left] = new Vector2(-1, 0);
         _axisDirection[right] = new Vector2(1, 0);

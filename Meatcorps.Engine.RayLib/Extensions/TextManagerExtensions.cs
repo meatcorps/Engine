@@ -26,25 +26,29 @@ public static class TextManagerExtensions
         }
     }
 
-    public static Vector2 MeasureText<T>(this TextManager<T> manager, T fontType, string text, float fontSize, float spacing) where T : Enum
+    public static Vector2 MeasureText<T>(this TextManager<T> manager, T fontType, string text, float fontSize,
+        float spacing) where T : Enum
     {
         var font = manager.GetFont(fontType);
         return Raylib.MeasureTextEx(font, text, fontSize, spacing);
     }
 
-    public static Vector2 MeasureTextDefault<T>(this TextManager<T> manager, string text, float fontSize, float spacing) where T : Enum
+    public static Vector2 MeasureTextDefault<T>(this TextManager<T> manager, string text, float fontSize, float spacing)
+        where T : Enum
     {
         var font = manager.GetFont();
         return Raylib.MeasureTextEx(font, text, fontSize, spacing);
     }
 
-    public static Vector2 CenteredPosition<T>(this TextManager<T> manager, string text, float fontSize, float spacing, Vector2 areaSize) where T : Enum
+    public static Vector2 CenteredPosition<T>(this TextManager<T> manager, string text, float fontSize, float spacing,
+        Vector2 areaSize) where T : Enum
     {
         var size = manager.MeasureTextDefault(text, fontSize, spacing);
         return (areaSize - size) / 2f;
     }
 
-    public static TextStyle CreateStyle<T>(this TextManager<T> manager, T type, float size, float spacing = 0f, float lineHeight = 1.2f, Color? color = null) where T : Enum
+    public static TextStyle CreateStyle<T>(this TextManager<T> manager, T type, float size, float spacing = 0f,
+        float lineHeight = 1.2f, Color? color = null) where T : Enum
     {
         return TextStyle.Create(manager.GetFont(type), size, spacing, lineHeight, color);
     }

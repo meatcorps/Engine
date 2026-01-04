@@ -5,11 +5,13 @@ namespace Meatcorps.Engine.RayLib.PostProcessing;
 
 public class OnePassBloomPostProcessor : BaseFinalPostProcessor
 {
+    public OnePassBloomPostProcessor()
+        : base("Assets/Shaders/bloom.fx", new[] { "resolution", "intensity", "threshold" })
+    {
+    }
+
     public float Intensity { get; set; } = 0.5f;
     public float Threshold { get; set; } = 0.8f;
-
-    public OnePassBloomPostProcessor() 
-        : base("Assets/Shaders/bloom.fx", new[] { "resolution", "intensity", "threshold" }) { }
 
     protected override void ApplyValues(Shader shader, Texture2D target)
     {

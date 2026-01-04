@@ -5,7 +5,7 @@ namespace Meatcorps.Engine.Core.Storage.Services;
 
 public class FallbackConfig : IUniversalConfig
 {
-    public string GetOrDefault(string group, string key, string defaultValue)
+    public string GetOrDefault(string group, string key, string defaultValue, bool expose = true)
     {
         return defaultValue;
     }
@@ -14,7 +14,7 @@ public class FallbackConfig : IUniversalConfig
     {
     }
 
-    public int GetOrDefault(string group, string key, int defaultValue)
+    public int GetOrDefault(string group, string key, int defaultValue, bool expose = true)
     {
         return defaultValue;
     }
@@ -23,7 +23,7 @@ public class FallbackConfig : IUniversalConfig
     {
     }
 
-    public float GetOrDefault(string group, string key, float defaultValue)
+    public float GetOrDefault(string group, string key, float defaultValue, bool expose = true)
     {
         return defaultValue;
     }
@@ -32,7 +32,7 @@ public class FallbackConfig : IUniversalConfig
     {
     }
 
-    public bool GetOrDefault(string group, string key, bool defaultValue)
+    public bool GetOrDefault(string group, string key, bool defaultValue, bool expose = true)
     {
         return defaultValue;
     }
