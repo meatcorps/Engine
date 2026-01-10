@@ -14,6 +14,8 @@
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <IsPackable>true</IsPackable>
+        <NoBuild>true</NoBuild>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Meatcorps.Game.GameStarter\Meatcorps.Game.GameStarter.csproj" />
+        <None Include="Templates\**\*" Pack="true" PackagePath="content" />
     </ItemGroup>
 
 </Project>
