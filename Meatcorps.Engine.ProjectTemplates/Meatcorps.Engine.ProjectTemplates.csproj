@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Templates\**\*" Pack="true" PackagePath="content" />
+        <None Include="..\Templates\**\*" Pack="true" PackagePath="content" />
     </ItemGroup>
 
 </Project>
