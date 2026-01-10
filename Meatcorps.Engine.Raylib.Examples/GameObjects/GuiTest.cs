@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.Extensions;
@@ -27,13 +28,14 @@ public class GuiTest : BaseGameObject
     private GuiService _guiService = null!;
     private List<RectF> _rains = new();
     private DefaultGuiSettings<GameInput, GameSounds> _uiSettings;
+    private OneTexture _bgTexture = null!;
 
     protected override void OnInitialize()
     {
         _guiService = new GuiService();
         Scene.SceneObjectManager.Register(_guiService);
         Scene.SceneObjectManager.Add<IBackgroundService>(_guiService);
-        
+        _bgTexture = GlobalObjectManager.ObjectManager.Get<OneTexture>("BGPIC")!;
         _uiSettings = new DefaultGuiSettings<GameInput, GameSounds>
         {
             Font = GlobalObjectManager.ObjectManager.Get<IDefaultFont>()!.GetFont(),
@@ -106,10 +108,15 @@ public class GuiTest : BaseGameObject
     {
         base.OnDraw();
 
-        foreach (var rain in _rains)
+        Raylib_cs.Raylib.DrawTexturePro(
+            _bgTexture.Texture, 
+            new Rectangle(0,0, 640, 360), 
+            new Rectangle(0,0, 640, 360), Vector2.Zero, 0, Color.Gray);
+
+        /*foreach (var rain in _rains)
         {
             rain.DrawFilled(new Color((byte)0, (byte)255, (byte)255, (byte)(rain.Height + 20)));
-        }
+        }*/
     }
 
     protected override void OnDispose()

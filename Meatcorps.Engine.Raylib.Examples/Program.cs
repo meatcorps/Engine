@@ -29,6 +29,7 @@ using var _ = RayLibModule.Setup()
     .SetResource(new OneTexture("Assets/CRTSidePanels.png", texture2D =>
         GlobalObjectManager.ObjectManager.Get<CrtNewPixiePostProcessor>()!.SetFrameTexture(texture2D)
     ))
+    .SetResource(new OneTexture("Assets/test2.png"), "BGPIC")
     .SetResource(TextManager.OnlyOneFont("PressStart2P-Regular.ttf"))
     //.SetResource(TextManager.OnlyOneFont("Assets/gnf.regular.ttf", 16))
     .SetResource(AudioEnumBinder.BindAllSounds(

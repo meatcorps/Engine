@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Meatcorps.Engine.ProjectTemplates</RootNamespace><Product>Meatcorps Engine ProjectTemplates</Product>
+        <Description>
+            Meatcorps.Engine is a lightweight, code-first game framework built on top of Raylib. Load this to get the project templates
+        </Description>
+        <RepositoryUrl>https://github.com/meatcorps/Engine</RepositoryUrl>
+        <PackageProjectUrl>https://www.meatcorps.nl/engine/</PackageProjectUrl>
+        <PackageTags>game-engine;engine-core;gamedev;cross-platform;starters;project-templates</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+        <None Include="README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Meatcorps.Game.GameStarter\Meatcorps.Game.GameStarter.csproj" />
+    </ItemGroup>
+
+</Project>

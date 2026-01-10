@@ -4,7 +4,7 @@
   "classifications": ["Arcade", "Raylib", "GameTemplate"],
   "name": "Arcade 2 player template",
   "identity": "Meatcorps.Engine.TwoPlayers",
-  "shortName": "myproj",
+  "shortName": "mcArcadeTemplate",
   "tags": {
     "language": "C#",
     "type": "project"
