@@ -10,18 +10,11 @@
 
   <ItemGroup>
 
-    <PackageReference Include="Meatcorps.Engine.Assets.Packager" Version="[0.1.0,)" />
-    <ProjectReference Include="..\..\Meatcorps.Engine.Assets.Packager\Meatcorps.Engine.Assets.Packager.csproj" />
-    <PackageReference Include="Meatcorps.Engine.RayLib" Version="[0.1.0,)" />
-    <ProjectReference Include="..\..\Meatcorps.Engine.Assets\Meatcorps.Engine.Assets.csproj" />
-    <PackageReference Include="Meatcorps.Engine.RayLib.Assets" Version="[0.1.0,)" />
-    <ProjectReference Include="..\..\Meatcorps.Engine.RayLib.Assets\Meatcorps.Engine.RayLib.Assets.csproj" />
-    <PackageReference Include="Meatcorps.Engine.RayLib" Version="[0.1.0,)" />
-    <ProjectReference Include="..\..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj"/>
-    <PackageReference Include="Meatcorps.Engine.SDL" Version="[0.1.0,)" />
-    <ProjectReference Include="..\..\Meatcorps.Engine.SDL\Meatcorps.Engine.SDL.csproj" />
-    <PackageReference Include="Meatcorps.Engine.Session" Version="[0.1.0,)" />
-    <ProjectReference Include="..\..\Meatcorps.Engine.Session\Meatcorps.Engine.Session.csproj"/>
+    <PackageReference Include="Meatcorps.Engine.Assets.Packager" Version="*" />
+    <PackageReference Include="Meatcorps.Engine.RayLib" Version="*" />
+    <PackageReference Include="Meatcorps.Engine.RayLib.Assets" Version="*" />
+    <PackageReference Include="Meatcorps.Engine.SDL" Version="*" />
+    <PackageReference Include="Meatcorps.Engine.Session" Version="*" />
   </ItemGroup>
 
   <ItemGroup>

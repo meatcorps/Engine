@@ -2,6 +2,7 @@ using System.Numerics;
 using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Settings;
 using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
@@ -215,10 +216,9 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
             }
 
             RunGameLoopTask(GameLoopType.PostRender, false);
-#if DEBUG
-            Raylib.SetWindowTitle(
-                $"Steps: {totalSteps}, Update time {UpdateLoopTime:F4}, Render time {RenderLoopTime:F4}, FPS {Raylib.GetFPS()}");
-#endif
+            if (MeatcorpsEngineLibSettings.IsDebug) 
+                Raylib.SetWindowTitle(
+                    $"Steps: {totalSteps}, Update time {UpdateLoopTime:F4}, Render time {RenderLoopTime:F4}, FPS {Raylib.GetFPS()}");
         }
 
         Raylib.CloseWindow();

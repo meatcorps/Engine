@@ -2,6 +2,7 @@ using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Resource;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Settings;
 using Meatcorps.Engine.Core.Storage.Services;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Camera;
@@ -38,16 +39,8 @@ public class RayLibModule
         GlobalObjectManager.ObjectManager.RegisterList<IRenderTargetStrategy>();
         var raylibResource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>();
 
-        if (raylibResource is null)
-        {
+        if (raylibResource is null || MeatcorpsEngineLibSettings.IsDebug)
             raylibResource = new FileResourceLoader();
-        }
-        else
-        {
-#if DEBUG
-            raylibResource = new FileResourceLoader();
-#endif
-        }
 
         GlobalObjectManager.ObjectManager.Register<IRaylibResource>(raylibResource);
         GlobalObjectManager.ObjectManager.Register<IResource>(raylibResource);
@@ -102,14 +95,14 @@ public class RayLibModule
 
     public RayLibModule SetFixedSizeCamera(int targetWidth, int targetHeight, bool pixelPerfect = true)
     {
-#if DEBUG
-        if (!_config.GetOrDefault("Debug", "SetFixedSizeCamera", true))
-            return this;
+        if (MeatcorpsEngineLibSettings.IsDebug)
+        {
+            if (!_config.GetOrDefault("Debug", "SetFixedSizeCamera", true))
+                return this;
 
-        targetWidth = _config.GetOrDefault("Debug", "SetFixedSizeCamera_TargetWidth", targetWidth);
-        targetHeight = _config.GetOrDefault("Debug", "SetFixedSizeCamera_TargetHeight", targetHeight);
-
-#endif
+            targetWidth = _config.GetOrDefault("Debug", "SetFixedSizeCamera_TargetWidth", targetWidth);
+            targetHeight = _config.GetOrDefault("Debug", "SetFixedSizeCamera_TargetHeight", targetHeight);
+        }
 
         _camera = new FixedSizeCamera(targetWidth, targetHeight);
 
@@ -127,10 +120,12 @@ public class RayLibModule
 
     public RayLibModule SetResource<T>(T instance, string tag = "default") where T : class, IResourceLoadOnInit
     {
-#if DEBUG
-        if (!_config.GetOrDefault("Debug", "SetResource_" + instance.GetType().Name, true))
-            return this;
-#endif
+        if (MeatcorpsEngineLibSettings.IsDebug)
+        {
+            if (!_config.GetOrDefault("Debug", "SetResource_" + instance.GetType().Name, true))
+                return this;
+        }
+
         GlobalObjectManager.ObjectManager.Add<IResourceLoadOnInit>(instance);
         GlobalObjectManager.ObjectManager.Register(instance, tag);
         return this;
@@ -138,10 +133,12 @@ public class RayLibModule
 
     public RayLibModule SetProcessing<T>(T postProcessor) where T : class, IPostProcessor
     {
-#if DEBUG
-        if (!_config.GetOrDefault("Debug", "SetProcessing_" + postProcessor.GetType().Name, true))
-            return this;
-#endif
+        if (MeatcorpsEngineLibSettings.IsDebug)
+        {
+            if (!_config.GetOrDefault("Debug", "SetProcessing_" + postProcessor.GetType().Name, true))
+                return this;
+        }
+
         GlobalObjectManager.ObjectManager.Add<IPostProcessor>(postProcessor);
         GlobalObjectManager.ObjectManager.Add<IResourceLoadOnInit>(postProcessor);
         

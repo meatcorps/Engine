@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meatcorps.Engine.Arcade.Data;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Settings;
 using Meatcorps.Engine.Core.Storage.Services;
 
 namespace Meatcorps.Engine.Arcade.Services;
@@ -24,16 +25,17 @@ public class HighScoreService
                 Scores = new List<ArcadeScoreItem>()
             };
 
-#if DEBUG
-        Console.WriteLine("Leaderboard rank:");
-        foreach (var score in GetLeaderboard(10))
+        if (MeatcorpsEngineLibSettings.IsDebug)
         {
-            Console.WriteLine($"#{score.rank} {score.item.Name} ({score.item.Score})");
+            Console.WriteLine("Leaderboard rank:");
+            foreach (var score in GetLeaderboard(10))
+            {
+                Console.WriteLine($"#{score.rank} {score.item.Name} ({score.item.Score})");
+            }
+
+            Console.WriteLine();
         }
-        
-        Console.WriteLine();
-#endif
-        
+
     }
     
     public IReadOnlyList<ArcadeScoreItem> GetScores() => _scores.Scores;

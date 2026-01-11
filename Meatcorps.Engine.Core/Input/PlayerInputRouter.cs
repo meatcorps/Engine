@@ -1,5 +1,6 @@
 using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.Interfaces.Services;
+using Meatcorps.Engine.Core.Settings;
 
 namespace Meatcorps.Engine.Core.Input;
 
@@ -85,11 +86,10 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
         if (_playerMappers.TryGetValue(player, out var mapper))
             return mapper.GetAxis(player, axis);
 
-#if DEBUG
-        throw new InvalidOperationException($"No input mapper assigned for player {player}");
-#else
-        return Vector2.Zero;
-#endif
+        if (MeatcorpsEngineLibSettings.IsDebug)
+            throw new InvalidOperationException($"No input mapper assigned for player {player}");
+        else
+            return Vector2.Zero;
     }
 
     public void Rumble(int player, float left, float right, float duration)

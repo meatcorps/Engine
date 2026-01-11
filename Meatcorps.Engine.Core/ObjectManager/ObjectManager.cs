@@ -1,4 +1,5 @@
 using System.Collections;
+using Meatcorps.Engine.Core.Settings;
 
 namespace Meatcorps.Engine.Core.ObjectManager;
 
@@ -146,11 +147,10 @@ public class ObjectManager : IDisposable
             }
             catch (Exception e)
             {
-#if DEBUG
-                Console.WriteLine(instance.GetType().FullName);
+                if (MeatcorpsEngineLibSettings.IsDebug)
+                    Console.WriteLine(instance.GetType().FullName);
                 throw e;
-#endif
-                /* optional: log; never throw during shutdown */
+            /* optional: log; never throw during shutdown */
             }
         }
         Console.WriteLine();

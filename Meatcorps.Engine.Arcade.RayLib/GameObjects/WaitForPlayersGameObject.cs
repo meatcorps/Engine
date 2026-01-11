@@ -6,6 +6,7 @@ using Meatcorps.Engine.Arcade.RayLib.Utilities;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Settings;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Enums;
@@ -40,13 +41,15 @@ public class WaitForPlayersGameObject: BaseGameObject
 
     public WaitForPlayersGameObject(int totalPlayersRequested, BaseScene jumpToScene, BaseScene timeOutToScene, int fontScale = 1)
     {
-#if DEBUG
-        if (GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!
-            .GetOrDefault("Debug", "ShortWaitForPlayerCountDown", false))
+        if (MeatcorpsEngineLibSettings.IsDebug)
         {
-            _startTimer = new TimerOn(5);
+            if (GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!
+                .GetOrDefault("Debug", "ShortWaitForPlayerCountDown", false))
+            {
+                _startTimer = new TimerOn(5);
+            }
         }
-#endif
+
         Layer = 9;
         Camera = CameraLayer.UI;
         

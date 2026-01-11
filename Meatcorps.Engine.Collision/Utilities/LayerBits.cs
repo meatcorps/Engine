@@ -1,4 +1,5 @@
 using System;
+using Meatcorps.Engine.Core.Settings;
 
 namespace Meatcorps.Engine.Collision.Utilities;
 
@@ -9,10 +10,12 @@ public static class LayerBits
     {
         var i = Convert.ToInt32(value);
 
-#if DEBUG
-        if (i < 0 || i > 31)
-            throw new ArgumentOutOfRangeException(nameof(value), $"Layer index {i} must be in [0,31].");
-#endif
+        if (MeatcorpsEngineLibSettings.IsDebug)
+        {
+            if (i < 0 || i > 31)
+                throw new ArgumentOutOfRangeException(nameof(value), $"Layer index {i} must be in [0,31].");
+        }
+
         return 1u << i;
     }
 
