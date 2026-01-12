@@ -1,5 +1,6 @@
 ﻿using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Settings;
 using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.RayLib.Assets.Modules;
 using Meatcorps.Engine.RayLib.Modules;
@@ -16,6 +17,11 @@ using GameInput = Meatcorps.Game.GameStarter.Resources.GameInput;
 
 LoggingModule.Load();
 CoreModule.Load();
+
+// Set this to true when debugging the engine. It will disable the asset packer + some handy tools while creating the game
+#if DEBUG
+MeatcorpsEngineLibSettings.IsDebug = true;
+#endif
 
 var settings = GameConfig<GameSettings>.Create();
 
