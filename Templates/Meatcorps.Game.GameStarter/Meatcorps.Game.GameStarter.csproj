@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
     <OutputType>WinExe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-
     <PackageReference Include="Meatcorps.Engine.Assets.Packager" Version="0.1.*" />
     <PackageReference Include="Meatcorps.Engine.RayLib" Version="0.1.*" />
     <PackageReference Include="Meatcorps.Engine.RayLib.Assets" Version="0.1.*" />

@@ -10,8 +10,4 @@
     <ItemGroup>
         <PackageReference Include="Meatcorps.Engine.RayLib" Version="0.1.*" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Content Include=".template.config\template.json" />
-    </ItemGroup>
 </Project>

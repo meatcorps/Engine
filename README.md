@@ -17,11 +17,11 @@ Use the following command to install the dotnet templates:
 
 Then use gamestarter including some shaders, controller, keyboard support and more (RECOMMENDED!):
 
-`dotnet new Meatcorps.Game.GameStarter -n YourGameName`
+`dotnet new mcGameStarterTemplate -n YourGameName`
 
 **OR** Really bare bone, then use the following:
 
-`dotnet new Meatcorps.Game.BareBoneStarter -n YourGameName`
+`dotnet new mcBareBoneTemplate -n YourGameName`
 
 ### Without template 
 Install nuget package `Meatcorps.Engine.RayLib` then use the following minimal snipped:
