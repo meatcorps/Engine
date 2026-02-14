@@ -92,6 +92,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.ProjectTem
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.GameStarter", "Templates\Meatcorps.Game.GameStarter\Meatcorps.Game.GameStarter.csproj", "{2003ED72-3065-4064-8D9F-7A8BB203C2F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.BareBoneStarter", "Templates\Meatcorps.Game.BareBoneStarter\Meatcorps.Game.BareBoneStarter.csproj", "{51D306E7-DCD3-4763-AF06-4066002EDFA9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -250,6 +252,10 @@ Global
 		{2003ED72-3065-4064-8D9F-7A8BB203C2F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2003ED72-3065-4064-8D9F-7A8BB203C2F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2003ED72-3065-4064-8D9F-7A8BB203C2F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51D306E7-DCD3-4763-AF06-4066002EDFA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51D306E7-DCD3-4763-AF06-4066002EDFA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51D306E7-DCD3-4763-AF06-4066002EDFA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51D306E7-DCD3-4763-AF06-4066002EDFA9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9F4FE9E3-4EE5-41B6-9EEB-B6AF597AF04B} = {BE6028C9-0015-457F-BCD2-DA31024F614D}
@@ -294,5 +300,6 @@ Global
 		{109606C5-6C56-46A7-90F7-F567365E0D70} = {BE6028C9-0015-457F-BCD2-DA31024F614D}
 		{C5E44610-1886-428C-88F1-7C8E812F0D43} = {D7168539-5530-4670-983C-9B623234EE38}
 		{2003ED72-3065-4064-8D9F-7A8BB203C2F6} = {D7168539-5530-4670-983C-9B623234EE38}
+		{51D306E7-DCD3-4763-AF06-4066002EDFA9} = {D7168539-5530-4670-983C-9B623234EE38}
 	EndGlobalSection
 EndGlobal

@@ -16,6 +16,7 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
     private Dictionary<string, bool> _expose = new();
     
     private bool _dirty;
+    private bool _running;
     protected BaseConfig()
     {
         var fileInfo = new FileInfo("Config.json");
@@ -27,6 +28,15 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
         GlobalObjectManager.ObjectManager.RegisterList<IConfigChangeTracker>();
         GlobalObjectManager.ObjectManager.Register<T>(Instance);
         DoRegisterDefaultValues();
+
+        Task.Run(async () =>
+        {
+            while (_running)
+            {
+                Save();
+                await Task.Delay(2000);
+            }
+        });
     }
 
     protected abstract void DoRegisterDefaultValues();
@@ -38,8 +48,8 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
         if (!SystemSettings.ContainsKey(group))
             SystemSettings.Add(group, new Dictionary<string, string>());
 
-        if (SystemSettings[group].TryAdd(key, defaultValue)) 
-            Set(group, key, defaultValue);
+        if (SystemSettings[group].TryAdd(key, defaultValue))
+            _dirty = true;
 
         _valueType.TryAdd(group + ":" + key, ConfigValueType.IsString);
         _expose.TryAdd(group + ":" + key, expose);
@@ -66,7 +76,6 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
             tracker.ConfigChanged(group, key, value);
         
         _dirty = true;
-        Save();
     }
 
     public int GetOrDefault(string group, string key, int defaultValue, bool expose = true)
@@ -147,6 +156,7 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
 
     public void Dispose()
     {
+        _running = false;
         Save();
     }
 }

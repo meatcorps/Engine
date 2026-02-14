@@ -10,11 +10,11 @@
 
   <ItemGroup>
 
-    <PackageReference Include="Meatcorps.Engine.Assets.Packager" Version="*" />
-    <PackageReference Include="Meatcorps.Engine.RayLib" Version="*" />
-    <PackageReference Include="Meatcorps.Engine.RayLib.Assets" Version="*" />
-    <PackageReference Include="Meatcorps.Engine.SDL" Version="*" />
-    <PackageReference Include="Meatcorps.Engine.Session" Version="*" />
+    <PackageReference Include="Meatcorps.Engine.Assets.Packager" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.RayLib" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.RayLib.Assets" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.SDL" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.Session" Version="0.1.*" />
   </ItemGroup>
 
   <ItemGroup>

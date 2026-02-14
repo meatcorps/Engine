@@ -4,8 +4,89 @@
 
 (Click here for the documentation / wiki!)[https://github.com/meatcorps/Engine/wiki]
 
+(Click here for updates on Reddit!)[https://reddit.com/r/meatcorps]
+
 **Meatcorps.Engine** is a lightweight, code-first game framework built on top of **Raylib**.  
-It’s designed for speed, clarity, and arcade-style projects — no heavy IDE tools, no scene editors, just code.  
+It’s designed for speed, clarity, and arcade-style projects — no heavy IDE tools, no scene editors, just code.
+
+## Get started
+### With template (RECOMMENDED!)
+Use the following command to install the dotnet templates:
+
+`dotnet new install Meatcorps.Engine.ProjectTemplates`
+
+Then use gamestarter including some shaders, controller, keyboard support and more (RECOMMENDED!):
+
+`dotnet new Meatcorps.Game.GameStarter -n YourGameName`
+
+**OR** Really bare bone, then use the following:
+
+`dotnet new Meatcorps.Game.BareBoneStarter -n YourGameName`
+
+### Without template 
+Install nuget package `Meatcorps.Engine.RayLib` then use the following minimal snipped:
+```csharp
+using Meatcorps.Engine.Core.Modules;
+using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Settings;
+using Meatcorps.Engine.Core.Storage.Data;
+using Meatcorps.Engine.Logging.Module;
+using Meatcorps.Engine.RayLib.Abstractions;
+using Meatcorps.Engine.RayLib.Modules;
+using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
+using Meatcorps.Engine.RayLib.Resources;
+using Raylib_cs;
+
+LoggingModule.Load();
+CoreModule.Load();
+BasicConfig.Load();
+
+MeatcorpsEngineLibSettings.IsDebug = true;
+
+using var _ = RayLibModule.Setup()
+    .SetTitle("Meatcorps Game Starter")
+    .SetInitialSize(1920, 1080) // Turn this off when publishing the game!
+    .Load(new ExampleScene())
+    .Run();
+
+
+public class ExampleScene : BaseScene
+{
+    protected override void OnInitialize()
+    {
+        AddGameObject(new ExampleGameObject());
+    }
+
+    protected override void OnUpdate(float deltaTime)
+    {
+    }
+
+    protected override void OnDispose()
+    {
+    }
+}
+
+public class ExampleGameObject : BaseGameObject
+{
+    protected override void OnInitialize()
+    {
+    }
+
+    protected override void OnUpdate(float deltaTime)
+    {
+    }
+
+    protected override void OnDraw()
+    {
+        Raylib.DrawText("HELLO WORLD!", 32, 32, 16, Color.White);
+        base.OnDraw();
+    }
+
+    protected override void OnDispose()
+    {
+    }
+}
+```
 
 ## Philosophy
 

@@ -10,7 +10,8 @@ public class BasicScreenRenderTarget : BaseRenderTarget, IDisposable
     private readonly PostProcessingRenderer _postProcessingRenderer = new();
     private readonly bool _useRenderTexture = true;
     private RenderTexture2D? _renderTexture;
-
+    public Guid Id { get; } = Guid.NewGuid();
+    
     public override int RenderWidth
     {
         get

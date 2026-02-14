@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Meatcorps",
+  "classifications": ["Game", "Raylib", "BareBoneTemplate"],
+  "name": "BareBone starter template",
+  "identity": "Meatcorps.Game.BareBoneStarter",
+  "shortName": "mcBareBoneTemplate",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Meatcorps.Game.BareBoneStarter",
+  "preferNameDirectory": true
+}

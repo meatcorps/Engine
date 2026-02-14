@@ -163,12 +163,13 @@ public class RayLibModule
         GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new MouseTask());
         GlobalObjectManager.ObjectManager.Add<IGameLoopTask>(new SceneTask());
 
+        if (_camera is null)
+            _camera = new FallBackCamera();
+        
         if (!GlobalObjectManager.ObjectManager.GetList<IRenderTargetStrategy>()!.Any())
         {
-            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(new BasicScreenRenderTarget()
-                .SetFullScreen());
-            GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(
-                new BasicScreenRenderTarget().SetFullScreen(), "UI");
+            RegisterRenderTargetStrategy(new BasicScreenRenderTarget().SetFullScreen());
+            RegisterRenderTargetStrategy(new BasicScreenRenderTarget().SetFullScreen(), "UI");
         }
 
         FinalRenderer();
