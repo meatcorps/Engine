@@ -5,6 +5,7 @@ using Meatcorps.Engine.Assets.Manager;
 using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Settings;
 using Meatcorps.Engine.Hardware.ArduinoController.Modules;
 using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.MQTT.Modules;
@@ -27,6 +28,11 @@ using Raylib_cs;
 
 LoggingModule.Load();
 CoreModule.Load();
+
+#if DEBUG
+MeatcorpsEngineLibSettings.IsDebug = true;
+#endif
+
 HighScoreModule.Load();
 
 var settings = GameConfig<GameSettings>.Create();
@@ -92,9 +98,9 @@ GlobalObjectManager.ObjectManager.Register<IGuiSettings>(new DefaultGuiSettings<
 
 using var _ = RayLibModule.Setup()
     .SetTitle("Meatcorps " + GlobalObjectManager.ObjectManager.Get<ArcadeGame>()!.Name)
-    //.SetInitialSize(1920, 1080)
+    .SetInitialSize(1920, 1080)
     .AutoSize()
-    .StartInFullscreen()
+    //.StartInFullscreen()
     .SetFixedSizeCamera(640, 360)
     .SetExitKey()
     .SetupProcessingBloom(0.6f, 0.2f, 0.8f, 2f)

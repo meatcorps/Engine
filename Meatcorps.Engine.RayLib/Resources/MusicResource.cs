@@ -27,23 +27,27 @@ public class MusicResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T : 
         var nonExisting = new List<string>();
         var manager = new MusicManager<T>();
         foreach (var (k, v) in _music)
+        {
             if (resource.Exists(v.path))
             {
                 await manager.Load(k, v.path);
-                ResourcesLoaded++;
                 manager.SetMasterVolume(v.volume);
             }
             else
             {
+                await manager.Load(k, Path.Combine("Assets", "PlaceHolders", "music.mp3"));
                 nonExisting.Add($"{k} -> {v.path} does not map to a file");
             }
+            
+            ResourcesLoaded++;
+        }
 
         foreach (var e in Enum.GetValues<T>())
-            if (!_music.ContainsKey(e))
+            if (!_music.ContainsKey(e)) 
                 nonExisting.Add($"{e} is not mapped!");
 
         if (nonExisting.Any())
-            throw new Exception("Missing music files: \n" + string.Join("\n ", nonExisting));
+            Console.WriteLine("Missing music files: Using failback " + Path.Combine("Assets", "PlaceHolders", "music.mp3") + ": \n" + string.Join("\n ", nonExisting));
 
         _music.Clear();
         GlobalObjectManager.ObjectManager.RegisterList<IMasterVolume>();

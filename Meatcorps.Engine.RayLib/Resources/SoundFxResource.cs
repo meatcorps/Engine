@@ -40,14 +40,19 @@ public class SoundFxResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T 
             if (resource.Exists(sound.Value))
                 await manager.Load(sound.Key, sound.Value, () => _done.Add(sound.Value));
             else
-                nonExisting.Add($"{sound.Key} -> {sound.Value} does not map to a file");
+            {
+                await manager.Load(sound.Key, Path.Combine("Assets", "PlaceHolders", "sound.wav"), () => _done.Add(sound.Value));
+                nonExisting.Add($"{sound.Key} -> {sound.Value} does not map to a file.");
+            }
 
         foreach (var e in Enum.GetValues<T>())
             if (!_sound.ContainsKey(e))
                 nonExisting.Add($"{e} is not mapped!");
 
         if (nonExisting.Any())
-            throw new Exception("Missing sound files: \n" + string.Join("\n ", nonExisting));
+        {
+            Console.WriteLine("Missing sound files. Using failback " + Path.Combine("Assets", "PlaceHolders", "sound.wav") + ": \n" + string.Join("\n ", nonExisting));
+        }
 
         _sound.Clear();
         GlobalObjectManager.ObjectManager.RegisterList<IMasterVolume>();

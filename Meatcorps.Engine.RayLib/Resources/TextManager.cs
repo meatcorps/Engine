@@ -51,11 +51,12 @@ public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultF
             var font = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadFontEx(fontToBeLoaded.Item1,
                 fontToBeLoaded.Item3, fontToBeLoaded.codePoints, fontToBeLoaded.codePoints?.Length ?? 0);
 
+            _fonts.Add(fontToBeLoaded.Item2, font);
+            
             await GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.AddTaskToMainThread(() =>
             {
                 Raylib.SetTextureFilter(font.Texture, fontToBeLoaded.Item4);
             });
-            _fonts.Add(fontToBeLoaded.Item2, font);
         }
     }
 
