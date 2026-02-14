@@ -64,7 +64,7 @@ public class MainGameObject : BaseGameObject
 
         if (_scene.IsKeyDown(KeyboardKey.LeftControl) && _scene.IsKeyDown(KeyboardKey.S))
             _scene.SaveData();
-
+        
         if (_scene.IsMouseDown(MouseButton.Middle))
         {
             var delta = Raylib.GetMouseDelta() * -1;

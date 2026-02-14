@@ -45,17 +45,7 @@ public class LoadAfterRayLibInitTask : IGameLoopTask
 
             foreach (var instance in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
             {
-                tasks.Add(System.Threading.Tasks.Task.Run(() =>
-                {
-                    try
-                    {
-                        instance.Load();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("Something really bad happend while loading more info:\n" + e);
-                    }
-                }));
+                tasks.Add(instance.Load());
             }
 
             _ = System.Threading.Tasks.Task.Run(async () =>

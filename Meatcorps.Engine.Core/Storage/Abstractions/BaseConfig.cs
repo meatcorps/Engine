@@ -16,7 +16,7 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
     private Dictionary<string, bool> _expose = new();
     
     private bool _dirty;
-    private bool _running;
+    private bool _running = true;
     protected BaseConfig()
     {
         var fileInfo = new FileInfo("Config.json");

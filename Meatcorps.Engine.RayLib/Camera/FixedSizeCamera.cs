@@ -11,6 +11,7 @@ public class FixedSizeCamera : ICamera, ICameraFixedWidthAndHeight
     private GameHost? _gameHost;
 
     private float _zoom;
+    private Vector2 _position;
 
     public FixedSizeCamera(int targetWidth, int targetHeight)
     {
@@ -22,13 +23,8 @@ public class FixedSizeCamera : ICamera, ICameraFixedWidthAndHeight
 
     public Vector2 Position
     {
-        get => Camera.Target;
-        set
-        {
-            var camera = Camera;
-            camera.Target = value;
-            Camera = camera;
-        }
+        get => _position;
+        set => _position = value;
     }
 
     public float Zoom { get; set; } = 0;
@@ -58,6 +54,7 @@ public class FixedSizeCamera : ICamera, ICameraFixedWidthAndHeight
         var camera = Camera;
         camera.Zoom = _zoom + Zoom;
         camera.Offset = new Vector2(renderTargetStrategy.RenderWidth, renderTargetStrategy.RenderHeight) / 2;
+        camera.Target = new Vector2(MathF.Floor(_position.X), MathF.Floor(_position.Y)); // Some strange jitter is happening. The pixel offset calculation is done in the render pipeline. Maby confused because of that?
         Camera = camera;
     }
 
