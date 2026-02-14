@@ -2,6 +2,7 @@ using System.Numerics;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Game;
 using Meatcorps.Engine.RayLib.Interfaces;
+using Meatcorps.Engine.RayLib.Renderer;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Camera;
@@ -50,11 +51,16 @@ public class FixedSizeCamera : ICamera, ICameraFixedWidthAndHeight
         if (TargetWidth == 0 || TargetHeight == 0 || _gameHost.Width == 0 || _gameHost.Height == 0)
             return;
 
+        var floorTarget = false;
+        if (renderTargetStrategy is PixelPerfectRenderTarget pixelPerfectRenderTarget)
+            floorTarget = pixelPerfectRenderTarget.UsePixelOffset;
+        
         UpdateZoom(renderTargetStrategy);
         var camera = Camera;
         camera.Zoom = _zoom + Zoom;
         camera.Offset = new Vector2(renderTargetStrategy.RenderWidth, renderTargetStrategy.RenderHeight) / 2;
-        camera.Target = new Vector2(MathF.Floor(_position.X), MathF.Floor(_position.Y)); // Some strange jitter is happening. The pixel offset calculation is done in the render pipeline. Maby confused because of that?
+        
+        camera.Target = !floorTarget ? _position : new Vector2(MathF.Floor(_position.X), MathF.Floor(_position.Y)); // Some strange jitter is happening. The pixel offset calculation is done in the render pipeline. Maby confused because of that?
         Camera = camera;
     }
 
