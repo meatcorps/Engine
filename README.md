@@ -9,6 +9,8 @@
 **Meatcorps.Engine** is a lightweight, code-first game framework built on top of **Raylib**.  
 It’s designed for speed, clarity, and arcade-style projects — no heavy IDE tools, no scene editors, just code.
 
+![Introduction image.](Assets/intropicture.png)
+
 ## Get started
 ### With template (RECOMMENDED!)
 Use the following command to install the dotnet templates:
