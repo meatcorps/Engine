@@ -7,8 +7,8 @@ namespace Meatcorps.Engine.RayLib.Renderer;
 
 public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
 {
+    public bool UsePixelOffset { get; set; } = true;
     private readonly PostProcessingRenderer _postProcessingRenderer = new();
-
     private Color _clearColor;
     private RenderTexture2D? _currentRenderer;
     private bool _isDisposed;
@@ -93,16 +93,26 @@ public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
 
         var cameraPosition = Camera?.Position ?? Vector2.Zero;
 
-        var cameraSubpixelX = cameraPosition.X - MathF.Floor(cameraPosition.X);
-        var cameraSubpixelY = cameraPosition.Y - MathF.Floor(cameraPosition.Y);
+        if (UsePixelOffset)
+        {
+            var cameraSubpixelX = cameraPosition.X - MathF.Floor(cameraPosition.X);
+            var cameraSubpixelY = cameraPosition.Y - MathF.Floor(cameraPosition.Y);
 
-        var subpixelOffsetX = cameraSubpixelX * _screenScale;
-        var subpixelOffsetY = cameraSubpixelY * _screenScale;
+            var subpixelOffsetX = cameraSubpixelX * _screenScale;
+            var subpixelOffsetY = cameraSubpixelY * _screenScale;
 
-        _offset = new Vector2(
-            (screenWidth - renderWidth) / 2f - subpixelOffsetX,
-            (screenHeight - renderHeight) / 2f - subpixelOffsetY
-        );
+            _offset = new Vector2(
+                (screenWidth - renderWidth) / 2f - subpixelOffsetX,
+                (screenHeight - renderHeight) / 2f - subpixelOffsetY
+            );
+        }
+        else
+        {
+            _offset = new Vector2(
+                (screenWidth - renderWidth) / 2f,
+                (screenHeight - renderHeight) / 2f
+            );
+        }
 
         Raylib.BeginTextureMode(_renderTextureFinal.Value);
         Raylib.BeginBlendMode(BlendMode.AlphaPremultiply);
