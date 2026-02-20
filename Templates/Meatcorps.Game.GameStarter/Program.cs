@@ -23,7 +23,7 @@ CoreModule.Load();
 MeatcorpsEngineLibSettings.IsDebug = true;
 #endif
 
-var settings = GameConfig<GameSettings>.Create();
+GameConfig<GameSettings>.Create();
 
 GameInput.Load();
 

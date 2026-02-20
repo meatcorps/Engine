@@ -1,12 +1,9 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
-using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
-using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.GameObjects;
-using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Game.Snake.Data;
 using Meatcorps.Game.Snake.GameObjects.Abstractions;
 using Meatcorps.Game.Snake.Resources;
@@ -17,10 +14,10 @@ namespace Meatcorps.Game.Snake.GameObjects;
 public class Background : SnakeGameObject
 {
     private PersistentCanvas _canvas = null!;
-    private TimerOn _timer = new(2000);
-    private Dictionary<PointInt, float> _multiplier = new();
-    private Dictionary<PointInt, bool> _playSound = new();
-    private EdgeDetector _animationDone = new();
+    private readonly TimerOn _timer = new(2000);
+    private readonly Dictionary<PointInt, float> _multiplier = new();
+    private readonly Dictionary<PointInt, bool> _playSound = new();
+    private readonly EdgeDetector _animationDone = new();
     
     protected override void OnInitialize()
     {
@@ -31,7 +28,7 @@ public class Background : SnakeGameObject
         {
             for (var y = 0; y < LevelData.LevelHeight; y++)
             {
-                _multiplier.Add(new PointInt(x, y), 1 + ((float)Raylib.GetRandomValue(0, 100) / 100f));
+                _multiplier.Add(new PointInt(x, y), 1 + Raylib.GetRandomValue(0, 100) / 100f);
             }
         }
     }
@@ -67,15 +64,13 @@ public class Background : SnakeGameObject
     protected override void OnDraw()
     {
         var color = Color.White;
-        var ended = false;
         for (var x = 0; x < LevelData.LevelWidth; x++)
         {
             for (var y = 0; y < LevelData.LevelHeight; y++)
             {
-                ended = false;
                 if (!_timer.Output)
                 {
-                    ended = MathF.Min(1, _timer.NormalizedElapsed * _multiplier[new PointInt(x, y)]).EqualsSafe(1);
+                    var ended = MathF.Min(1, _timer.NormalizedElapsed * _multiplier[new PointInt(x, y)]).EqualsSafe(1);
                     color = ended
                         ? Color.White
                         : Color.Black;

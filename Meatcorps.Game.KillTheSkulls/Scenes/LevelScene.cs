@@ -2,8 +2,6 @@ using System.Numerics;
 using Meatcorps.Engine.Arcade.Interfaces;
 using Meatcorps.Engine.AsciiScript.Commands;
 using Meatcorps.Engine.AsciiScript.Services;
-using Meatcorps.Engine.Core.Data;
-using Meatcorps.Engine.Core.GridSystem;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Audio;
@@ -28,25 +26,23 @@ namespace Meatcorps.Game.KillTheSkulls.Scenes;
 public class LevelScene : BaseScene
 {
     private readonly string _levelPath;
-    public int TotalPlayers => DemoMode ? 2 : _sessionService.CurrentSession.TotalPlayers;
     public bool DemoMode { get; }
-    private LevelData _level { get; set; }
-    private List<Player> _players = new();
-    private AsciiScriptParser _parser = new();
-    private bool _firstLevelData = true;
-    private UIMessageEmitter _uiMessage;
+    private LevelData _level { get; set; } = null!;
+    private readonly List<Player> _players = new();
+    private readonly AsciiScriptParser _parser = new();
+    private UIMessageEmitter _uiMessage = null!;
     private Font _font;
-    private MusicManager<GameMusic> _musicManager;
-    private SoundFxManager<GameSounds> _soundFxManager;
-    private SessionService<GameSessionData, GamePlayerData> _sessionService;
+    private MusicManager<GameMusic> _musicManager = null!;
+    private SoundFxManager<GameSounds> _soundFxManager = null!;
+    private SessionService<GameSessionData, GamePlayerData> _sessionService = null!;
     private int _cachedScore;
-    private IPlayerCheckin _playerCheckin;
+    private IPlayerCheckin _playerCheckin = null!;
     public int RandomNumber = -1;
-    public int MaxIdle = 4;
-    private List<int> _notSpawnedEnemies = new();
-    public int GetLiveCount = 0;
-    public bool StartGame = false;
-    private ScoreEmitter _scoreEmitter; 
+    private int _maxIdle = 4;
+    private readonly List<int> _notSpawnedEnemies = new();
+    private int _getLiveCount;
+    private bool _startGame;
+    private ScoreEmitter _scoreEmitter = null!;
 
     public LevelScene(string levelPath = "Assets/Level1.txt", bool demoMode = false)
     {
@@ -87,7 +83,7 @@ public class LevelScene : BaseScene
             .Register(() => new SimpleCommand("STARTGAME",
                 () =>
                 {
-                    StartGame = true;
+                    _startGame = true;
                 }
             ));
 
@@ -111,7 +107,7 @@ public class LevelScene : BaseScene
                 .Register(() => new IntVariableCommand("SETMAXIDLE",
                     (value) =>
                     {
-                        MaxIdle = value;
+                        _maxIdle = value;
                     }
                 ))
                 .Register(() => new SimpleCommand("INCREASESPEED",
@@ -122,8 +118,8 @@ public class LevelScene : BaseScene
                             UpdateTimeMultiplier = 2;
                     }
                 ))
-                .Register(() => new StringVariableCommand("PAUSESONG", sound => { _musicManager.Pause(); }))
-                .Register(() => new StringVariableCommand("RESUMESONG", sound => { _musicManager.Resume(); }))
+                .Register(() => new StringVariableCommand("PAUSESONG", _ => { _musicManager.Pause(); }))
+                .Register(() => new StringVariableCommand("RESUMESONG", _ => { _musicManager.Resume(); }))
                 .Register(() => new SimpleCommand("ENDLEVEL", () => { GameHost.SwitchScene(new LevelScene()); }))
                 .Register(() => new StringVariableCommand("NEXTLEVEL",
                     level => { GameHost.SwitchScene(new LevelScene("Assets/" + level)); }))
@@ -143,7 +139,7 @@ public class LevelScene : BaseScene
         else
         {
             _parser.Register(() => new SimpleCommand("ENDLEVEL", () => { Died(null); }))
-                .Register(() => new StringVariableCommand("NEXTLEVEL", level => { Died(null); }));
+                .Register(() => new StringVariableCommand("NEXTLEVEL", _ => { Died(null); }));
         }
 
         _parser.Load();
@@ -163,15 +159,15 @@ public class LevelScene : BaseScene
         cameraManager.SetPosition(center);
         AddGameObject(cameraManager);
         AddGameObject(new PersistentCanvas(640, 380));
-        AddGameObject(new GameObjects.Background());
-        AddGameObject(new GameObjects.PipeOverlay());
+        AddGameObject(new Background());
+        AddGameObject(new PipeOverlay());
         var rows = new List<LevelRow>();
         for (var i = 0; i < 5; i++)
         {
             var row = new LevelRow
             {
-                LedBar = new GameObjects.LedBar(new Vector2(i * 128f, 240f), GetColumnColor(i)),
-                Thunder = new GameObjects.Thunder(new Vector2(i * 128f, 128f)),
+                LedBar = new LedBar(new Vector2(i * 128f, 240f), GetColumnColor(i)),
+                Thunder = new Thunder(new Vector2(i * 128f, 128f)),
                 Enemy = new Enemy(new Vector2(i * 128f, 112f), i)
             };
             rows.Add(row);
@@ -220,8 +216,7 @@ public class LevelScene : BaseScene
         var player = new Player
         {
             SessionDataBag = playerData,
-            PlayerId = playerId,
-            Color = playerId == 1 ? Color.Magenta : Color.Blue,
+            PlayerId = playerId
         };
         _players.Add(player);
         
@@ -248,7 +243,7 @@ public class LevelScene : BaseScene
 
     protected override void OnUpdate(float deltaTime)
     {
-        if (StartGame)
+        if (_startGame)
         {
             _notSpawnedEnemies.Clear();
             var counter = 0;
@@ -259,7 +254,7 @@ public class LevelScene : BaseScene
                 counter++;
             }
 
-            if (_notSpawnedEnemies.Count > MaxIdle)
+            if (_notSpawnedEnemies.Count > _maxIdle)
             {
                 var totalNotSpawned = _notSpawnedEnemies.Count;
                 RandomNumber =
@@ -282,7 +277,7 @@ public class LevelScene : BaseScene
 
     protected override void OnLateUpdate(float deltaTime)
     {
-        if (DemoMode || !StartGame)
+        if (DemoMode || !_startGame)
             return;
         
         if (!_playerCheckin.IsPlayerCheckedIn(1, out var _))
@@ -305,7 +300,7 @@ public class LevelScene : BaseScene
                 player.AddValue(GamePlayerData.TotalHits);
                 hit = true;
                 player.Streak++;
-                GetLiveCount++;
+                _getLiveCount++;
                 var totalScore = 10 * Math.Min(player.Streak, 20);
                 player.Score += totalScore;
                 _scoreEmitter.ShowScore(new Vector2(counter * 128 + 32, 240), $"+{totalScore}");
@@ -321,18 +316,18 @@ public class LevelScene : BaseScene
         {
             player.Lives--;
             player.Streak = 0;
-            GetLiveCount = 0;
+            _getLiveCount = 0;
             _scoreEmitter.Negative(new Vector2(640 - 64, 64), $"-1");
             _scoreEmitter.Negative(new Vector2(640 - 192, 64), $"ZERO!");
         }
 
         
         if (player.Lives == 10)
-            GetLiveCount = 0;
+            _getLiveCount = 0;
 
-        if (GetLiveCount == 10)
+        if (_getLiveCount == 10)
         {
-            GetLiveCount = 0;
+            _getLiveCount = 0;
             player.Score += 200;
             if (player.Lives < 10)
                 player.Lives++;
@@ -341,9 +336,9 @@ public class LevelScene : BaseScene
         }
         
         
-        if (hit && GetLiveCount >= 2)
+        if (hit && _getLiveCount >= 2)
         {
-            _scoreEmitter.ShowScore(new Vector2(640 - 192, 64), $"{10 - GetLiveCount} FOR\nEXTRA LIFE");
+            _scoreEmitter.ShowScore(new Vector2(640 - 192, 64), $"{10 - _getLiveCount} FOR\nEXTRA LIFE");
         }
         
         if (player.Lives == 0)
@@ -358,11 +353,6 @@ public class LevelScene : BaseScene
 
     public void Died(BasePlayer? playerObject)
     {
-        if (playerObject == null)
-            foreach (var player in _players)
-                if (player.IsDead)
-                    return;
-
         if (DemoMode)
         {
             GlobalObjectManager.ObjectManager.Get<BaseScene>()!.RemoveScene(this);
@@ -398,7 +388,7 @@ public class LevelScene : BaseScene
     {
     }
     
-    public static UIMessageStyle DefaultTextStyle(Font font) => new()
+    private static UIMessageStyle DefaultTextStyle(Font font) => new()
     {
         Style = TextKitStyles.HudDefault(font) with
         {

@@ -11,8 +11,8 @@ public class GridDistanceCalculator
     public IReadOnlySet<PointInt> Visited => _visited;
     private IGridDistanceResource _resource { get; }
     private PointInt[] _allowedDirections = [];
-    private Queue<(int, PointInt)> _nextToVisit = new();
-    private HashSet<PointInt> _visited = new();
+    private readonly Queue<(int, PointInt)> _nextToVisit = new();
+    private readonly HashSet<PointInt> _visited = new();
     public int MaxDistance { get; private set; }
 
     public GridDistanceCalculator(IGridDistanceResource resource)
@@ -44,10 +44,8 @@ public class GridDistanceCalculator
         _nextToVisit.Enqueue((-keepDistance, start));
         MaxDistance = 0;
         _resource.Set(start, -keepDistance);
-        var iterations = 0;
         while (_nextToVisit.Count > 0)
         {
-            iterations++;
             _nextToVisit.TryDequeue(out var item);
             var currentDistance = item.Item1;
             var position = item.Item2;
@@ -60,11 +58,8 @@ public class GridDistanceCalculator
                     if (_visited.Contains(realNeighbor))
                         continue;
 
-                    if (!_visited.Contains(realNeighbor))
-                    {
-                        _visited.Add(realNeighbor);
+                    if (_visited.Add(realNeighbor))
                         distance = int.MaxValue;
-                    }
                     
                     if (Math.Abs(currentDistance) <= distance)
                     {

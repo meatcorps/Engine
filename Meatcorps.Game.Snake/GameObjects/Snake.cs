@@ -12,7 +12,6 @@ using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.GameObjects;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Particles;
-using Meatcorps.Engine.RayLib.Text;
 using Meatcorps.Engine.RayLib.UI.Data;
 using Meatcorps.Game.Snake.Data;
 using Meatcorps.Game.Snake.GameObjects.Abstractions;
@@ -28,33 +27,32 @@ public class Snake : SnakeGameObject
     public Player Player { get; }
     private readonly PointInt[] _startPositions;
     private readonly PointInt _startDirection;
-    private PointInt _direction = PointInt.Zero;
-    private SnakeModel _snakeModel;
+    private PointInt _direction;
+    private SnakeModel _snakeModel = null!;
     private PlayerInputRouter<SnakeInput> _controller = null!;
     private ParticleSystemBuilder _smokeParticle = new();
     private ParticleSystemBuilder _bloodParticle = new();
     private ParticleSystemBuilder _positiveTextParticle = new();
     private ParticleSystemBuilder _negativeParticle = new();
     private ParticleSystemBuilder _explosionParticle = new();
-    private PulseTimer _emitRedSmoke = new(1000);
-    private FixedTimer _destroySnakeEmitter = new(250);
-    private TimerOn _wallHitTimer = new(3000);
-    private bool _smokeEmitToggle;
-    private PersistentCanvas _canvas;
-    private bool _isHittingWall = false;
-    private bool _isDead = false;
-    private bool _isDying = false;
-    private Color _deadColor;
-    private CameraControllerGameObject _cameraController;
-    private SnakePerkManager _perkManager;
-    private UIMessageEmitter _uiMessage;
-    private bool _gainedLife = false;
+    private readonly PulseTimer _emitRedSmoke = new(1000);
+    private readonly FixedTimer _destroySnakeEmitter = new(250);
+    private readonly TimerOn _wallHitTimer = new(3000);
+    private PersistentCanvas _canvas = null!;
+    private bool _isHittingWall;
+    private bool _isDead;
+    private bool _isDying;
+    private readonly Color _deadColor;
+    private CameraControllerGameObject _cameraController = null!;
+    private readonly SnakePerkManager _perkManager;
+    private UIMessageEmitter _uiMessage = null!;
+    private bool _gainedLife;
     public IReadOnlyList<IConsumableItem> Perks => _perkManager.Perks;
-    private bool _demoMode = false;
+    private bool _demoMode;
     
-    private FixedTimer _demoRandomDirectionTimer = new(3000);
-    private IArcadePointsMutator _pointMutator;
-    private IPlayerCheckin _playerCheckin;
+    private readonly FixedTimer _demoRandomDirectionTimer = new(3000);
+    private IArcadePointsMutator _pointMutator = null!;
+    private IPlayerCheckin _playerCheckin = null!;
 
     public Snake(Player player, PointInt[] startPositions, PointInt startDirection)
     {
@@ -80,7 +78,7 @@ public class Snake : SnakeGameObject
         _playerCheckin = GlobalObjectManager.ObjectManager.Get<IPlayerCheckin>()!;
         _snakeModel = new SnakeModel(Sprites, LevelData, _startPositions, _startDirection);
         _cameraController = Scene.GetGameObject<CameraControllerGameObject>()!;
-        _demoMode = Scene is LevelScene levelScene && levelScene.DemoMode;
+        _demoMode = Scene is LevelScene { DemoMode: true };
         
         if (_demoMode)
             _demoRandomDirectionTimer.ChangeSpeed(Raylib.GetRandomValue(2000, 5000));
@@ -95,8 +93,8 @@ public class Snake : SnakeGameObject
         else
             Player.AddValue(SnakePlayerData.PickupsTaken);
         
-        var score = (int)(Player.Modifiers.RotProof ? item.OriginalScore : item.ScoreAmount);
-        score = (int)((float)score * Player.Modifiers.ScoreModifier);
+        var score = Player.Modifiers.RotProof ? item.OriginalScore : item.ScoreAmount;
+        score = (int)(score * Player.Modifiers.ScoreModifier);
         Player.Score += score; 
         if (score > 0)
             _positiveTextParticle.Emit(1, _snakeModel.HeadRenderPosition.Position, null, "+" + score.ToString());
@@ -227,17 +225,15 @@ public class Snake : SnakeGameObject
                 _demoRandomDirectionTimer.ChangeSpeed(Raylib.GetRandomValue(2000, 5000));
                 if (_direction.X == 0)
                 {
-                    if (Raylib.GetRandomValue(0, 1) == 0)
-                        _direction = new PointInt(1, 0);
-                    else
-                        _direction = new PointInt(-1, 0);
+                    _direction = Raylib.GetRandomValue(0, 1) == 0 
+                        ? new PointInt(1, 0) 
+                        : new PointInt(-1, 0);
                 }
                 else
                 {
-                    if (Raylib.GetRandomValue(0, 1) == 0)
-                        _direction = new PointInt(0, 1);
-                    else
-                        _direction = new PointInt(0, -1);
+                    _direction = Raylib.GetRandomValue(0, 1) == 0 
+                        ? new PointInt(0, 1) 
+                        : new PointInt(0, -1);
                 }
             }
                 
@@ -361,7 +357,7 @@ public class Snake : SnakeGameObject
             Raylib.DrawTexturePro(texture, source, destination, Vector2.Zero, 0,
                 segment.IsDestroyed ? _deadColor : Player.Color);
 
-            if (segment!.IsProcessing && !tail)
+            if (segment.IsProcessing && !tail)
                 Sprites.Draw(SnakeSprites.SnakeProcessing, destination.Position,
                     Raylib.ColorLerp(Color.Black, Color.Red, Player.MoveTimer.NormalizedElapsed));
         }

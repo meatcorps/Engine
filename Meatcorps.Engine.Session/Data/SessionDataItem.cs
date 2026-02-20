@@ -14,7 +14,7 @@ public class SessionDataItem<TType, TValue>: ISessionDataItem<TType>, ISessionDa
     public SessionDataItem(TType key, string? name, TValue defaultValue)
     {
         Key = key;
-        Name = string.IsNullOrWhiteSpace(name) ? key.ToString()! : name!;
+        Name = string.IsNullOrWhiteSpace(name) ? key.ToString() : name;
         DefaultValue = defaultValue;
         Value = defaultValue;
     }

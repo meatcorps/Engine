@@ -1,7 +1,7 @@
 using System.Numerics;
 using Meatcorps.Engine.Arcade.Interfaces;
 using Meatcorps.Engine.AsciiScript.Commands;
-using Meatcorps.Engine.AsciiScript.Data;
+using Meatcorps.Engine.AsciiScript.Interfaces;
 using Meatcorps.Engine.AsciiScript.Services;
 using Meatcorps.Engine.Boids.Data;
 using Meatcorps.Engine.Boids.Enums;
@@ -32,21 +32,21 @@ namespace Meatcorps.Game.Snake.Scenes;
 public class LevelScene : BaseScene
 {
     private readonly string _levelPath;
-    public int TotalPlayers => DemoMode ? 2 : _sessionService.CurrentSession.TotalPlayers;
+    private int TotalPlayers => DemoMode ? 2 : _sessionService.CurrentSession.TotalPlayers;
     public bool DemoMode { get; }
     private LevelData _level { get; set; } = new();
-    private List<Player> _players = new();
-    private AsciiScriptParser _parser = new();
+    private readonly List<Player> _players = new();
+    private readonly AsciiScriptParser _parser = new();
     private bool _firstLevelData = true;
-    private UIMessageEmitter _uiMessage;
-    private FlyFlockGameObject _flies;
+    private UIMessageEmitter _uiMessage = null!;
+    private FlyFlockGameObject _flies = null!;
     private Font _font;
-    private MusicManager<SnakeMusic> _musicManager;
-    private SoundFxManager<SnakeSounds> _soundFxManager; 
-    private SessionService<SnakeSessionData, SnakePlayerData> _sessionService;
+    private MusicManager<SnakeMusic> _musicManager = null!;
+    private SoundFxManager<SnakeSounds> _soundFxManager = null!; 
+    private SessionService<SnakeSessionData, SnakePlayerData> _sessionService = null!;
     private int _cachedScore;
-    private IPlayerCheckin _playerCheckin;
-    private bool _levelReplaceMode = false;
+    private IPlayerCheckin _playerCheckin = null!;
+    private bool _levelReplaceMode;
 
     public LevelScene(string levelPath = "Assets/Level1_Easy.txt", bool demoMode = false)
     {
@@ -68,54 +68,53 @@ public class LevelScene : BaseScene
         AddGameObject(_uiMessage);
         _firstLevelData = true;
         _parser
-            .Register(() => new DelayCommand())
-            .Register(() => new ExternalIntVariableCondition("WAITFORPOINTS",
-                (minimalAmount, firstRun) =>
+            .Register(IAsciiScriptCommand () => new DelayCommand())
+            .Register(IAsciiScriptCommand () => new ExternalIntVariableCondition("WAITFORPOINTS", bool (minimalAmount, firstRun) =>
                 {
                     if (firstRun)
                         _cachedScore = CurrentScorePlayers();
                     return CurrentScorePlayers() >= minimalAmount + _cachedScore;
                 }
                 ))
-            .Register(() => new IntVariableCommand("RANDOMMEAT1", total =>
+            .Register(IAsciiScriptCommand () => new IntVariableCommand("RANDOMMEAT1", void (total) =>
             {
                 for (var i = 0; i < total; i++)
                     AddGameObject(new GameObjects.Consumable(new Meat1()));
             }))
-            .Register(() => new IntVariableCommand("RANDOMMEAT2", total =>
+            .Register(IAsciiScriptCommand () => new IntVariableCommand("RANDOMMEAT2", void (total) =>
             {
                 for (var i = 0; i < total; i++)
                     AddGameObject(new GameObjects.Consumable(new Meat2()));
             }))
-            .Register(() => new IntVariableCommand("SPAWNFLIES", total =>
+            .Register(IAsciiScriptCommand () => new IntVariableCommand("SPAWNFLIES", void (total) =>
             {
                 _flies.SpawnRandom(total,
                     new RectF(0, 0, _level.LevelWidth * _level.GridSize, _level.LevelHeight * _level.GridSize));
             }))
-            .Register(() => new SimpleCommand("REMOVEFLIES", () =>
+            .Register(IAsciiScriptCommand () => new SimpleCommand("REMOVEFLIES", void () =>
             {
                 _flies.KillAll();
             }))
-            .Register(() => new SimpleCommand("REPLACEWALLS", () =>
+            .Register(IAsciiScriptCommand () => new SimpleCommand("REPLACEWALLS", void () =>
             {
                 _levelReplaceMode = true;
             }))
-            .Register(() => new SimpleCommand("ADDWALLS", () =>
+            .Register(IAsciiScriptCommand () => new SimpleCommand("ADDWALLS", void () =>
             {
                 _levelReplaceMode = false;
             }))
-            .Register(() => new BlockGridCommand("LEVELDATA", LoadLevel));
+            .Register(IAsciiScriptCommand () => new BlockGridCommand("LEVELDATA", LoadLevel));
 
         if (!DemoMode)
         {
-            _parser.Register(() => new StringVariableCommand("PLAYSOUND", sound =>
+            _parser.Register(IAsciiScriptCommand () => new StringVariableCommand("PLAYSOUND", void (sound) =>
                 {
                     if (Enum.TryParse<SnakeSounds>(sound, out var result))
                         _soundFxManager.Play(result);
                     else
                         Console.WriteLine("Invalid sound " + sound);
                 }))
-                .Register(() => new StringVariableCommand("PLAYSONG", sound =>
+                .Register(IAsciiScriptCommand () => new StringVariableCommand("PLAYSONG", void (sound) =>
                 {
 
                     if (Enum.TryParse<SnakeMusic>(sound, out var result))
@@ -123,19 +122,19 @@ public class LevelScene : BaseScene
                     else
                         Console.WriteLine("Invalid music " + sound);
                 }))
-                .Register(() => new StringVariableCommand("PAUSESONG", sound =>
+                .Register(IAsciiScriptCommand () => new StringVariableCommand("PAUSESONG", void (_) =>
                 {
                     _musicManager.Pause();
                 }))
-                .Register(() => new StringVariableCommand("RESUMESONG", sound =>
+                .Register(IAsciiScriptCommand () => new StringVariableCommand("RESUMESONG", void (_) =>
                 {
                     _musicManager.Resume();
                 }))
-                .Register(() => new SimpleCommand("ENDLEVEL", () =>
+                .Register(IAsciiScriptCommand () => new SimpleCommand("ENDLEVEL", void () =>
                 {
                     GameHost.SwitchScene(new LevelScene());
                 }))
-                .Register(() => new StringVariableCommand("NEXTLEVEL", level =>
+                .Register(IAsciiScriptCommand () => new StringVariableCommand("NEXTLEVEL", void (level) =>
                 {
                     foreach (var player in _players)
                     {
@@ -144,7 +143,7 @@ public class LevelScene : BaseScene
                     }
                     GameHost.SwitchScene(new LevelScene("Assets/" + level));
                 }))
-                .Register(() => new DelayCommand("DELAYCOUNTDOWN", (on, firstTick) =>
+                .Register(IAsciiScriptCommand () => new DelayCommand("DELAYCOUNTDOWN", void (on, firstTick) =>
                 {
                     if (firstTick)
                     {
@@ -152,26 +151,23 @@ public class LevelScene : BaseScene
                         _uiMessage.Countdown((int)on.TimeRemaining, UIMessagePresets.Countdown(_font));
                     }
                 }))
-                .Register(() => new StringVariableCommand("MESSAGE", message =>
+                .Register(IAsciiScriptCommand () => new StringVariableCommand("MESSAGE", void (message) =>
                 {
                     _uiMessage.Show(message, UIMessagePresets.Default(_font));
                 }))
-                .Register(() => new StringVariableCommand("LEVELNAME", message =>
+                .Register(IAsciiScriptCommand () => new StringVariableCommand("LEVELNAME", void (message) =>
                 {
                     _uiMessage.Show(message, UIMessagePresets.Default(_font));
                 }));
         }
         else
         {
-            _parser.Register(() => new SimpleCommand("ENDLEVEL", () =>
+            _parser.Register(IAsciiScriptCommand () => new SimpleCommand("ENDLEVEL", void () =>
                 {
                     Died(null);
                 }))
-                .Register(() => new SimpleCommand("ENDGAME", () =>
-                {
-                    EndGame();
-                }))
-                .Register(() => new StringVariableCommand("NEXTLEVEL", level =>
+                .Register(IAsciiScriptCommand () => new SimpleCommand("ENDGAME", EndGame))
+                .Register(IAsciiScriptCommand () => new StringVariableCommand("NEXTLEVEL", void (_) =>
                 {
                     Died(null);
                 }));
@@ -181,8 +177,8 @@ public class LevelScene : BaseScene
 
         SceneObjectManager.Register(_level);
         var cameraManager = new CameraControllerGameObject(GlobalObjectManager.ObjectManager.Get<ICamera>()!);
-        var center = new Vector2(320 - ((640 - _level.LevelWidth * _level.GridSize) / 2),
-            180 - ((360 - _level.LevelHeight * _level.GridSize) / 2));
+        var center = new Vector2(320 - ((640f - _level.LevelWidth * _level.GridSize) / 2),
+            180 - ((360f - _level.LevelHeight * _level.GridSize) / 2));
 
         if (!DemoMode)
         {
@@ -250,7 +246,7 @@ public class LevelScene : BaseScene
                         AddGameObject(new GameObjects.Wall(5000, position, _firstLevelData));
                     break;
                 case 'E':
-                    AddGameObject(new GameObjects.Consumable(GetRandomMeat.Get(), position, true));
+                    AddGameObject(new GameObjects.Consumable(GetRandomMeat.Get(), position));
                     break;
                 case 'e':
                     AddGameObject(new GameObjects.Consumable(GetRandomMeat.Get(), position, false));
@@ -415,7 +411,7 @@ public class LevelScene : BaseScene
         }
     }
 
-    public void EndGame()
+    private void EndGame()
     {
         GameHost.SwitchScene(new EndScene());
     }

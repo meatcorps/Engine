@@ -1,6 +1,5 @@
 using System.Numerics;
 using Meatcorps.Engine.Arcade.Data;
-using Meatcorps.Engine.Arcade.Enums;
 using Meatcorps.Engine.Arcade.Interfaces;
 using Meatcorps.Engine.Arcade.RayLib.Utilities;
 using Meatcorps.Engine.Core.Enums;
@@ -27,32 +26,31 @@ public class MainGameObject: ResourceGameObject
 {
     public DrumRenderer DrumRenderer = null!;
     public GameInternalState InternalState { get; set; } = GameInternalState.WaitingForPlayers;
-    private PlayerInputRouter<GameInput> _controller;
-    public FixedTimer ApplyForceTimer = new(2000);
-    public TimerOn ShowScoreTimer = new(7500);
-    public TimerOn WaitForPlayerTimer = new(30000);
-    public TimerOn IgnoreInputTimer = new(500);
+    private PlayerInputRouter<GameInput> _controller = null!;
+    public readonly FixedTimer ApplyForceTimer = new(2000);
+    public readonly TimerOn ShowScoreTimer = new(7500);
+    public readonly TimerOn WaitForPlayerTimer = new(30000);
+    public readonly TimerOn IgnoreInputTimer = new(500);
     public DrumTypes CurrentDrumType = DrumTypes.Reroll;
-    private EdgeDetector _buttonPressed = new();
     private GameInternalState _previousInternalState = GameInternalState.WaitingForPlayers;
-    public float MaxForce = 2;
-    public IArcadePointsMutator ArcadePointMutator { get; private set; }
-    public ArcadeGame GameInfo { get; private set; }
-    public IPlayerCheckin PlayerCheckin { get; private set; }
-    private PersistentDatabase _storage;
-    private SmoothValue _jackpotSmoothValue;
-    public TimerOn ButtonWaitingTimer = new(10000);
-    public EdgeDetector ButtonWaitingTrigger = new();
+    public readonly float MaxForce = 2;
+    public IArcadePointsMutator ArcadePointMutator { get; private set; } = null!;
+    public ArcadeGame GameInfo { get; private set; } = null!;
+    public IPlayerCheckin PlayerCheckin { get; private set; } = null!;
+    private PersistentDatabase _storage = null!;
+    private SmoothValue _jackpotSmoothValue = null!;
+    public readonly TimerOn ButtonWaitingTimer = new(10000);
+    public readonly EdgeDetector ButtonWaitingTrigger = new();
     private OverlayGameObject? _overlay;
     private OverlayGameObject? _nextOverlay;
     private DrumTypes _previousDrumType = DrumTypes.Nothing;
     private int _internalJackpot;
-    private ArcadeServer _arcadeServer;
+    private ArcadeServer _arcadeServer = null!;
     private Texture2D _qrCodeTexture;
     private TimerOn _idleTimer = new(1000);
-    private FixedTimer _animationTimer = new(100);
-    private FixedTimer _buttonAnimationTimer = new(250);
-    private FixedTimer _blinkTimer = new(32);
+    private readonly FixedTimer _animationTimer = new(100);
+    private readonly FixedTimer _buttonAnimationTimer = new(250);
+    private readonly FixedTimer _blinkTimer = new(32);
     public string Text = "Hello World!";
     
     private GameSprites _skullTop = GameSprites.SkullTop1;
@@ -60,7 +58,7 @@ public class MainGameObject: ResourceGameObject
 
     public bool ButtonPressed { get; private set; }
 
-    private RandomEnum<GameSounds> _idleRandom = new RandomEnum<GameSounds>()
+    private readonly RandomEnum<GameSounds> _idleRandom = new RandomEnum<GameSounds>()
         .Add(GameSounds.Idle1, 25)
         .Add(GameSounds.Idle2, 25)
         .Add(GameSounds.Idle3, 25)
@@ -68,13 +66,13 @@ public class MainGameObject: ResourceGameObject
         .Add(GameSounds.Idle5, 25)
         .Add(GameSounds.Idle6, 25);
 
-    public RandomEnum<GameSounds> JackpotRandom = new RandomEnum<GameSounds>()
+    public readonly RandomEnum<GameSounds> JackpotRandom = new RandomEnum<GameSounds>()
         .Add(GameSounds.Jackpot1, 25)
         .Add(GameSounds.Jackpot2, 25)
         .Add(GameSounds.Jackpot3, 25)
         .Add(GameSounds.Jackpot4, 25);
     
-    public RandomEnum<GameSounds> NothingRandom = new RandomEnum<GameSounds>()
+    public readonly RandomEnum<GameSounds> NothingRandom = new RandomEnum<GameSounds>()
         .Add(GameSounds.Nothing1, 25)
         .Add(GameSounds.Nothing2, 25)
         .Add(GameSounds.Nothing3, 25)
@@ -82,28 +80,28 @@ public class MainGameObject: ResourceGameObject
         .Add(GameSounds.Nothing5, 25)
         .Add(GameSounds.Nothing6, 25);
     
-    public RandomEnum<GameSounds> RollRandom = new RandomEnum<GameSounds>()
+    public readonly RandomEnum<GameSounds> RollRandom = new RandomEnum<GameSounds>()
         .Add(GameSounds.Roll1, 25)
         .Add(GameSounds.Roll2, 25)
         .Add(GameSounds.Roll3, 25)
         .Add(GameSounds.Roll4, 25);
 
-    public RandomEnum<GameSounds> ScanRandom = new RandomEnum<GameSounds>()
+    public readonly RandomEnum<GameSounds> ScanRandom = new RandomEnum<GameSounds>()
         .Add(GameSounds.Scan1, 25)
         .Add(GameSounds.Scan2, 25);
     
-    public RandomEnum<GameSounds> ButtonRandom = new RandomEnum<GameSounds>()
+    public readonly RandomEnum<GameSounds> ButtonRandom = new RandomEnum<GameSounds>()
         .Add(GameSounds.PresstheButton, 25)
         .Add(GameSounds.PresstheButton2, 25)
         .Add(GameSounds.ChopChop, 25);
     
-    public RandomEnum<GameSounds> Score10Random = new RandomEnum<GameSounds>()
+    public readonly RandomEnum<GameSounds> Score10Random = new RandomEnum<GameSounds>()
         .Add(GameSounds.Score10won1, 25)
         .Add(GameSounds.Score10won2, 25)
         .Add(GameSounds.Score10won3, 25)
         .Add(GameSounds.Score10won4, 25);
     
-    public RandomEnum<GameSounds> Score100Random = new RandomEnum<GameSounds>()
+    public readonly RandomEnum<GameSounds> Score100Random = new RandomEnum<GameSounds>()
         .Add(GameSounds.Score100won1, 25)
         .Add(GameSounds.Score100won2, 25)
         .Add(GameSounds.Score100won3, 25)
@@ -111,10 +109,7 @@ public class MainGameObject: ResourceGameObject
     
     public int Jackpot
     {
-        get
-        {
-            return _internalJackpot;
-        }
+        get => _internalJackpot;
         set
         {
             if (_internalJackpot == value)
@@ -250,40 +245,36 @@ public class MainGameObject: ResourceGameObject
         
         _animationTimer.Update(deltaTime);
 
-        if (_animationTimer.Output)
-        {
-            _skullTop = GameSprites.SkullTop1;
+        if (!_animationTimer.Output) 
+            return;
+        
+        _skullTop = GameSprites.SkullTop1;
             
-            var topRandom = Raylib.GetRandomValue(0, 100);
-            
-            if (topRandom > 80 && topRandom < 90)
-                _skullTop = GameSprites.SkullTop2;
-            if (topRandom >= 90)
-                _skullTop = GameSprites.SkullTop3;
+        var topRandom = Raylib.GetRandomValue(0, 100);
 
-            if (_skullBottom == GameSprites.SkullBottom1)
-            {
+        _skullTop = topRandom switch
+        {
+            > 80 and < 90 => GameSprites.SkullTop2,
+            >= 90 => GameSprites.SkullTop3,
+            _ => _skullTop
+        };
+
+        switch (_skullBottom)
+        {
+            case GameSprites.SkullBottom1:
                 _skullBottom = GameSprites.SkullBottom2;
                 return;
-            }
-
-            if (_skullBottom == GameSprites.SkullBottom2)
-            {
+            case GameSprites.SkullBottom2:
                 _skullBottom = GameSprites.SkullBottom3;
                 return;
-            }
-            
-            if (_skullBottom == GameSprites.SkullBottom3)
-            {
+            case GameSprites.SkullBottom3:
                 _skullBottom = GameSprites.SkullBottom4;
                 return;
-            }
-            
-            if (_skullBottom == GameSprites.SkullBottom4)
-            {
+            case GameSprites.SkullBottom4:
                 _skullBottom = GameSprites.SkullBottom1;
-                return;
-            }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
@@ -313,7 +304,7 @@ public class MainGameObject: ResourceGameObject
         var flickerRandom = Raylib.GetRandomValue(0, 100) / 500f; 
         var flickerRandom2 = Raylib.GetRandomValue(0, 100) / 500f; 
         
-        Sprites.Draw(GameSprites.UIPanel, new Vector2(0, 0), Color.White, 0f);
+        Sprites.Draw(GameSprites.UIPanel, new Vector2(0, 0), Color.White);
         var textSize = Raylib.MeasureTextEx(Fonts.GetFont(), Text, 10, 1);
         Raylib.DrawTextEx(Fonts.GetFont(), Text, new Vector2((360 - textSize.X) / 2, 620), 10, 1, Raylib.ColorAlpha(Color.Red, 0.8f + flickerRandom));
         
@@ -332,15 +323,15 @@ public class MainGameObject: ResourceGameObject
         
         if (InternalState == GameInternalState.PlayerIsApplyingForce)
         {
-            var normal = Tween.ApplyEasing(Tween.PingPong(ApplyForceTimer.NormalizedElapsed * 2, 1f),
+            var normal = Tween.ApplyEasing(Tween.PingPong(ApplyForceTimer.NormalizedElapsed * 2),
                 EaseType.EaseInOut);
             var posX = (int)(normal * 302) - 20;
             Sprites.Draw(GameSprites.SpeedSliderBg, new Vector2(0, 288), Color.White);
-            
-            if (normal.Between(0.4f, 0.6f))
-                Sprites.Draw(GameSprites.SpeedSliderPointer, new Vector2(posX, 222 + Raylib.GetRandomValue(-5, 5)), Raylib.ColorLerp(Color.White, Color.Red, normal));
-            else
-                Sprites.Draw(GameSprites.SpeedSliderPointer, new Vector2(posX, 222), Raylib.ColorLerp(Color.White, Color.Red, normal));
+
+            Sprites.Draw(GameSprites.SpeedSliderPointer,
+                normal.Between(0.4f, 0.6f)
+                    ? new Vector2(posX, 222 + Raylib.GetRandomValue(-5, 5))
+                    : new Vector2(posX, 222), Raylib.ColorLerp(Color.White, Color.Red, normal));
         }
         
         //Raylib.DrawTextEx(Fonts.GetFont(), DrumHelper.GetDrumTypeFromNormal(_drumRenderer.Rotation).ToString(), new Vector2(64, 300), 16, 1, Color.White);
@@ -379,7 +370,7 @@ public class MainGameObject: ResourceGameObject
         var textLength = Raylib.MeasureTextEx(Fonts.GetFont(), text, 16, 1);
         var setting = new OverlaySettings
         {
-            OnDrawLayer = (f, color) =>
+            OnDrawLayer = (f, _) =>
             {
                 var fp = Tween.ApplyEasing(f, EaseType.EaseInBounce);
                 var rect = Sprites.GetSprite(sprite);
@@ -401,7 +392,7 @@ public class MainGameObject: ResourceGameObject
         var sound = _idleRandom.Get();
         var setting = new OverlaySettings
         {
-            OnDrawLayer = (f, color) =>
+            OnDrawLayer = (f, _) =>
             {
                 trigger.Update(f.EqualsSafe(1));
                 var skullTop = GameSprites.SkullTop1;
@@ -442,7 +433,7 @@ public class MainGameObject: ResourceGameObject
     {
         PlayerJoinOverlay = new OverlaySettings
         {
-            OnDrawLayer = (f, color) =>
+            OnDrawLayer = (f, _) =>
             {
                 Raylib.DrawTextEx(Fonts.GetFont(), "SCAN QR CODE", new Vector2(78, 200), 16, 1, Raylib.ColorAlpha(Color.Red, f));
                 Raylib.DrawTexture(_qrCodeTexture, (360 - _qrCodeTexture.Width) / 2, (640 - _qrCodeTexture.Height) / 2,

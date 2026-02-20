@@ -1,4 +1,3 @@
-using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Interfaces.Input;
 
 namespace Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;

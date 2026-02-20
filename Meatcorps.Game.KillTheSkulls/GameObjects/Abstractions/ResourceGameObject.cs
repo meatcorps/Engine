@@ -6,19 +6,18 @@ using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Game.KillTheSkulls.Data;
 using Meatcorps.Game.KillTheSkulls.GameEnums;
-using Meatcorps.Game.KillTheSkulls.Resources;
 using Meatcorps.Game.KillTheSkulls.Scenes;
 
 namespace Meatcorps.Game.KillTheSkulls.GameObjects.Abstractions;
 
 public abstract class ResourceGameObject : BaseGameObject
 {
-    protected Texture2DItem<GameSprites> Sprites { get; private set; }
-    protected TextManager<DefaultFont> Fonts { get; private set; }
-    protected LevelData LevelData { get; private set; }
-    protected SoundFxManager<GameSounds> Sounds { get; private set; }
-    public MusicManager<GameMusic> Music { get; private set; }
-    public IArcadePointsMutator PointMutator { get; private set; }
+    protected Texture2DItem<GameSprites> Sprites { get; private set; } = null!;
+    protected TextManager<DefaultFont> Fonts { get; private set; } = null!;
+    protected LevelData LevelData { get; private set; } = null!;
+    protected SoundFxManager<GameSounds> Sounds { get; private set; } = null!;
+    public MusicManager<GameMusic> Music { get; private set; } = null!;
+    public IArcadePointsMutator PointMutator { get; private set; } = null!;
 
     protected bool DemoMode { get; private set; }
 

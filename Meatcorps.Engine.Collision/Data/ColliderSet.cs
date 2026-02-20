@@ -1,6 +1,7 @@
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 namespace Meatcorps.Engine.Collision.Data;
 
-public readonly record struct ColliderSet() : IEquatable<ColliderSet>
+public readonly record struct ColliderSet()
 {
     public int A { get; init; }
     public int B { get; init; }

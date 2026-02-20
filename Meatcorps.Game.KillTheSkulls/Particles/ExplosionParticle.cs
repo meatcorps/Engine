@@ -4,7 +4,6 @@ using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.Particles;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Game.KillTheSkulls.GameEnums;
-using Meatcorps.Game.KillTheSkulls.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Game.KillTheSkulls.Particles;

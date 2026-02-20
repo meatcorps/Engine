@@ -17,16 +17,14 @@ namespace Meatcorps.Game.CyberMaze.GameObjects;
 
 public class Map: ResourceGameObject, ICollisionEventsFiltered
 {
-    private TileRuleSettings<GameTileGroup> _tileRuleSettings;
-    private TileRuleSet<GameSprites, GameTileGroup> _tileRuleSet;
-    private bool _oneTheBridge;
-    private SmoothValue _bridgeOffset = new SmoothValue(0, 0.2f);
-    private Dictionary<PointInt, bool> _placed = new();
+    private TileRuleSettings<GameTileGroup> _tileRuleSettings = null!;
+    private TileRuleSet<GameSprites, GameTileGroup> _tileRuleSet = null!;
+    private readonly SmoothValue _bridgeOffset = new SmoothValue(0, 0.2f);
+    private readonly Dictionary<PointInt, bool> _placed = new();
     private int _totalDronesCalled;
-    private int _totalDronesCalledDone;
     private bool _started;
-    private SmoothValue _borderColorTimer = new SmoothValue(0, 4);
-    private FixedTimer _lineBorderBlinkTimer = new(333);
+    private readonly SmoothValue _borderColorTimer = new SmoothValue(0, 4);
+    private readonly FixedTimer _lineBorderBlinkTimer = new(333);
     
     protected override void OnInitialize()
     {
@@ -37,7 +35,7 @@ public class Map: ResourceGameObject, ICollisionEventsFiltered
         _tileRuleSet.ClearCache();
         _tileRuleSettings = new();
         _tileRuleSettings
-            .WithIsAllowed((position, group) =>
+            .WithIsAllowed((position, _) =>
             {
                 if (!LevelData.Map.Entities.TryGetValue(position, out var mapItem))
                     return false;
@@ -63,7 +61,6 @@ public class Map: ResourceGameObject, ICollisionEventsFiltered
                     Scene.AddGameObject(new Drone(position, result ? tile : GameSprites.WalkableTopBottomLeftRight, () =>
                     {
                         _placed[mapItem.Position] = true;
-                        _totalDronesCalledDone++;
                     }, delay));
                     droneCalled = true;
                 
@@ -74,7 +71,6 @@ public class Map: ResourceGameObject, ICollisionEventsFiltered
                 Scene.AddGameObject(new Drone(position, GameSprites.GhostCharger, () =>
                 {
                     _placed[mapItem.Position] = true;
-                    _totalDronesCalledDone++;
                 }, delay));
                 droneCalled = true;
             }
@@ -84,7 +80,6 @@ public class Map: ResourceGameObject, ICollisionEventsFiltered
                 Scene.AddGameObject(new Drone(position, GameSprites.WalkableBridge, () =>
                 {
                     _placed[mapItem.Position] = true;
-                    _totalDronesCalledDone++;
                     
                 }, delay));
                 droneCalled = true;
@@ -159,7 +154,7 @@ public class Map: ResourceGameObject, ICollisionEventsFiltered
                     {
                         MessageUI.Show("GO! GET ALL THE MEAT!", preset);
                     }
-                }, 1000));
+                }));
             }
         }
     }

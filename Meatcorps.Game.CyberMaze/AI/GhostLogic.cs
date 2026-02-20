@@ -20,11 +20,10 @@ public abstract class GhostLogic: BaseGridDistanceResource
         LevelData = levelData;
         Bounds = new Rect(PointInt.Zero, new PointInt(levelData.LevelWidth, levelData.LevelHeight));
 
-        var counter = 0;
         foreach (var itemLevelData in LevelData.Map.Entities.Values)
         {
             if (itemLevelData.GhostHome) {
-                _homes.Add(itemLevelData.Position);;
+                _homes.Add(itemLevelData.Position);
             }
         }
         _homes.Sort((x, b) => x.Y > b.Y ? -1 : 1);

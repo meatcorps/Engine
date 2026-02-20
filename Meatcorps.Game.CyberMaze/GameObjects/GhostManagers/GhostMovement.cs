@@ -12,20 +12,19 @@ namespace Meatcorps.Game.CyberMaze.GameObjects.GhostManagers;
 
 public class GhostMovement
 {
-    private GhostBehaviour _behaviour;
+    private readonly GhostBehaviour _behaviour;
     private PointInt _lastTargetPoint;
-    private GridDistanceCalculator _distanceCalculator;
+    private readonly GridDistanceCalculator _distanceCalculator;
     private Vector2 _lastVelocity;
-    private List<PointInt> _possibleDirections = new();
-    private List<PointInt> _breadCrumb;
-    private BufferedDirection _bufferedDirection;
-    private Vector2 _previousDirection;
+    private readonly List<PointInt> _possibleDirections = new();
+    private readonly List<PointInt> _breadCrumb;
+    private readonly BufferedDirection _bufferedDirection;
     private PointInt _lastPosition;
-    private EdgeDetector _edgeDetector = new();
-    private TimerOn _parkMove = new(100);
+    private readonly EdgeDetector _edgeDetector = new();
+    private readonly TimerOn _parkMove = new(100);
     private Vector2 _parkPosition;
-    private LevelData LevelData;
-    private GhostStateManager _ghostState;
+    private readonly LevelData LevelData;
+    private readonly GhostStateManager _ghostState;
 
     public IEnumerable<PointInt> PossibleDirections => _possibleDirections;
     

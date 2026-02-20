@@ -1,6 +1,5 @@
 using System.Numerics;
 using Meatcorps.Engine.Collision.Colliders;
-using Meatcorps.Engine.Collision.Data;
 using Meatcorps.Engine.Collision.Enums;
 using Meatcorps.Engine.Collision.Interfaces;
 using Meatcorps.Engine.Collision.Providers.Bodies;

@@ -13,10 +13,9 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
     public int GamePrice => Game.PricePoints;
     
     private readonly int _maxPlayers;
-    private readonly int _startingPoints;
-    private List<ArcadePlayer> _players = new();
-    private Queue<ArcadePlayer> _playerQueue = new();
-    private int _nextPlayer = 1;
+    private readonly List<ArcadePlayer> _players = new();
+    private readonly Queue<ArcadePlayer> _playerQueue = new();
+    private readonly int _nextPlayer = 1;
     public void SetTotalPlayerSessions(int total)
     {
         //
@@ -24,9 +23,9 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
 
     public int TotalPlayers => _players.Count;
 
-    public bool RemovePlayersAtIdle { get; set; }
+    public bool RemovePlayersAtIdle { get; init; }
 
-    public FallbackArcadeSystem(int totalPlayers = 2, int maxPlayers = 2, int startingPoints = 3000)
+    public FallbackArcadeSystem(int maxPlayers = 2, int startingPoints = 3000)
     {
         if (_instance != null)
             throw new InvalidOperationException("Only one instance of FallbackArcadePointMutator is allowed");
@@ -34,7 +33,6 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
         
         Game = GlobalObjectManager.ObjectManager.Get<ArcadeGame>()!;
         _maxPlayers = maxPlayers;
-        _startingPoints = startingPoints;
 
         for (var i = 0; i < Game.MaxPlayers; i++)
             _players.Add(new ArcadePlayer
@@ -68,7 +66,7 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
             return false;
         
         Console.WriteLine("DEDUCTING POINTS: " + points + " TO: " + current.Name + " CURRENT: " + current.Points);
-        current!.Points -= points;
+        current.Points -= points;
         return true;
     }
 
@@ -76,8 +74,8 @@ public class FallbackArcadeSystem: IArcadePointsMutator, IPlayerCheckin, IBackgr
     {
         if (!TryGetPlayer(player, out var current))
             return;
-        Console.WriteLine("SUBMITTING POINTS: " + points + " TO: " + current.Name + " CURRENT: " + current.Points);
-        current!.Points += points;
+        Console.WriteLine("SUBMITTING POINTS: " + points + " TO: " + current!.Name + " CURRENT: " + current.Points);
+        current.Points += points;
     }
 
     public bool IsPlayerCheckedIn(int player, out string name)

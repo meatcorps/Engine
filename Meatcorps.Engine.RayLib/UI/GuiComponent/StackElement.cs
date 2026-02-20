@@ -2,7 +2,6 @@ using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Utilities;
-using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.UI.GuiComponent.Core;
 
 namespace Meatcorps.Engine.RayLib.UI.GuiComponent;
@@ -22,9 +21,9 @@ public class StackElement : BaseGuiItem
     }
 
     public override bool IsContainer => true;
-    public int Gap { get; set; } = 4;
-    public Vector2 Direction { get; set; } = Vector2.UnitY;
-    public Vector2 Uv { get; set; } = UVHelper.Top;
+    public int Gap { get; set; }
+    public Vector2 Direction { get; set; }
+    public Vector2 Uv { get; set; }
 
     protected override void OnInitialize()
     {

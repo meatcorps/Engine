@@ -3,7 +3,6 @@ using Meatcorps.Engine.Collision.Enums;
 using Meatcorps.Engine.Collision.Interfaces;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
-using Meatcorps.Engine.Core.Interfaces.Grid;
 
 namespace Meatcorps.Engine.Collision.Providers.Bodies;
 
@@ -30,34 +29,31 @@ public sealed class Body : IBody, IInternalBody
     }
     public Vector2 PreviousPosition { get; set; }
     public Vector2 Velocity { get; set; }
-    public object Owner { get; set; }
+    public object? Owner { get; set; }
     public IWorldService WorldService { get; }
-    public IEnumerable<ICollider> Colliders
-    {
-        get { return _colliders; }
-    }
+    public IEnumerable<ICollider> Colliders => _colliders;
 
     public float Mass { get; private set; } = 1f;
 
-    public float Restitution { get; private set; } = 0f;
+    public float Restitution { get; private set; }
 
-    public float Friction { get; private set; } = 0f;
+    public float Friction { get; private set; }
 
-    public float LinearDamping { get; private set; } = 0f;
+    public float LinearDamping { get; private set; }
 
-    public float MaxSpeed { get; private set; } = 0f;
+    public float MaxSpeed { get; private set; }
 
-    public float GravityScale { get; private set; } = 0f;
+    public float GravityScale { get; private set; }
 
     public bool IsAwake { get; set; } = true;
 
-    public bool CanSleep { get; private set; } = false;
+    public bool CanSleep { get; private set; }
 
     public int StableIndex { get; private set; } = -1;
 
     public bool Enabled { get; set; } = true;
 
-    public float MovementConstraintAngle { get; private set; } = 0f;
+    public float MovementConstraintAngle { get; private set; }
 
     public RectF BoundingBox
     {
@@ -72,7 +68,7 @@ public sealed class Body : IBody, IInternalBody
         }
     }
 
-    public Body(IWorldService world, object owner = null)
+    public Body(IWorldService world, object? owner = null)
     {
         WorldService = world;
         Owner = owner;
@@ -142,7 +138,7 @@ public sealed class Body : IBody, IInternalBody
 
     // --------- Collider management ---------
 
-    public Body AddCollider(ICollider collider)
+    public Body AddCollider(ICollider? collider)
     {
         if (collider == null)
             return this;
@@ -158,7 +154,7 @@ public sealed class Body : IBody, IInternalBody
         return this;
     }
 
-    public Body RemoveCollider(ICollider collider)
+    public Body RemoveCollider(ICollider? collider)
     {
         if (collider == null)
             return this;

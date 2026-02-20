@@ -1,5 +1,6 @@
 ﻿using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
+// ReSharper disable PossibleMultipleEnumeration
 
 namespace Meatcorps.Engine.RayLib.PostProcessing.Renderer;
 
@@ -9,9 +10,9 @@ public sealed class PostProcessingRenderer : IDisposable
     private RenderTexture2D? _renderTarget2;
     private bool _swapped;
 
-    private RenderTexture2D FromTexture => _swapped ? _renderTarget2!.Value! : _renderTarget1!.Value!;
+    private RenderTexture2D FromTexture => _swapped ? _renderTarget2!.Value : _renderTarget1!.Value;
 
-    private RenderTexture2D ToTexture => _swapped ? _renderTarget1!.Value! : _renderTarget2!.Value!;
+    private RenderTexture2D ToTexture => _swapped ? _renderTarget1!.Value : _renderTarget2!.Value;
 
     public void Dispose()
     {
@@ -58,7 +59,7 @@ public sealed class PostProcessingRenderer : IDisposable
             if (postProcessor is INeedsSceneTexture needsSceneTexture)
                 needsSceneTexture.SetSceneTexture(sourceTexture.Texture);
 
-            postProcessor.Apply(first ? sourceTexture.Texture : FromTexture!.Texture, ToTexture);
+            postProcessor.Apply(first ? sourceTexture.Texture : FromTexture.Texture, ToTexture);
 
             _swapped = !_swapped;
             first = false;

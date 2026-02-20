@@ -10,7 +10,7 @@ public class BlockGridCommand : IAsciiScriptCommand
     private readonly Action<List<List<char>>> _action;
     public AsciiScriptItemType ScriptType => AsciiScriptItemType.Block;
     public string Command { get; }
-    public List<List<char>> Grid { get; private set; }
+    public List<List<char>> Grid { get; private set; } = null!;
     
     public BlockGridCommand(string command, Action<List<List<char>>> action)
     {

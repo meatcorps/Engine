@@ -1,12 +1,12 @@
 ﻿// dotnet add package Raylib-cs
 
-using System;
 using System.Globalization;
-using System.IO;
 using System.Numerics;
 using Raylib_cs;
 
-class Program
+namespace Meatcorps.Engine.AtlasPicker;
+
+public static class Program
 {
     static void Main(string[] args)
     {
@@ -69,7 +69,7 @@ class Program
 
             HandleTyping(ref typedName);
 
-            // Where image is drawn (top-left, integer scale) — includes pan
+            // Where image is drawn (a top-left, integer scale) — includes pan
             var drawRect = new Rectangle(panX, panY, tex.Width * scale, tex.Height * scale);
             var mouse = Raylib.GetMousePosition();
             bool mouseOnImage = Raylib.CheckCollisionPointRec(mouse, drawRect);
@@ -97,7 +97,7 @@ class Program
             bool ctrl = Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl);
             int step = ctrl ? fineStep : gridStep;
 
-            if (Raylib.IsKeyPressed(KeyboardKey.Right)) panX -= step; // move image left relative to window
+            if (Raylib.IsKeyPressed(KeyboardKey.Right)) panX -= step; // move image left relative to the window
             if (Raylib.IsKeyPressed(KeyboardKey.Left)) panX += step; // move image right
             if (Raylib.IsKeyPressed(KeyboardKey.Down)) panY -= step; // move image up
             if (Raylib.IsKeyPressed(KeyboardKey.Up)) panY += step; // move image down
@@ -111,11 +111,11 @@ class Program
                     MathF.Floor(localX / gridSize),
                     MathF.Floor(localY / gridSize)
                 );
-                hovered.X = Math.Clamp(hovered.X, 0, tex.Width / gridSize - 1);
-                hovered.Y = Math.Clamp(hovered.Y, 0, tex.Height / gridSize - 1);
+                hovered.X = Math.Clamp(hovered.X, 0, (float)tex.Width / gridSize - 1);
+                hovered.Y = Math.Clamp(hovered.Y, 0, (float)tex.Height / gridSize - 1);
             }
 
-            // Mouse drag for rect select
+            // Mouse drags for rect select
             if (mouseOnImage && Raylib.IsMouseButtonPressed(MouseButton.Left))
             {
                 draggingMouse = true;
@@ -134,7 +134,7 @@ class Program
                 }
             }
 
-            // Emit single cell (RMB or Enter)
+            // Emit a single cell (RMB or Enter)
             if ((mouseOnImage && Raylib.IsMouseButtonPressed(MouseButton.Right)) ||
                 Raylib.IsKeyPressed(KeyboardKey.Enter))
             {
@@ -190,7 +190,8 @@ class Program
             );
 
             Raylib.DrawRectangle(0, 0, Raylib.GetScreenWidth(), 32, Color.Black);
-            DrawHudLabel(2, 2, $"Image: {Path.GetFileName(imagePath)} | Grid: {gridSize}   Scale: {scale}x | Cell: {(int)hovered.X}, {(int)hovered.Y} | Name: {typedName}");
+            DrawHudLabel(2, 2,
+                $"Image: {Path.GetFileName(imagePath)} | Grid: {gridSize}   Scale: {scale}x | Cell: {(int)hovered.X}, {(int)hovered.Y} | Name: {typedName}");
             if (!string.IsNullOrEmpty(lastOutput))
                 DrawHudLabel(2, 16, $"Last: {lastOutput}");
 
@@ -225,15 +226,10 @@ class Program
         static void DrawRectOutline(System.Drawing.Rectangle r, int thickness, Color col) =>
             Raylib.DrawRectangleLinesEx(new Rectangle(r.X, r.Y, r.Width, r.Height), thickness, col);
 
-        static void DrawLabel(int x, int y, string text)
-        {
-            Raylib.DrawText(text, x + 1, y + 1, 12, Color.Black);
-            Raylib.DrawText(text, x, y, 12, Color.White);
-        }
-
         static void DrawHudLabel(int x, int y, string text)
         {
-            Raylib.DrawTextPro(Raylib.GetFontDefault(), text, new Vector2(x + 1, y + 1), Vector2.Zero, 0, 16, 2, Color.Black);
+            Raylib.DrawTextPro(Raylib.GetFontDefault(), text, new Vector2(x + 1, y + 1), Vector2.Zero, 0, 16, 2,
+                Color.Black);
             Raylib.DrawTextPro(Raylib.GetFontDefault(), text, new Vector2(x, y), Vector2.Zero, 0, 16, 2, Color.White);
         }
 

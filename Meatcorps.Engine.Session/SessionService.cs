@@ -12,7 +12,7 @@ public sealed class SessionService<TEnumSession, TEnumPlayer>: IBackgroundServic
     private readonly SessionFactory<TEnumSession, TEnumPlayer> _factory;
     private bool _stopCalled;
     public SessionSet<TEnumSession, TEnumPlayer> CurrentSession { get; private set; }
-    public int Seed { get; set; } = 0;
+    public int Seed { get; set; }
     public int MaxPlayers => _factory.MaxPlayers;
     
     private bool _isDisposed;
@@ -60,7 +60,7 @@ public sealed class SessionService<TEnumSession, TEnumPlayer>: IBackgroundServic
     public bool TryPlayerJoin(int playerId, string playerName)
     {
         var result = CurrentSession.TryAddPlayer(playerId, playerName, out var data);
-        if (result)
+        if (result && data != null)
             PlayerJoined(CurrentSession.SessionData, data, CurrentSession.TotalPlayers);
         return result;
     }
@@ -73,7 +73,7 @@ public sealed class SessionService<TEnumSession, TEnumPlayer>: IBackgroundServic
     public bool TryPlayerJoin(int playerId, string playerName, out SessionDataBag<TEnumPlayer>? data)
     {
         var result = CurrentSession.TryAddPlayer(playerId, playerName, out data);
-        if (result)
+        if (result && data != null)
             PlayerJoined(CurrentSession.SessionData, data, CurrentSession.TotalPlayers);
         return result;
     }

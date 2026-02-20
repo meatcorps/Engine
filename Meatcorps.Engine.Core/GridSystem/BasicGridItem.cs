@@ -14,5 +14,5 @@ public class BasicGridItem : IGridItem
     
     public RectF BoundingBox { get; set; }
 
-    public object Owner { get; }
+    public object? Owner { get; }
 }

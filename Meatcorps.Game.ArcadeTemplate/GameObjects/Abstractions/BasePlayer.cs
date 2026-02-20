@@ -7,13 +7,13 @@ namespace Meatcorps.Game.ArcadeTemplate.GameObjects.Abstractions;
 
 public abstract class BasePlayer: ResourceGameObject
 {
-    protected readonly IArcadePointsMutator PointMutator;
+    protected new readonly IArcadePointsMutator PointMutator;
     protected readonly IPlayerCheckin PlayerCheckin;
     public Player Player { get; }
 
-    public BasePlayer(Player _player)
+    protected BasePlayer(Player player)
     {
-        Player = _player;
+        Player = player;
         PointMutator = GlobalObjectManager.ObjectManager.Get<IArcadePointsMutator>()!;
         PlayerCheckin = GlobalObjectManager.ObjectManager.Get<IPlayerCheckin>()!;
     }
@@ -29,7 +29,7 @@ public abstract class BasePlayer: ResourceGameObject
         ((LevelScene)Scene).EndGame();
     }
     
-    abstract protected void PlayerLost();
+    protected abstract void PlayerLost();
 
     protected override void OnPreUpdate(float deltaTime)
     {

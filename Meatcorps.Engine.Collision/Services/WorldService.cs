@@ -4,7 +4,6 @@ using Meatcorps.Engine.Collision.Data;
 using Meatcorps.Engine.Collision.Enums;
 using Meatcorps.Engine.Collision.Interfaces;
 using Meatcorps.Engine.Collision.Providers;
-using Meatcorps.Engine.Collision.Providers.Bodies;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
 
@@ -36,7 +35,7 @@ public sealed class WorldService : IWorldService
 
     // ---------- Fluent registration ----------
 
-    public WorldService RegisterBody(IBody body)
+    public WorldService RegisterBody(IBody? body)
     {
         if (body == null)
         {
@@ -55,7 +54,7 @@ public sealed class WorldService : IWorldService
         return this;
     }
 
-    public WorldService UnregisterBody(IBody body)
+    public WorldService UnregisterBody(IBody? body)
     {
         if (body == null)
         {
@@ -70,7 +69,7 @@ public sealed class WorldService : IWorldService
         return this;
     }
 
-    public WorldService AddCollisionEvents(ICollisionEvents sink)
+    public WorldService AddCollisionEvents(ICollisionEvents? sink)
     {
         if (sink != null && !_sinks.Contains(sink))
         {
@@ -80,7 +79,7 @@ public sealed class WorldService : IWorldService
         return this;
     }
 
-    public WorldService RemoveCollisionEvents(ICollisionEvents sink)
+    public WorldService RemoveCollisionEvents(ICollisionEvents? sink)
     {
         if (sink != null)
         {
@@ -109,10 +108,8 @@ public sealed class WorldService : IWorldService
     public void Step(float deltaTime)
     {
         // 1) Integrate (Dynamic/Kinematic only). Broadphase stays outside (IWorldEntityResource).
-        for (var i = 0; i < _bodies.Count; i++)
+        foreach (var body in _bodies)
         {
-            var body = _bodies[i];
-
             if (!body.Enabled)
                 continue;
 
@@ -140,10 +137,8 @@ public sealed class WorldService : IWorldService
         _manifoldThisFrame.Clear();
 
         // 2) Narrow-phase only (broadphase candidates come from IWorldEntityResource)
-        for (var i = 0; i < _bodies.Count; i++)
+        foreach (var body in _bodies)
         {
-            var body = _bodies[i];
-
             if (!body.Enabled)
                 continue;
 
@@ -152,7 +147,7 @@ public sealed class WorldService : IWorldService
 
             var candidates = _spatial.Query(body.BoundingBox);
 
-            if (candidates == null || candidates.Count == 0)
+            if (candidates.Count == 0)
                 continue;
 
             foreach (var other in candidates)
@@ -200,7 +195,7 @@ public sealed class WorldService : IWorldService
                             continue;
                         }
                         
-                        // Provider does narrow-phase & manifold (may be stricter than AABB)
+                        // Provider does narrow-phase & manifold (maybe stricter than AABB)
                         var hit = _providers.CollideWith(a, b, out var m);
                         
                         if (!hit)
@@ -233,9 +228,9 @@ public sealed class WorldService : IWorldService
     }
     
     public IEnumerable<(ICollider A, ICollider B, ContactManifold Manifold)>
-        QueryContacts(IBody body, Vector2 position, uint collisionMask = int.MaxValue)
+        QueryContacts(IBody? body, Vector2 position, uint collisionMask = int.MaxValue)
     {
-        if (body == null || !body.Enabled)
+        if (body is not { Enabled: true })
             yield break;
 
         // Broadphase: bounding box moved by delta
@@ -256,7 +251,7 @@ public sealed class WorldService : IWorldService
                 if (ReferenceEquals(other, body) || !other.Enabled)
                     continue;
 
-                // don’t test static vs static
+                // don’t test static vs. static
                 if (body.BodyType == BodyType.Static && other.BodyType == BodyType.Static)
                     continue;
 
@@ -282,7 +277,7 @@ public sealed class WorldService : IWorldService
         }
         finally
         {
-            // restore position afterwards
+            // restore position afterward
             body.Position = originalPos;
         }
     }

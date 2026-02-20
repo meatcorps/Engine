@@ -9,7 +9,7 @@ namespace Meatcorps.Engine.Collision.Providers.WorldEntityResource;
 public class SpatialEntityGridResource: IWorldEntityResource
 {
     private readonly ISpatialEntityGrid _grid;
-    private ThreadLocal<HashSet<IBody>> _collidersThreadLocal = new(() => new HashSet<IBody>());
+    private readonly ThreadLocal<HashSet<IBody>> _collidersThreadLocal = new(() => new HashSet<IBody>());
 
     public SpatialEntityGridResource(ISpatialEntityGrid? grid)
     {

@@ -1,4 +1,3 @@
-using System;
 using Meatcorps.Engine.Core.Settings;
 
 namespace Meatcorps.Engine.Collision.Utilities;
@@ -6,7 +5,7 @@ namespace Meatcorps.Engine.Collision.Utilities;
 public static class LayerBits
 {
     // 1 << enum value (supports negative-check & >= 32 guard in debug)
-    public static uint Bit<TEnum>(TEnum value) where TEnum : struct, System.Enum
+    public static uint Bit<TEnum>(TEnum value) where TEnum : struct, Enum
     {
         var i = Convert.ToInt32(value);
 
@@ -20,16 +19,16 @@ public static class LayerBits
     }
 
     // Combine many enum values into one mask
-    public static uint MaskOf<TEnum>(params TEnum[] values) where TEnum : struct, System.Enum
+    public static uint MaskOf<TEnum>(params TEnum[] values) where TEnum : struct, Enum
     {
         var mask = 0u;
 
-        if (values == null || values.Length == 0)
+        if (values.Length == 0)
             return mask;
 
-        for (var i = 0; i < values.Length; i++)
+        foreach (var t in values)
         {
-            mask |= Bit(values[i]);
+            mask |= Bit(t);
         }
 
         return mask;
@@ -52,10 +51,10 @@ public static class LayerBits
     }
 
     // Nice-to-have: decode mask back to enum names (for debugging / tooling)
-    public static IEnumerable<string> NamesFromMask<TEnum>(uint mask) where TEnum : struct, System.Enum
+    public static IEnumerable<string> NamesFromMask<TEnum>(uint mask) where TEnum : struct, Enum
     {
-        var names = System.Enum.GetNames(typeof(TEnum));
-        var values = (TEnum[])System.Enum.GetValues(typeof(TEnum));
+        var names = Enum.GetNames(typeof(TEnum));
+        var values = (TEnum[])Enum.GetValues(typeof(TEnum));
 
         for (var i = 0; i < values.Length; i++)
         {

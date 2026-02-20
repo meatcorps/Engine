@@ -13,7 +13,7 @@ public class PlayerManager: BaseManager
     private readonly SignalValue<ArcadePlayer, MQTTGroup> _playerJoin;
     private readonly SignalValue<ArcadePlayer, MQTTGroup> _playerRegister;
     private readonly SignalValue<ArcadeAdminActions, MQTTGroup> _adminActions;
-    private object _playerUpdateLock = new();
+    private readonly object _playerUpdateLock = new();
 
     public PlayerManager()
     {
@@ -129,7 +129,7 @@ public class PlayerManager: BaseManager
 
     private void PointChangeSignalOnValueChanged(ArcadePointChange value)
     {
-        ArcadePlayer player;
+        ArcadePlayer? player;
         lock (_playerUpdateLock)
         {
             player = Data.Players.FirstOrDefault(x => x.Id == value.Id);

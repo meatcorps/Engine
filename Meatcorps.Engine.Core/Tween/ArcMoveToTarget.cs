@@ -4,7 +4,7 @@ namespace Meatcorps.Engine.Core.Tween;
 
 public class ArcMoveToTarget : MoveToTarget
 {
-    public float ArcHeight = 1.0f;
+    public readonly float ArcHeight = 1.0f;
 
     public new void Update(float deltaTime)
     {

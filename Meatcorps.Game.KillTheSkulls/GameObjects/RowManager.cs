@@ -16,8 +16,8 @@ public class RowManager : ResourceGameObject
     private readonly int _rowNumber;
     private readonly PlayerInputRouter<GameInput> _controller;
     private readonly GameInput _targetInput;
-    private LevelScene _levelScene;
-    private CameraControllerGameObject _camera;
+    private LevelScene _levelScene = null!;
+    private CameraControllerGameObject _camera = null!;
     private EnemyState _previousEnemyState;
 
     public RowManager(LevelRow levelRow, int rowNumber)

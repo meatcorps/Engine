@@ -10,7 +10,6 @@ using Meatcorps.Engine.RayLib.Text;
 using Meatcorps.Game.ArcadeTemplate.Data;
 using Meatcorps.Game.ArcadeTemplate.GameEnums;
 using Meatcorps.Game.ArcadeTemplate.GameObjects.Abstractions;
-using Meatcorps.Game.ArcadeTemplate.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Game.ArcadeTemplate.GameObjects.UI;
@@ -19,21 +18,21 @@ public class PlayerUI : ResourceGameObject
 {
     private readonly Player _player;
     private readonly SmoothValue _smoothValue;
-    private FixedTimer _audioValueChangeTimer = new FixedTimer(50);
+    private readonly FixedTimer _audioValueChangeTimer = new FixedTimer(50);
     private PointInt _targetScreenSize;
     private Vector2 _iconPosition = Vector2.Zero;
     private Vector2 _scorePosition = Vector2.Zero;
     private Vector2 _perkPosition = Vector2.Zero;
     private Vector2 _perkDirection = Vector2.Zero;
     private TextStyle _textStyle;
-    private IArcadePointsMutator _pointMutator;
-    private IPlayerCheckin _playerCheckin;
+    private IArcadePointsMutator _pointMutator = null!;
+    private IPlayerCheckin _playerCheckin = null!;
 
     public PlayerUI(Player player)
     {
         _player = player;
         Camera = CameraLayer.UI;
-        _smoothValue = new(_player.Score, 1f);
+        _smoothValue = new(_player.Score);
     }
 
     protected override void OnInitialize()
@@ -76,25 +75,23 @@ public class PlayerUI : ResourceGameObject
 
     protected override void OnDraw()
     {
-        Sprites.Draw(_player.PlayerId == 1 ? GameSprites.MiniArcadeButtonUpPlayerOne : GameSprites.MiniArcadeButtonUpPlayerTwo, _iconPosition, _player.Color, 0f);
+        Sprites.Draw(_player.PlayerId == 1 ? GameSprites.MiniArcadeButtonUpPlayerOne : GameSprites.MiniArcadeButtonUpPlayerTwo, _iconPosition, _player.Color);
         
         TextKit.Draw(ref _textStyle, ((int)_smoothValue.DisplayValue).ToString("000000"), _scorePosition);
-
-        var counter = 0;
         
         var text = _playerCheckin.GetPlayerName(_player.PlayerId) + " (" + _pointMutator.GetPoints(_player.PlayerId) + ")";
         var size = Raylib.MeasureTextEx(Fonts.GetFont(), text, 8, 0);
         if (_player.PlayerId == 1)
         {
-            var additionalOffset = counter > 0 ? new Vector2(4, 4) : new Vector2(0, 4);
-            Raylib.DrawTextEx(Fonts.GetFont(), text, _perkPosition + _perkDirection * counter + additionalOffset, 8, 0,
+            var additionalOffset = new Vector2(0, 4);
+            Raylib.DrawTextEx(Fonts.GetFont(), text, _perkPosition + _perkDirection + additionalOffset, 8, 0,
                 Color.White);
         }
         else
         {
-            var additionalOffset = counter > 0 ? new Vector2(0, 4) : new Vector2(4, 4);
+            var additionalOffset = new Vector2(4, 4);
             Raylib.DrawTextEx(Fonts.GetFont(), text,
-                (_perkPosition + _perkDirection * (counter - 1)) - new Vector2(size.X, 0) + additionalOffset, 8, 0,
+                (_perkPosition + _perkDirection * -1) - new Vector2(size.X, 0) + additionalOffset, 8, 0,
                 Color.White);
         }
 

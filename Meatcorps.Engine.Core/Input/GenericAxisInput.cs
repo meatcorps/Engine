@@ -6,7 +6,7 @@ namespace Meatcorps.Engine.Core.Input;
 public class GenericAxisInput<T> where T : Enum
 {
     private readonly IInputMapper<T> _mapper;
-    private Dictionary<T, Vector2> _axisDirection = new();
+    private readonly Dictionary<T, Vector2> _axisDirection = new();
 
     public GenericAxisInput(IInputMapper<T> mapper, T left, T right, T top, T bottom)
     {

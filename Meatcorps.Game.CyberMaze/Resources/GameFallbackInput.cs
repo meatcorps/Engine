@@ -1,11 +1,11 @@
 using Meatcorps.Engine.Core.Input;
-using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.Controllers.Enums;
 using Meatcorps.Engine.Hardware.Controllers.Mapper;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.Input;
+using Meatcorps.Engine.SDL.Controller;
 using Meatcorps.Game.CyberMaze.GameEnums;
 using Raylib_cs;
 

@@ -1,7 +1,6 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Pathfinding.Utilities;
-using Meatcorps.Engine.RayLib.Extensions;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Pathfinding.Extensions;

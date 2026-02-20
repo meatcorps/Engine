@@ -1,7 +1,5 @@
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using Meatcorps.Engine.Collision.Data;
-using Meatcorps.Engine.Collision.Enums;
 using Meatcorps.Engine.Collision.Interfaces;
 using Meatcorps.Engine.Core.Data;
 

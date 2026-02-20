@@ -17,9 +17,9 @@ namespace Meatcorps.Game.CyberMaze.GameObjects;
 public class Collectable: ResourceGameObject, ICollisionEventsFiltered
 {
     private readonly PointInt _position;
-    private Body _body;
+    private Body _body = null!;
     private bool _isCollected;
-    private RandomEnum<GameSounds> _randomSound = new RandomEnum<GameSounds>()
+    private readonly RandomEnum<GameSounds> _randomSound = new RandomEnum<GameSounds>()
         .Add(GameSounds.Nlpakem1, 25)
         .Add(GameSounds.Nlpakem2, 25)
         .Add(GameSounds.Nlpakem3, 25)

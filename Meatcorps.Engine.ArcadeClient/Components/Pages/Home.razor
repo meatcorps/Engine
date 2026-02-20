@@ -1,5 +1,6 @@
 ﻿@page "/"
 @page "/SIGNIN/{id:int}"
+@using System.Reactive
 @using System.Reactive.Disposables
 @using System.Reactive.Linq
 @using Meatcorps.Engine.Arcade.Data
@@ -78,7 +79,7 @@
     @if (ArcadeDataService.TryGetGame(CurrentPlayer.CurrentGame, out var game))
     {
         <div class="game-card Waiting">
-            <h2>@game.Name</h2>
+            <h2>@game!.Name</h2>
             <span class="tag">@game.State.ToString()</span>
             <span>Current idiots playing: </span>
             @foreach (var player in ArcadeDataService.Players().Where(x => x.CurrentGame == game.Code))
@@ -127,15 +128,15 @@ else
     public int? Id { get; set; }
     
     private string _userId = "";
-    public string ErrorMessage = "";
-    public bool UserKnown;
-    public bool CanTheUserRegister;
-    public bool ProcessingInformation;
-    public string NewPlayerName = "";
-    public ArcadeQuestion? Question;
-    public float QuestionTimeLeft;
-    public ArcadePlayer CurrentPlayer = new ArcadePlayer();
-    private CancellationDisposable _pageAliveCts = new ();
+    private string ErrorMessage = "";
+    private bool UserKnown;
+    private bool CanTheUserRegister;
+    private bool ProcessingInformation;
+    private string NewPlayerName = "";
+    private ArcadeQuestion? Question;
+    private float QuestionTimeLeft;
+    private ArcadePlayer CurrentPlayer = new ArcadePlayer();
+    private readonly CancellationDisposable _pageAliveCts = new ();
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -172,12 +173,14 @@ else
             UpdateEnterWithGameId();
             await InvokeAsync(StateHasChanged);
             
-            ArcadeDataService.DataChanged.Subscribe(async _ =>
-            {
-                UpdatePlayerData();
-                await InvokeAsync(StateHasChanged);
-            }, _pageAliveCts.Token);
+            ArcadeDataService.DataChanged.Subscribe(OnArcadeDataChanged, _pageAliveCts.Token);
         }
+    }
+    
+    private void OnArcadeDataChanged(Unit __)
+    {
+        UpdatePlayerData();
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private void UpdateEnterWithGameId()
@@ -189,7 +192,7 @@ else
             return;
         
         Console.WriteLine(DateTime.Now - game!.LastReported);
-        if (game!.State is GameState.Waiting or GameState.Active && (DateTime.Now - game!.LastReported) < TimeSpan.FromSeconds(5))
+        if (game.State is GameState.Waiting or GameState.Active && (DateTime.Now - game.LastReported) < TimeSpan.FromSeconds(5))
         {
             if (UserKnown)
             {
@@ -209,7 +212,7 @@ else
             Nav.NavigateTo("/");
     }
 
-    public async Task RegisterPlayer()
+    private async Task RegisterPlayer()
     {
         if (NewPlayerName.Trim().Length < 2)
         {
@@ -242,7 +245,7 @@ else
             UpdateEnterWithGameId();
     }
 
-    public async Task JoinGame(ArcadeGame game)
+    private async Task JoinGame(ArcadeGame game)
     {
         ProcessingInformation = true;
         ErrorMessage = "";
@@ -261,7 +264,7 @@ else
         Nav.NavigateTo("/");
     }
 
-    public async Task SendAnswer(string answer)
+    private async Task SendAnswer(string answer)
     {
         ArcadeResponseService.SubmitResponse(CurrentPlayer.Name, answer);
         Question = null;

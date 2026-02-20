@@ -17,9 +17,9 @@ namespace Meatcorps.Game.CyberMaze.GameObjects;
 public class PowerPellet: ResourceGameObject, ICollisionEventsFiltered
 {
     private readonly PointInt _position;
-    private Body _body;
+    private Body _body = null!;
 
-    private RandomEnum<GameSounds> _randomSound = new RandomEnum<GameSounds>()
+    private readonly RandomEnum<GameSounds> _randomSound = new RandomEnum<GameSounds>()
         .Add(GameSounds.Nlhierkomenjij6, 25)
         .Add(GameSounds.Nlhierkomenjij8, 25)
         .AddGroup()

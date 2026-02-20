@@ -22,7 +22,6 @@ public class SmoothColor
 
     /// <param name="initialValue">Optional starting value</param>
     /// <param name="speed">Speed in units per second</param>
-    /// <param name="fixedTime">If true it reach the display value always within the speed in seconds</param>
     public SmoothColor(Color initialValue, float speed = 1f)
     {
         _speed = speed;
@@ -79,10 +78,9 @@ public class SmoothColor
     {
         var delta = speed * deltaTime;
 
-        if (value < target)
-            value = Math.Min(value + delta, target);
-        else
-            value = Math.Max(value - delta, target);
+        value = value < target 
+            ? Math.Min(value + delta, target) 
+            : Math.Max(value - delta, target);
 
         return value;
     }

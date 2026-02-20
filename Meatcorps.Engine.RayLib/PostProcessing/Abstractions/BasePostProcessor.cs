@@ -71,7 +71,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
         );
         Raylib.EndShaderMode();
         DoOverlayRender(new PointInt(target.Texture.Width, target.Texture.Height));
-        ;
+        
         Raylib.EndTextureMode();
     }
 
@@ -138,7 +138,7 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
 
     protected void SetValue(string name, Color color)
     {
-        if (!TryLoc(name, out var loc)) return;
+        if (!TryLoc(name, out _)) return;
         // Convert Raylib color (0–255) to normalized RGB (0–1)
         var rgb = new Vector3(color.R / 255f, color.G / 255f, color.B / 255f);
         Raylib.SetShaderValue(_shader, ShaderLocations[name], rgb, ShaderUniformDataType.Vec3);

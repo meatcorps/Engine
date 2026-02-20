@@ -7,11 +7,11 @@ namespace Meatcorps.Engine.Core.Input;
 
 public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enum
 {
-    private Dictionary<int, Dictionary<T, GenericInput>> _inputMap = new();
-    private Dictionary<int, Dictionary<int, GenericAxisInput<T>>> _inputAxisMap = new();
-    private Dictionary<int, int> _indexProfile = new();
-    private GenericInput _defaultInput = new GenericInput(() => 0, "UNKNOWN");
-    private IGenericInputMapSaver<T>? _loaderAndSaver;
+    private readonly Dictionary<int, Dictionary<T, GenericInput>> _inputMap = new();
+    private readonly Dictionary<int, Dictionary<int, GenericAxisInput<T>>> _inputAxisMap = new();
+    private readonly Dictionary<int, int> _indexProfile = new();
+    private readonly GenericInput _defaultInput = new GenericInput(() => 0, "UNKNOWN");
+    private readonly IGenericInputMapSaver<T>? _loaderAndSaver;
 
     public GenericMapper(IGenericInputMapSaver<T>? loaderAndSaver = null)
     {
@@ -36,7 +36,6 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
     {
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
             _inputMap[profileId] = playerInputs = new Dictionary<T, GenericInput>();
-        //CheckIfAlreadyAssigned(profileId, inputState); 
         playerInputs[input] = _loaderAndSaver?.LoadFromConfig(profileId, input, inputState) ?? inputState;
         return this;
     }
@@ -93,10 +92,8 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
             return _defaultInput;
             //throw new InvalidOperationException($"No input map for profile {profileId}");
-        if (!playerInputs.TryGetValue(input, out var inputState))
-            return _defaultInput;
+        return playerInputs.GetValueOrDefault(input, _defaultInput);
             //throw new InvalidOperationException($"No input state for input {input} on profile {profileId}");
-        return inputState;
     }
 
     public Vector2 GetAxis(int player, int axis = 1)
@@ -146,7 +143,7 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
 
     public bool IsConnected(int player)
     {
-        return _indexProfile.TryGetValue(player, out var profileId);
+        return _indexProfile.TryGetValue(player, out _);
     }
 
     public bool AnyInputPressed(out int profileId, out int playerid)

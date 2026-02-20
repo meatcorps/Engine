@@ -1,4 +1,3 @@
-using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -134,7 +133,7 @@ public struct RectF : IEquatable<RectF>
         if (minimumVector2.X < maximumVector2.X || minimumVector2.Y < maximumVector2.Y)
             result = new RectF();
         else
-            result = RectF.CreateFrom(maximumVector2, minimumVector2);
+            result = CreateFrom(maximumVector2, minimumVector2);
     }
 
     public static RectF Intersection(RectF first, RectF second)
@@ -160,7 +159,7 @@ public struct RectF : IEquatable<RectF>
         return Intersects(ref first, ref second);
     }
 
-    public bool Intersects(RectF rectangle) => RectF.Intersects(ref this, ref rectangle);
+    public bool Intersects(RectF rectangle) => Intersects(ref this, ref rectangle);
 
     public static bool Contains(ref RectF rectangle, ref Vector2 point)
     {
@@ -170,10 +169,10 @@ public struct RectF : IEquatable<RectF>
 
     public static bool Contains(RectF rectangle, Vector2 point)
     {
-        return RectF.Contains(ref rectangle, ref point);
+        return Contains(ref rectangle, ref point);
     }
 
-    public bool Contains(Vector2 point) => RectF.Contains(ref this, ref point);
+    public bool Contains(Vector2 point) => Contains(ref this, ref point);
 
     public float SquaredDistanceTo(Vector2 point)
     {

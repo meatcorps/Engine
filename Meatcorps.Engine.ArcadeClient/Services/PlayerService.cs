@@ -24,7 +24,7 @@ public class PlayerService : IDisposable
 
     public async Task<bool> RegisterPlayerAsync(string id, string name)
     {
-        if (_arcadeDataService.TryGetPlayer(id, out var player))
+        if (_arcadeDataService.TryGetPlayer(id, out _))
             return true;
         
         var waitForPlayerRegistration = _arcadeDataService

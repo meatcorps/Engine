@@ -9,7 +9,7 @@ public class ArduinoInputMapper<T> : IInputMapperWithManager<T, ArduinoControlle
     public ArduinoControllerManager Manager { get; }
     private Dictionary<T, ControllerInputEnum> Map { get; } = new();
     
-    private List<int> _availableProfiles = new([0, 1]);
+    private readonly List<int> _availableProfiles = new([0, 1]);
     
     public ArduinoInputMapper(ArduinoControllerManager manager)
     {

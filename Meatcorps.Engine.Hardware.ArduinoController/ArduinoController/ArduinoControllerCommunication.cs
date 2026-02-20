@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
 using Meatcorps.Engine.Core.Interfaces.Hardware;
 
 namespace Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;
@@ -14,7 +13,7 @@ public class ArduinoControllerCommunication : IDisposable
     public bool IsConnected => _serialPort.IsOpen;
     
     private readonly ConcurrentQueue<(ButtonLightsEnum, ButtonLightsEnum)> _buttonLightsQue = new();
-    private CancellationTokenSource _cts = new();
+    private readonly CancellationTokenSource _cts = new();
 
     private ButtonLightsEnum _previousButtonLights1;
     private ButtonLightsEnum _previousButtonLights2;

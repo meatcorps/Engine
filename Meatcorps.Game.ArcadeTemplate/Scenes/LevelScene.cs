@@ -19,7 +19,6 @@ using Meatcorps.Engine.Session;
 using Meatcorps.Game.ArcadeTemplate.Data;
 using Meatcorps.Game.ArcadeTemplate.GameEnums;
 using Meatcorps.Game.ArcadeTemplate.GameObjects.Abstractions;
-using Meatcorps.Game.ArcadeTemplate.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Game.ArcadeTemplate.Scenes;
@@ -30,16 +29,16 @@ public class LevelScene : BaseScene
     public int TotalPlayers => DemoMode ? 2 : _sessionService.CurrentSession.TotalPlayers;
     public bool DemoMode { get; }
     private LevelData _level { get; set; } = new();
-    private List<Player> _players = new();
-    private AsciiScriptParser _parser = new();
+    private readonly List<Player> _players = new();
+    private readonly AsciiScriptParser _parser = new();
     private bool _firstLevelData = true;
-    private UIMessageEmitter _uiMessage;
+    private UIMessageEmitter _uiMessage = null!;
     private Font _font;
-    private MusicManager<GameMusic> _musicManager;
-    private SoundFxManager<GameSounds> _soundFxManager; 
-    private SessionService<GameSessionData, GamePlayerData> _sessionService;
+    private MusicManager<GameMusic> _musicManager = null!;
+    private SoundFxManager<GameSounds> _soundFxManager = null!; 
+    private SessionService<GameSessionData, GamePlayerData> _sessionService = null!;
     private int _cachedScore;
-    private IPlayerCheckin _playerCheckin;
+    private IPlayerCheckin _playerCheckin = null!;
 
     public LevelScene(string levelPath = "Assets/Level1.txt", bool demoMode = false)
     {
@@ -89,11 +88,11 @@ public class LevelScene : BaseScene
                     else
                         Console.WriteLine("Invalid music " + sound);
                 }))
-                .Register(() => new StringVariableCommand("PAUSESONG", sound =>
+                .Register(() => new StringVariableCommand("PAUSESONG", _ =>
                 {
                     _musicManager.Pause();
                 }))
-                .Register(() => new StringVariableCommand("RESUMESONG", sound =>
+                .Register(() => new StringVariableCommand("RESUMESONG", _ =>
                 {
                     _musicManager.Resume();
                 }))
@@ -128,7 +127,7 @@ public class LevelScene : BaseScene
                 {
                     Died(null);
                 }))
-                .Register(() => new StringVariableCommand("NEXTLEVEL", level =>
+                .Register(() => new StringVariableCommand("NEXTLEVEL", _ =>
                 {
                     Died(null);
                 }));
@@ -138,8 +137,8 @@ public class LevelScene : BaseScene
 
         SceneObjectManager.Register(_level);
         var cameraManager = new CameraControllerGameObject(GlobalObjectManager.ObjectManager.Get<ICamera>()!);
-        var center = new Vector2(320 - ((640 - _level.LevelWidth * _level.GridSize) / 2),
-            180 - ((360 - _level.LevelHeight * _level.GridSize) / 2));
+        var center = new Vector2(320 - ((640f - _level.LevelWidth * _level.GridSize) / 2),
+            180 - ((360f - _level.LevelHeight * _level.GridSize) / 2));
 
         if (!DemoMode)
         {
@@ -163,7 +162,6 @@ public class LevelScene : BaseScene
 
         foreach (var gridItem in analyzer.IterateAll())
         {
-            var position = gridItem.Item1;
             var character = gridItem.Item2;
             switch (character)
             {
@@ -191,6 +189,7 @@ public class LevelScene : BaseScene
 
             foreach (var player in _players)
             {
+                Console.WriteLine(player.PlayerId);
                 //TODO: Your game object 
                 //AddGameObject(player.YourPlayerObject);
             }
@@ -213,7 +212,7 @@ public class LevelScene : BaseScene
         }
         
         //TODO: Place player spawn logic here
-        
+        Console.WriteLine(positions);
         var player = new Player
         {
             SessionDataBag = playerData,

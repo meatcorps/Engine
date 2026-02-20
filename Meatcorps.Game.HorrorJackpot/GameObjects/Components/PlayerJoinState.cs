@@ -14,7 +14,7 @@ public class PlayerJoinState: BaseStateMachine
     protected override void UpdateState(float deltaTime)
     {
         GameInfo.State = GameState.Waiting;
-        if (Target.PlayerCheckin.IsPlayerCheckedIn(1, out var player))
+        if (Target.PlayerCheckin.IsPlayerCheckedIn(1, out var _))
         {
             if (Target.ArcadePointMutator.RequestPoints(1, GameInfo.PricePoints))
             {

@@ -10,7 +10,7 @@ namespace Meatcorps.Engine.RayLib.Game.GameTasks;
 
 public class LoadAfterRayLibInitTask : IGameLoopTask
 {
-    private GameHost _host;
+    private GameHost _host = null!;
 
     private bool _isLoadingInitialized;
 
@@ -19,7 +19,7 @@ public class LoadAfterRayLibInitTask : IGameLoopTask
         Priority = priority;
     }
 
-    public int Priority { get; } = 1;
+    public int Priority { get; }
     public bool Enabled { get; set; } = true;
     public bool IsInitialized { get; private set; }
 
@@ -76,10 +76,10 @@ public class LoadAfterRayLibInitTask : IGameLoopTask
                 Raylib.ClearBackground(Color.Black);
                 Raylib.DrawText($"Loading... [{done}/{total}]", 16, 16, 32, Color.White);
                 Raylib.DrawRectangleLinesEx(
-                    new Rectangle(new Vector2(16, _host.Height / 2 - 16), new Vector2(_host.Width - 32, 32)), 2,
+                    new Rectangle(new Vector2(16, _host.Height / 2f - 16), new Vector2(_host.Width - 32, 32)), 2,
                     Color.White);
                 Raylib.DrawRectangleRec(
-                    new Rectangle(new Vector2(20, _host.Height / 2 - 12), new Vector2((_host.Width - 40) * normal, 24)),
+                    new Rectangle(new Vector2(20, _host.Height / 2f - 12), new Vector2((_host.Width - 40) * normal, 24)),
                     Color.White);
                 Raylib.EndDrawing();
             }

@@ -1,6 +1,8 @@
+using Meatcorps.Engine.AsciiScript.Commands;
 using Meatcorps.Engine.AsciiScript.Data;
 using Meatcorps.Engine.AsciiScript.Enums;
 using Meatcorps.Engine.AsciiScript.Interfaces;
+// ReSharper disable SuspiciousTypeConversion.Global
 
 namespace Meatcorps.Engine.AsciiScript.Services;
 
@@ -8,24 +10,24 @@ public class AsciiScriptParser : IDisposable
 {
     public ScriptParserState State { get; set; } = ScriptParserState.Idle;
     public float DeltaTime { get; private set; }
-    public Dictionary<string, Func<IAsciiScriptCommand>> _commandMap { get; } = new();
+    private Dictionary<string, Func<IAsciiScriptCommand>> _commandMap { get; } = new();
     
-    private List<IAsciiScriptCommand> _templateCommands = new();
-    private List<IAsciiScriptCommand> _executeCommands  = new();
-    private List<AsciiScriptItem> _commandParameters  = new();
-    private AsciiScriptReader? _reader;
+    private readonly List<IAsciiScriptCommand> _templateCommands = new();
+    private readonly List<IAsciiScriptCommand> _executeCommands  = new();
+    private readonly List<AsciiScriptItem> _commandParameters  = new();
+    public AsciiScriptReader? Reader { get; private set; }
     private bool _isLoaded;
     private bool _isDisposed;
     private int _lineNumber;
     private int _runs;
+    
     public AsciiScriptParser Register(Func<IAsciiScriptCommand> command)
     {
         var commandInstance = command();
         
-        if (_commandMap.ContainsKey(commandInstance.Command))
+        if (!_commandMap.TryAdd(commandInstance.Command, command))
             throw new InvalidOperationException($"Command already registered: {commandInstance.Command}");
-        
-        _commandMap.Add(commandInstance.Command, command);
+
         _templateCommands.Add(commandInstance);
         return this;
     }
@@ -36,7 +38,7 @@ public class AsciiScriptParser : IDisposable
             return this;
         _isLoaded = true;
         
-        _reader = new AsciiScriptReader(
+        Reader = new AsciiScriptReader(
             _templateCommands
                 .Where(x => x.ScriptType == AsciiScriptItemType.Block)
                 .Select(x => x.Command).ToArray(),
@@ -49,6 +51,14 @@ public class AsciiScriptParser : IDisposable
         
         return this;
     }
+
+    public void JumpToLine(int position)
+    {
+        if (_lineNumber < 0 || _lineNumber >= _executeCommands.Count)
+            throw new Exception("Jump to line out of range");
+        _lineNumber = position;
+        Console.WriteLine($"Jump to line {_lineNumber}");
+    }
     
     public void Parse(string path)
     {
@@ -57,10 +67,43 @@ public class AsciiScriptParser : IDisposable
         
         State = ScriptParserState.Idle;
         
-        _reader!.LoadFromFileAndParse(path);
+        Reader!.LoadFromFileAndParse(path);
         ClearCommands();
-        while (_reader.ReadNext(out var currentCommand))
+        while (Reader.ReadNext(out var currentCommand))
         {
+            if (currentCommand.Type == AsciiScriptItemType.Goto)
+            {
+                var currentCommandValue = currentCommand.Value;
+                var targetLineNumber = Reader.SearchAll(scriptItem => scriptItem.Value == currentCommandValue && scriptItem.Type == AsciiScriptItemType.GotoLabel);
+                _commandParameters.Add(currentCommand);
+                _executeCommands.Add(new JumpToLineCommand(targetLineNumber));
+                continue;
+            }
+
+            if (currentCommand.Type == AsciiScriptItemType.ConditionElse)
+            {
+                var targetLineNumber = 0;
+                Reader.SearchAfter((item, i) =>
+                {
+                    if (item.Type == AsciiScriptItemType.ConditionEnd)
+                    {
+                        targetLineNumber = i;
+                        return true;
+                    }
+                    return false;
+                });
+                _commandParameters.Add(currentCommand);
+                _executeCommands.Add(new JumpToLineCommand(targetLineNumber));
+                continue;
+            }
+
+            if (currentCommand.Type is AsciiScriptItemType.GotoLabel or AsciiScriptItemType.ConditionEnd)
+            {
+                _commandParameters.Add(currentCommand);
+                _executeCommands.Add(new NothingCommand());
+                continue;
+            }
+
             var accepted = false;
             foreach (var template in _templateCommands)
             {
@@ -123,6 +166,7 @@ public class AsciiScriptParser : IDisposable
     private void HandleCommand()
     {
         var currentCommand = _executeCommands[_lineNumber];
+        
         currentCommand.Execute(_commandParameters[_lineNumber], this, _runs);
 
 

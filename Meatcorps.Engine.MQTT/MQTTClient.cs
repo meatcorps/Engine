@@ -15,11 +15,11 @@ public class MQTTClient: IDisposable
     private readonly IMqttClient _client;
     private bool _running = true;
     
-    private Subject<Tuple<string, string>> _messageReceived = new();
-    private Subject<Unit> _connected = new();
+    private readonly Subject<Tuple<string, string>> _messageReceived = new();
+    private readonly Subject<Unit> _connected = new();
     public IObservable<Unit> Connected => _connected.AsObservable();
     public bool IsConnected => _client.IsConnected;
-    private bool _verboseTrafficLogging;
+    private readonly bool _verboseTrafficLogging;
     
     public MQTTClient(string host)
     {
@@ -33,14 +33,14 @@ public class MQTTClient: IDisposable
     {
         var options = new MqttClientOptionsBuilder()
             .WithCredentials(username, password)
-            .WithTcpServer(_host, port) // Replace with your MQTT broker address
+            .WithTcpServer(_host, port) 
             .WithCleanSession()
             .Build();
 
         _client.ApplicationMessageReceivedAsync += e =>
         {
             var topic = e.ApplicationMessage.Topic;
-            var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+            var payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
 
             if (_verboseTrafficLogging)
                 Console.WriteLine($"MQTT INCOMING: {topic} > {payload}");
@@ -50,7 +50,7 @@ public class MQTTClient: IDisposable
             return Task.CompletedTask;
         };
 
-        _client.ConnectedAsync += e =>
+        _client.ConnectedAsync += _ =>
         {
             if (_verboseTrafficLogging)
                 Console.WriteLine("MQTT CONNECTED!");
@@ -59,7 +59,7 @@ public class MQTTClient: IDisposable
             return Task.CompletedTask;
         };
         
-        _client.DisconnectedAsync += e =>
+        _client.DisconnectedAsync += _ =>
         { 
             if (_verboseTrafficLogging)
                 Console.WriteLine($"MQTT DISCONNECTED!");

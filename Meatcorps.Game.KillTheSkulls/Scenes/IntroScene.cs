@@ -11,10 +11,8 @@ using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Engine.RayLib.Text;
 using Meatcorps.Engine.Session;
-using Meatcorps.Game.KillTheSkulls.Data;
 using Meatcorps.Game.KillTheSkulls.GameEnums;
 using Meatcorps.Game.KillTheSkulls.GameObjects.UI;
-using Meatcorps.Game.KillTheSkulls.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Game.KillTheSkulls.Scenes;
@@ -22,18 +20,17 @@ namespace Meatcorps.Game.KillTheSkulls.Scenes;
 public class IntroScene : BaseScene
 {
     private Font _font;
-    private UIMessageEmitter _uiMessage;
-    private PlayerInputRouter<GameInput> _controller;
+    private UIMessageEmitter _uiMessage = null!;
+    private PlayerInputRouter<GameInput> _controller = null!;
     private TimerOn _startTimer = new(2000);
-    private FixedTimer _sliderTimer = new(10000);
-    private int currentSlide = 0;
-    private MusicManager<GameMusic> _musicManager;
-    private SoundFxManager<GameSounds> _soundManager;
-    private TextManager<DefaultFont> _fontManager;
-    private SessionService<GameSessionData, GamePlayerData> _sessionService;
-    public int TotalPlayersReady { get; set; } = 0;
-    private bool _waitingForPlayers = false;
-    private IUniversalConfig _config;
+    private readonly FixedTimer _sliderTimer = new(10000);
+    private int currentSlide;
+    private MusicManager<GameMusic> _musicManager = null!;
+    private SoundFxManager<GameSounds> _soundManager = null!;
+    private SessionService<GameSessionData, GamePlayerData> _sessionService = null!;
+    public int TotalPlayersReady { get; private set; }
+    private bool _waitingForPlayers;
+    private IUniversalConfig _config = null!;
 
     protected override void OnInitialize()
     {
@@ -60,7 +57,6 @@ public class IntroScene : BaseScene
         _controller.GetState(1, GameInput.Smash5Red).Animation = null;
         _musicManager = GlobalObjectManager.ObjectManager.Get<MusicManager<GameMusic>>()!;
         _soundManager = GlobalObjectManager.ObjectManager.Get<SoundFxManager<GameSounds>>()!;
-        _fontManager = GlobalObjectManager.ObjectManager.Get<TextManager<DefaultFont>>()!;
         _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!;
         _musicManager.Play(GameMusic.IntroOutro);
         _sessionService.StartSession();

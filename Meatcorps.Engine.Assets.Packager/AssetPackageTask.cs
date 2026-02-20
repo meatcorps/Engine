@@ -1,5 +1,4 @@
 using System.Reflection;
-using Meatcorps.Engine.Assets.Interfaces;
 using Meatcorps.Engine.Assets.Packager.Services;
 
 namespace Meatcorps.Engine.Assets.Packager;

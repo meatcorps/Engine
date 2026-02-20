@@ -8,8 +8,9 @@ public class GridAnalyzerYX<T>
     private readonly PointInt _size;
     private PointInt _position;
     private static readonly EqualityComparer<T> Eq = EqualityComparer<T>.Default;
-    private List<PointInt> _neighborsVisited = new();
-    private PointInt[] _neighborDirections = new[] { new PointInt(0, -1), new PointInt(0, 1), new PointInt(-1, 0), new PointInt(1, 0) };
+    private readonly List<PointInt> _neighborsVisited = new();
+    private readonly PointInt[] _neighborDirections = [new(0, -1), new(0, 1), new(-1, 0), new(1, 0)
+    ];
     
     public GridAnalyzerYX(List<List<T>> grid)
     {
@@ -81,13 +82,12 @@ public class GridAnalyzerYX<T>
         if (position is not null && InBounds(position.Value))
             _position = position.Value;
         _neighborsVisited.Clear();
-        var neighborFound = false;
         while (true)
         {
             totalJumps++;
             if (totalJumps > maxJumps) 
                 break;
-            neighborFound = false;
+            var neighborFound = false;
             foreach (var direction in _neighborDirections)
             {
                 if (Neighbor(direction, out var neighbor, false) && neighbor!.Equals(value) && !_neighborsVisited.Contains(_position + direction))
@@ -96,7 +96,6 @@ public class GridAnalyzerYX<T>
                     _neighborsVisited.Add(_position);
                     yield return _position;
                     neighborFound = true;
-                    continue;
                 }
             }
             if (!neighborFound)

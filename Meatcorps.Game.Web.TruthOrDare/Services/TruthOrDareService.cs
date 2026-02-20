@@ -9,8 +9,8 @@ namespace Meatcorps.Game.Web.TruthOrDare.Services;
 
 public class TruthOrDareService
 {
-    private List<TruthDareItem>  _truthDareItems = new ();
-    private Dictionary<(TruthDareType, string), Queue<TruthDareItem>> _truthDareItemsQueue = new ();
+    private readonly List<TruthDareItem>  _truthDareItems = new ();
+    private readonly Dictionary<(TruthDareType, string), Queue<TruthDareItem>> _truthDareItemsQueue = new ();
     
     public TruthOrDareService()
     {

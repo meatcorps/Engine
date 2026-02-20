@@ -1,12 +1,9 @@
 ﻿using Meatcorps.Engine.Core.Modules;
-using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Settings;
 using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Modules;
-using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
-using Meatcorps.Engine.RayLib.Resources;
 using Raylib_cs;
 
 LoggingModule.Load();

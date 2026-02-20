@@ -26,7 +26,7 @@ public class FinalScoreCalculator : ResourceGameObject
     private readonly InlineRender _inlineRender = new();
     private readonly string _playerName;
     private int _itemsInList = 1;
-    private TimerOn _iterateTimer;
+    private TimerOn _iterateTimer = null!;
     private int _previousLine = -1;
     private readonly ArcadeGame _gameInfo;
     private int _relativePoints;
@@ -79,7 +79,7 @@ public class FinalScoreCalculator : ResourceGameObject
         if (highestScore < finalScore)
             ListValues("Beat the HighScore!:", _gameInfo.PricePoints * 2, 0, "+ Points!");
         ListValues("Leaderboard rank:",
-            GlobalObjectManager.ObjectManager.Get<HighScoreService>()!.GetLeaderboardPosition(finalScore), 0);
+            GlobalObjectManager.ObjectManager.Get<HighScoreService>()!.GetLeaderboardPosition(finalScore));
 
         if (_relativePoints != 0)
         {
@@ -111,16 +111,16 @@ public class FinalScoreCalculator : ResourceGameObject
     private void SetLineOnOrOff(int line, bool on)
     {
         if (_inlineRender.TryGetItem($"{line}_1", out var item1))
-            item1.Enabled = on;
+            item1!.Enabled = on;
         if (_inlineRender.TryGetItem($"{line}_2", out var item2))
-            item2.Enabled = on;
+            item2!.Enabled = on;
         if (_inlineRender.TryGetItem($"{line}_3", out var item3))
-            item3.Enabled = on;
+            item3!.Enabled = on;
     }
 
     private void ListValues(string label, float value, float from = 0, string afterFix = "", int size = 8)
     {
-        var smoothValue = new SmoothValue(from, 1);
+        var smoothValue = new SmoothValue(from);
         smoothValue.RealValue = value;
 
         _inlineRender

@@ -10,7 +10,7 @@ public class PersistentLoaderAndSaverService : IKeyValueLoader<string>, IKeyValu
     private const string Filename = "session.bda";
     private readonly ILogger<PersistentLoaderAndSaverService> _logger;
     private IKeyValueDatabase<string>? _target;
-    private CancellationTokenSource _cancellationTokenSource = new();
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
     private bool _disposed;
 
     public PersistentLoaderAndSaverService()

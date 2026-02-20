@@ -1,6 +1,5 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Enums;
-using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Particles;
 using Meatcorps.Game.Snake.Data;
@@ -12,7 +11,7 @@ public static class MeatRottenParticle
 {
     public static ParticleSystemBuilder Create(Vector2 position)
     {
-        return new ParticleSystemBuilder().SetMaxParticles(10)
+        return new ParticleSystemBuilder().SetMaxParticles()
             .EnableAutoEmit(1, new FixedTimer(250))
             .AddMutator(() => new ParticleSizeLerp(EaseType.EaseIn)
                 .WithStartValue(() =>
@@ -22,7 +21,7 @@ public static class MeatRottenParticle
                 .WithStartValue(() =>
                 {
                     return Raylib.ColorLerp(Color.DarkBrown, Color.DarkGreen,
-                        ((float)Raylib.GetRandomValue(0, 100)) / 100f);
+                        Raylib.GetRandomValue(0, 100) / 100f);
                 })
                 .WithEndValue(Raylib.ColorAlpha(Color.Black, 0)))
             .SetSpawnLogic(() => new Particle

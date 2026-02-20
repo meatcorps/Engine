@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Meatcorps.Engine.AsciiScript\Meatcorps.Engine.AsciiScript.csproj" />
         <ProjectReference Include="..\Meatcorps.Engine.RayLib.ImGuiTools\Meatcorps.Engine.RayLib.ImGuiTools.csproj"/>
         <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj"/>
         <ProjectReference Include="..\Meatcorps.Engine.SDL\Meatcorps.Engine.SDL.csproj"/>

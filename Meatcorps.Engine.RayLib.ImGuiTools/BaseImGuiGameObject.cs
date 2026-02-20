@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-using System.Numerics;
-using ImGuiNET;
+﻿using System.Numerics;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Enums;
@@ -10,9 +8,9 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.ImGuiTools;
 
-public abstract class BaseImGuiGameObject: BaseGameObject
+public abstract class BaseImGuiGameObject : BaseGameObject
 {
-    protected bool DarkMode = false;
+    protected readonly bool DarkMode;
     private float _previousDeltaTime;
     private IRenderTargetStrategy? _renderer;
 
@@ -23,7 +21,6 @@ public abstract class BaseImGuiGameObject: BaseGameObject
 
     protected override void OnInitialize()
     {
-        
         rlImGui.Setup(DarkMode);
         Camera = CameraLayer.UI;
         OnGuiInitialize();
@@ -41,27 +38,31 @@ public abstract class BaseImGuiGameObject: BaseGameObject
     {
         // No need to force override for this :)
     }
-    
+
     protected abstract void OnGuiUpdate(float deltaTime);
 
     private Vector2 GetMouseCursorPosition()
     {
-       var mouse = Raylib.GetMousePosition();
-       var viewportX = 0;
-       var viewportY = 0;
-       var scaleX = Scene.GameHost.Width / _renderer.RenderWidth;
-       var scaleY = Scene.GameHost.Height / _renderer.RenderHeight;
-       return new System.Numerics.Vector2(
-           (mouse.X - viewportX) / scaleX,
-           (mouse.Y - viewportY) / scaleY
-       );
+        if (_renderer == null)
+            throw new InvalidOperationException("Renderer is null");
+
+        var mouse = Raylib.GetMousePosition();
+        var scaleX = Scene.GameHost.Width / RenderTarget!.RenderWidth;
+        var scaleY = Scene.GameHost.Height / RenderTarget!.RenderHeight;
+        return new Vector2(
+            mouse.X / scaleX,
+            mouse.Y / scaleY
+        );
     }
 
     private Vector2 GetScreenSize()
     {
-        return new Vector2(_renderer.RenderWidth, _renderer.RenderHeight);
+        if (_renderer == null)
+            throw new InvalidOperationException("Renderer is null");
+
+        return new Vector2(RenderTarget!.RenderWidth, RenderTarget!.RenderHeight);
     }
-    
+
     protected override void OnDraw()
     {
         if (_previousDeltaTime == 0)
@@ -69,7 +70,7 @@ public abstract class BaseImGuiGameObject: BaseGameObject
             Console.WriteLine("Delta time is 0. This is bad.");
             return;
         }
-        
+
         rlImGui.GetMouseCursorPosition = GetMouseCursorPosition;
         rlImGui.GetScreenSize = GetScreenSize;
         rlImGui.UseHighDPI = false;

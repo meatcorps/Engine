@@ -21,7 +21,6 @@
     <ItemGroup>
         <ProjectReference Include="..\Meatcorps.Engine.Pathfinding\Meatcorps.Engine.Pathfinding.csproj" />
         <PackageReference Include="Meatcorps.Engine.Pathfinding" Version="[0.1.0,)" />
-        <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
         <PackageReference Include="Meatcorps.Engine.RayLib" Version="[0.1.0,)" />
     </ItemGroup>
 

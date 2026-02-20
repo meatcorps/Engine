@@ -14,26 +14,26 @@ public class LevelData
     public int LevelHeight { get; }
     public int GridSize { get; }
     public float Speed { get; set; } = 75;
-    public bool GhostScared { get; set; } = false;
-    public bool GhostScaredResetTimer { get; set; } = false;
+    public bool GhostScared { get; set; }
+    public bool GhostScaredResetTimer { get; set; }
     public Player? TargetCyberPlayer { get; set; }
-    public int CollectibleCount { get; set; } = 0;
-    public int CollectiblesGone { get; set; } = 0;
+    public int CollectibleCount { get; set; }
+    public int CollectiblesGone { get; set; }
     
     public int ChaseTime { get; set; } = 10000;
     public int ScatterTime { get; set; } = 10000;
     public int StayAtHomeTime { get; set; } = 3000;
     public int ScaredTime { get; set; } = 10000;
-    public int TotalGhostEaten { get; set; } = 0;
+    public int TotalGhostEaten { get; set; }
 
     public bool AuthenticBug { get; set; } = true;
-    public bool FreezePlayersAndGhosts { get; set; } = false;
+    public bool FreezePlayersAndGhosts { get; set; }
     
     public SingleEntityGrid<MapItem> Map { get; } = new();
     public List<GhostBehaviour> Ghosts { get; } = new();
     public TargetSeekerGameObject? TargetSeeker { get; set; }
     
-    public bool DutchMode { get; set; } = false;
+    public bool DutchMode { get; set; }
 
     public LevelData(int levelWidth = 39, int levelHeight = 19, int gridSize = 16)
     {

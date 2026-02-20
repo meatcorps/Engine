@@ -10,7 +10,6 @@ public class TimerOff
     public float Elapsed => _elapsed;
     public float TotalTime => _delay;
     public float TimeRemaining => _delay - _elapsed;
-    private bool _active;
 
     public bool Output { get; private set; }
 

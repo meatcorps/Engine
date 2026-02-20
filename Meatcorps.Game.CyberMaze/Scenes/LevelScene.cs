@@ -42,22 +42,22 @@ public class LevelScene : BaseScene
     public int TotalPlayers => DemoMode ? 1 : _sessionService.CurrentSession.TotalPlayers;
     public bool DemoMode { get; }
     private LevelData _level { get; set; } = new();
-    private List<Player> _players = new();
-    private AsciiScriptParser _parser = new();
+    private readonly List<Player> _players = new();
+    private readonly AsciiScriptParser _parser = new();
     private bool _firstLevelData = true;
-    private UIMessageEmitter _uiMessage;
+    private UIMessageEmitter _uiMessage = null!;
     private Font _font;
-    private MusicManager<GameMusic> _musicManager;
-    private SoundFxManager<GameSounds> _soundFxManager;
-    private SessionService<GameSessionData, GamePlayerData> _sessionService;
+    private MusicManager<GameMusic> _musicManager = null!;
+    private SoundFxManager<GameSounds> _soundFxManager = null!;
+    private SessionService<GameSessionData, GamePlayerData> _sessionService = null!;
     private int _cachedScore;
-    private IPlayerCheckin _playerCheckin;
-    private WorldService _worldService;
+    private IPlayerCheckin _playerCheckin = null!;
+    private WorldService _worldService = null!;
     private TimerOn _cameraMovementTimer = new(4000);
-    private TimerOn _demoModeResetTimer = new(40000);
-    private CameraControllerGameObject _cameraManager;
+    private readonly TimerOn _demoModeResetTimer = new(40000);
+    private CameraControllerGameObject _cameraManager = null!;
     private string _nextLevel = "";
-    private DefaultGuiSettings<GameInput, GameSounds>? _guiSettings = null;
+    private DefaultGuiSettings<GameInput, GameSounds>? _guiSettings;
 
     public LevelScene(string levelPath = "Assets/Level1.txt", bool demoMode = false)
     {
@@ -129,8 +129,8 @@ public class LevelScene : BaseScene
                     else
                         Console.WriteLine("Invalid music " + sound);
                 }))
-                .Register(() => new StringVariableCommand("PAUSESONG", sound => { _musicManager.Pause(); }))
-                .Register(() => new StringVariableCommand("RESUMESONG", sound => { _musicManager.Resume(); }))
+                .Register(() => new StringVariableCommand("PAUSESONG", _ => { _musicManager.Pause(); }))
+                .Register(() => new StringVariableCommand("RESUMESONG", _ => { _musicManager.Resume(); }))
                 .Register(() => new SimpleCommand("ENDLEVEL", () => { GameHost.SwitchScene(new LevelScene()); }))
                 .Register(() => new StringVariableCommand("NEXTLEVEL",
                     level => { _nextLevel = "Assets/" + level; }))
@@ -182,8 +182,8 @@ public class LevelScene : BaseScene
 
         SceneObjectManager.Register(_level);
         var cameraManager = new CameraControllerGameObject(GlobalObjectManager.ObjectManager.Get<ICamera>()!);
-        var center = new Vector2(320 - ((640 - _level.LevelWidth * _level.GridSize) / 2),
-            180 - ((360 - _level.LevelHeight * _level.GridSize) / 2));
+        var center = new Vector2(320 - ((640f - _level.LevelWidth * _level.GridSize) / 2),
+            180 - ((360f - _level.LevelHeight * _level.GridSize) / 2));
 
         if (!DemoMode)
         {
@@ -194,7 +194,7 @@ public class LevelScene : BaseScene
         _cameraManager = cameraManager;
         AddGameObject(cameraManager);
         AddGameObject(new PersistentCanvas(640, 380));
-        AddGameObject(new GameObjects.Background());
+        AddGameObject(new Background());
         AddGameObject(new Map());
         AddGameObject(new TargetSeekerGameObject());
         _parser.Parse(_levelPath);
@@ -210,7 +210,7 @@ public class LevelScene : BaseScene
     {
         var analyzer = new GridAnalyzerYX<char>(levelData);
         var allowedDirections = new List<PointInt>();
-        var allDirections = new PointInt[]
+        var allDirections = new[]
             { new PointInt(-1, 0), new PointInt(1, 0), new PointInt(0, -1), new PointInt(0, 1) };
         
         if (_firstLevelData)
@@ -240,9 +240,6 @@ public class LevelScene : BaseScene
 
                 var position = gridItem.Item1;
                 var character = gridItem.Item2;
-                var walkable = false;
-                var isGhostHome = false;
-                var isOneWay = false;
 
                 switch (character)
                 {
@@ -252,11 +249,11 @@ public class LevelScene : BaseScene
                         break;
                 }
 
-                walkable = character != '#';
+                var walkable = character != '#';
                 // TODO: Maby in the future upgrade this to mare advance room scanning. 
                 // We need to see if it's really needed
-                isGhostHome = character is '2' or '3' or '4' or 'x' or 'X';
-                isOneWay = character is 'X';
+                var isGhostHome = character is '2' or '3' or '4' or 'x' or 'X';
+                var isOneWay = character is 'X';
 
                 foreach (var direction in allDirections)
                 {
@@ -399,10 +396,10 @@ public class LevelScene : BaseScene
         _level.GhostScaredResetTimer = false;
 
         _cameraMovementTimer.Update(true, deltaTime);
-        var center1 = new Vector2(320 - ((640 - _level.LevelWidth * _level.GridSize) / 2),
-            500 - ((360 - _level.LevelHeight * _level.GridSize) / 2));
-        var center2 = new Vector2(320 - ((640 - _level.LevelWidth * _level.GridSize) / 2),
-            180 - ((360 - _level.LevelHeight * _level.GridSize) / 2));
+        var center1 = new Vector2(320 - ((640f - _level.LevelWidth * _level.GridSize) / 2),
+            500 - ((360f - _level.LevelHeight * _level.GridSize) / 2));
+        var center2 = new Vector2(320 - ((640f - _level.LevelWidth * _level.GridSize) / 2),
+            180 - ((360f - _level.LevelHeight * _level.GridSize) / 2));
 
         if (!_cameraMovementTimer.Output)
             _cameraManager.SetPosition(Tween.Lerp(center1, center2,

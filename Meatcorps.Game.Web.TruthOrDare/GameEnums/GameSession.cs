@@ -3,7 +3,6 @@ using Meatcorps.Engine.Session.Data;
 using Meatcorps.Engine.Session.Extensions;
 using Meatcorps.Engine.Session.Factories;
 using Meatcorps.Engine.Session.Modules;
-using Meatcorps.Game.CyberPlayer.GameEnums;
 
 namespace Meatcorps.Game.Web.TruthOrDare.GameEnums;
 

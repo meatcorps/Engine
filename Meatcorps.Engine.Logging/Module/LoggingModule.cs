@@ -2,7 +2,6 @@ using System.Reflection;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Configuration;
 using Serilog;
 
 namespace Meatcorps.Engine.Logging.Module;
@@ -26,7 +25,7 @@ public static class LoggingModule
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] ({SourceContext}): {Message}{NewLine}{Exception}")
             .CreateLogger();
         
-        GlobalObjectManager.ObjectManager.Register<ILoggerFactory>(LoggerFactory.Create(builder =>
+        GlobalObjectManager.ObjectManager.Register(LoggerFactory.Create(builder =>
         {
             builder
                 .SetMinimumLevel(LogLevel.Debug)

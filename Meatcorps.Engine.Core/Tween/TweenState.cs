@@ -5,9 +5,9 @@ namespace Meatcorps.Engine.Core.Tween;
 public struct TweenState
 {
     public float ElapsedTime;
-    public float Duration;
-    public EaseType Ease;
-    public bool PingPong;
+    public readonly float Duration;
+    public readonly EaseType Ease;
+    public readonly bool PingPong;
 
     public bool Started { get; private set; }
     public bool Finished { get; private set; }

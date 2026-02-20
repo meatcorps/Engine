@@ -1,7 +1,5 @@
 using System.Numerics;
 using Meatcorps.Engine.Collision.Enums;
-using Meatcorps.Engine.Collision.Services;
-using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Interfaces.Grid;
 
 namespace Meatcorps.Engine.Collision.Interfaces;

@@ -3,7 +3,6 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meatcorps.Engine.MQTT.Enums;
 using Meatcorps.Engine.MQTT.Interfaces;
 using Meatcorps.Engine.Signals.Abstractions;
@@ -13,12 +12,12 @@ namespace Meatcorps.Engine.MQTT.Services;
 public class MQTTSignalValueEvent: BaseSignalValueEvent<MQTTGroup>
 {
     private readonly MQTTClient _client;
-    private Dictionary<string, (Func<string, object?>, Func<object, string>)> _converterActions = new ();
+    private readonly Dictionary<string, (Func<string, object?>, Func<object, string>)> _converterActions = new ();
     private CancellationDisposable _connectionAliveToken = new CancellationDisposable();
-    private ConcurrentQueue<Action> _publishTasks = new ();
-    private Dictionary<string, bool> _onlyRead = new();
-    private Dictionary<string, bool> _onlyWrite = new();
-    private List<string> _handledMessages = new();
+    private readonly ConcurrentQueue<Action> _publishTasks = new ();
+    private readonly Dictionary<string, bool> _onlyRead = new();
+    private readonly Dictionary<string, bool> _onlyWrite = new();
+    private readonly List<string> _handledMessages = new();
     
     public MQTTSignalValueEvent(MQTTClient client)
     {
@@ -90,7 +89,6 @@ public class MQTTSignalValueEvent: BaseSignalValueEvent<MQTTGroup>
                             } catch (Exception e)
                             {
                                 Console.WriteLine(e);
-                                return;
                             }
                         }, _connectionAliveToken.Token);
             }

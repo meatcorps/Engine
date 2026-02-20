@@ -5,7 +5,7 @@ namespace Meatcorps.Game.HorrorJackpot.Services;
 
 public static class DrumHelper
 {
-    private static DrumTypes[] _drumTypes =
+    private static readonly DrumTypes[] _drumTypes =
     [
         DrumTypes.Nothing,
         DrumTypes.Score10,

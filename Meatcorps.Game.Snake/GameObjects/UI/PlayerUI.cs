@@ -3,8 +3,6 @@ using Meatcorps.Engine.Arcade.Interfaces;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
-using Meatcorps.Engine.RayLib.Abstractions;
-using Meatcorps.Engine.RayLib.Camera;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.Interfaces;
@@ -22,22 +20,22 @@ public class PlayerUI : SnakeGameObject
 {
     private readonly Player _player;
     private readonly SmoothValue _smoothValue;
-    private FixedTimer _audioValueChangeTimer = new FixedTimer(50);
+    private readonly FixedTimer _audioValueChangeTimer = new FixedTimer(50);
     private PointInt _targetScreenSize;
     private Vector2 _iconPosition = Vector2.Zero;
     private Vector2 _scorePosition = Vector2.Zero;
     private Vector2 _perkPosition = Vector2.Zero;
     private Vector2 _perkDirection = Vector2.Zero;
     private TextStyle _textStyle;
-    private IArcadePointsMutator _pointMutator;
-    private IPlayerCheckin _playerCheckin;
-    private int _oldScore = 0;
+    private IArcadePointsMutator _pointMutator = null!;
+    private IPlayerCheckin _playerCheckin = null!;
+    private int _oldScore;
 
     public PlayerUI(Player player)
     {
         _player = player;
         Camera = CameraLayer.UI;
-        _smoothValue = new(_player.Score, 1f);
+        _smoothValue = new(_player.Score);
     }
 
     protected override void OnInitialize()
@@ -85,7 +83,7 @@ public class PlayerUI : SnakeGameObject
 
     protected override void OnDraw()
     {
-        Sprites.Draw(SnakeSprites.SnakeHead1, _iconPosition, _player.Color, 0f);
+        Sprites.Draw(SnakeSprites.SnakeHead1, _iconPosition, _player.Color);
         
         TextKit.Draw(ref _textStyle, ((int)_smoothValue.DisplayValue).ToString("000000"), _scorePosition);
 
@@ -106,7 +104,7 @@ public class PlayerUI : SnakeGameObject
                 color = Raylib.ColorLerp(Color.White, color, lifeTimeNormal);
             }
             
-            Sprites.Draw(perk.Sprite, _perkPosition + _perkDirection * counter, color, 0f, Vector2.Zero, 1f);
+            Sprites.Draw(perk.Sprite, _perkPosition + _perkDirection * counter, color, 0f, Vector2.Zero);
             if (timeRemaining < 9000)
             {
                 Raylib.DrawTextEx(Fonts.GetFont(), (timeRemaining / 1000).ToString("F0"), _perkPosition + _perkDirection * counter + new Vector2(4, 8), 8, 0, Color.White);

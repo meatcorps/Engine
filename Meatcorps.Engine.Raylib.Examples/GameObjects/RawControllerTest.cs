@@ -6,8 +6,8 @@ using Meatcorps.Engine.Hardware.Controllers.Interfaces;
 using Meatcorps.Engine.Hardware.Controllers.Mapper;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Enums;
-using Meatcorps.Engine.RayLib.Input;
 using Meatcorps.Engine.RayLib.Resources;
+using Meatcorps.Engine.SDL.Controller;
 using Microsoft.Extensions.Logging;
 using Raylib_cs;
 
@@ -17,10 +17,10 @@ namespace Meatcorps.Engine.Raylib.Examples.GameObjects;
 
 public class RawControllerTest : BaseGameObject
 {
-    private IControllerDeviceManager _controllerDeviceManager;
-    private ControllerInputMapper<ControllerInputEnum> _controllerInputMapper;
-    private TextManager<DefaultFont> _fonts;
-    private ILogger<RawControllerTest> _logger;
+    private IControllerDeviceManager _controllerDeviceManager = null!;
+    private ControllerInputMapper<ControllerInputEnum> _controllerInputMapper = null!;
+    private TextManager<DefaultFont> _fonts = null!;
+    private ILogger<RawControllerTest> _logger = null!;
     private string _previousText = "";
 
     protected override void OnInitialize()
@@ -28,9 +28,6 @@ public class RawControllerTest : BaseGameObject
         _logger = LoggingService.GetLogger<RawControllerTest>();
         Camera = CameraLayer.UI;
 
-        //if (GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("Debug", "UseRayLibController", true))
-        //_controllerDeviceManager = new RayLibControllerDeviceManager();
-        //else
         _controllerDeviceManager = new SDLControllerDeviceManager();
 
         _controllerInputMapper = new ControllerInputMapper<ControllerInputEnum>(_controllerDeviceManager);
@@ -73,7 +70,6 @@ public class RawControllerTest : BaseGameObject
             {
                 outputViewer.AppendLine("AXIS1: " + _controllerInputMapper.GetAxis(player));
                 outputViewer.AppendLine("AXIS2: " + _controllerInputMapper.GetAxis(player, 2));
-                var count = 0;
                 var type = _controllerDeviceManager.GetDevice(player)?.Type ?? ControllerType.Other;
                 foreach (var controllerType in Enum.GetValues<ControllerInputEnum>())
                 {
@@ -81,17 +77,15 @@ public class RawControllerTest : BaseGameObject
                     if (Math.Abs(state.Normalized) > 0.1f)
                     {
                         outputViewer.AppendLine(controllerType + ": " + state.Normalized.ToString("F2"));
-                        count++;
                     }
                 }
 
-                var text = _previousText;
-
-                text = "> " + player + " (" + type + ") " +
+                var text = "> " + player + " (" + type + ") " +
                        outputViewer.ToString().Replace("\n", ",").Replace("\r", "");
+                
                 if (_previousText != text)
                 {
-                    // _logger.LogInformation(text);
+                    _logger.LogInformation(text);
                 }
 
                 _previousText = text;

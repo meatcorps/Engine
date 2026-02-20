@@ -1,4 +1,3 @@
-using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 
 namespace Meatcorps.Engine.Collision.Interfaces;

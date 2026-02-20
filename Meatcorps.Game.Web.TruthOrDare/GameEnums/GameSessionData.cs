@@ -1,4 +1,4 @@
-namespace Meatcorps.Game.CyberPlayer.GameEnums;
+namespace Meatcorps.Game.Web.TruthOrDare.GameEnums;
 
 public enum GameSessionData
 {

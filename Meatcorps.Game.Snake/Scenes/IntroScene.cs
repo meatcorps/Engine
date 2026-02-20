@@ -1,5 +1,4 @@
 using Meatcorps.Engine.Arcade.RayLib.GameObjects;
-using Meatcorps.Engine.Arcade.Services;
 using Meatcorps.Engine.Core.Input;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
@@ -10,9 +9,7 @@ using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Engine.RayLib.Text;
-using Meatcorps.Engine.RayLib.UI.Data;
 using Meatcorps.Engine.Session;
-using Meatcorps.Engine.Session.Data;
 using Meatcorps.Game.Snake.Data;
 using Meatcorps.Game.Snake.GameObjects.UI;
 using Meatcorps.Game.Snake.Resources;
@@ -23,17 +20,16 @@ namespace Meatcorps.Game.Snake.Scenes;
 public class IntroScene: BaseScene
 {
     private Font _font;
-    private UIMessageEmitter _uiMessage;
-    private PlayerInputRouter<SnakeInput> _controller;
-    private TimerOn _startTimer = new(2000);
-    private FixedTimer _sliderTimer = new(10000);
-    private int currentSlide = 0;
-    private MusicManager<SnakeMusic> _musicManager;
-    private SoundFxManager<SnakeSounds> _soundManager;
-    private TextManager<DefaultFont> _fontManager;
-    private SessionService<SnakeSessionData, SnakePlayerData> _sessionService;
-    public int TotalPlayersReady { get; set; } = 0;
-    private bool _waitingForPlayers = false;
+    private UIMessageEmitter _uiMessage = null!;
+    private PlayerInputRouter<SnakeInput> _controller = null!;
+    private readonly TimerOn _startTimer = new(2000);
+    private readonly FixedTimer _sliderTimer = new(10000);
+    private int currentSlide;
+    private MusicManager<SnakeMusic> _musicManager = null!;
+    private SoundFxManager<SnakeSounds> _soundManager = null!;
+    private SessionService<SnakeSessionData, SnakePlayerData> _sessionService = null!;
+    public int TotalPlayersReady { get; private set; }
+    private bool _waitingForPlayers;
 
     protected override void OnInitialize()
     {
@@ -57,7 +53,6 @@ public class IntroScene: BaseScene
         _controller.GetState(2, SnakeInput.Action).Animation = new BlinkAnimation(250);
         _musicManager = GlobalObjectManager.ObjectManager.Get<MusicManager<SnakeMusic>>()!;
         _soundManager = GlobalObjectManager.ObjectManager.Get<SoundFxManager<SnakeSounds>>()!;
-        _fontManager = GlobalObjectManager.ObjectManager.Get<TextManager<DefaultFont>>()!;
         _musicManager.Play(SnakeMusic.IntroOutro);
         _sessionService.StartSession();
     }
@@ -94,10 +89,8 @@ public class IntroScene: BaseScene
 
         if (TotalPlayersReady > 0)
         {
-            if (TotalPlayersReady == 2)
-                _controller.GetState(2, SnakeInput.Action).Animation = new BlinkAnimation(50);
-            else
-                _controller.GetState(2, SnakeInput.Action).Animation = null;
+            _controller.GetState(2, SnakeInput.Action).Animation = TotalPlayersReady == 2 
+                ? new BlinkAnimation(50) : null;
             
             _controller.GetState(1, SnakeInput.Action).Animation = new BlinkAnimation(50);
 

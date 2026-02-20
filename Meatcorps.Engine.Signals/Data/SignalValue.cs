@@ -12,8 +12,8 @@ public interface ISignalValueTracker
 
 public  class SignalValue<TValueType, TGroup> : IEqualityComparer<SignalValue<TValueType, TGroup>>, IDisposable, ISignalValueTracker where TGroup : Enum
 {
-    private TValueType _value;
-    private ObjectManager _objectManager;
+    private TValueType? _value;
+    private readonly ObjectManager _objectManager;
     public TGroup Group { get; }
     public string GroupName => Group.ToString();
     public string Topic { get; init; }
@@ -23,7 +23,7 @@ public  class SignalValue<TValueType, TGroup> : IEqualityComparer<SignalValue<TV
     
     public TValueType Value
     {
-        get => _value;
+        get => (_value ?? default)!;
         set
         {
             if (_value?.Equals(value) ?? false)
@@ -45,7 +45,7 @@ public  class SignalValue<TValueType, TGroup> : IEqualityComparer<SignalValue<TV
         {
             if (valueEvent.GetGroup().Equals(Group))
             {
-                if (valueEvent.Register(this, initialValue, out var existingValue))
+                if (valueEvent.Register(this, initialValue, out _))
                     valueSet = true;
             }
         }
@@ -56,7 +56,7 @@ public  class SignalValue<TValueType, TGroup> : IEqualityComparer<SignalValue<TV
 
     public void Push()
     {
-        ValueChanged.Invoke(_value);
+        ValueChanged.Invoke(Value);
         SentChangeToTrackers();
     }
 

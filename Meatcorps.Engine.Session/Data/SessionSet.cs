@@ -7,8 +7,8 @@ public class SessionSet<TEnumSession, TEnumPlayer>
     where TEnumSession : Enum
     where TEnumPlayer : Enum 
 {
-    private SessionFactory<TEnumSession, TEnumPlayer> _factory;
-    private int _maxPlayers;
+    private readonly SessionFactory<TEnumSession, TEnumPlayer> _factory;
+    private readonly int _maxPlayers;
     public SessionDataBag<TEnumSession> SessionData { get; }
     private List<SessionDataBag<TEnumPlayer>> _playerData { get; } = new();
     public IReadOnlyList<SessionDataBag<TEnumPlayer>> PlayerData => _playerData;

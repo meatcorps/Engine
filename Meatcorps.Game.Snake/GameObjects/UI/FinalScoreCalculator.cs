@@ -27,7 +27,7 @@ public class FinalScoreCalculator: SnakeGameObject
     private readonly InlineRender _inlineRender = new();
     private readonly string _playerName;
     private int _itemsInList = 1;
-    private TimerOn _iterateTimer;
+    private TimerOn _iterateTimer = null!;
     private int _previousLine = -1;
     private readonly ArcadeGame _gameInfo;
     private int _relativePoints;
@@ -69,8 +69,8 @@ public class FinalScoreCalculator: SnakeGameObject
         _relativePoints = pointsWon;
         
         ListValues("Score:", _playerSessionData.Get<int>(SnakePlayerData.Score));
-        ListValues("Power ups:", _playerSessionData.Get<int>(SnakePlayerData.PickupsTaken), 0);
-        ListValues("Meat eaten:", _playerSessionData.Get<int>(SnakePlayerData.MeatEaten), 0);
+        ListValues("Power ups:", _playerSessionData.Get<int>(SnakePlayerData.PickupsTaken));
+        ListValues("Meat eaten:", _playerSessionData.Get<int>(SnakePlayerData.MeatEaten));
         ListValues("Snake length:", _playerSessionData.Get<int>(SnakePlayerData.SnakeLength), 0, " x10");
         ListValues("Gained:", _playerSessionData.Get<int>(SnakePlayerData.SnakeLength) * 100);
         ListValues("Died:", _playerSessionData.Get<int>(SnakePlayerData.Died), 1000, " x100");
@@ -78,7 +78,7 @@ public class FinalScoreCalculator: SnakeGameObject
         ListValues("End score:", finalScore, currentPoints);
         if (highestScore < finalScore)
             ListValues("Beat the HighScore!:", _gameInfo.PricePoints * 2, 0, "+ Points!");
-        ListValues("Leaderboard rank:", GlobalObjectManager.ObjectManager.Get<HighScoreService>()!.GetLeaderboardPosition(finalScore), 0);
+        ListValues("Leaderboard rank:", GlobalObjectManager.ObjectManager.Get<HighScoreService>()!.GetLeaderboardPosition(finalScore));
 
         if (_relativePoints != 0)
         {
@@ -110,16 +110,16 @@ public class FinalScoreCalculator: SnakeGameObject
     private void SetLineOnOrOff(int line, bool on)
     {
         if (_inlineRender.TryGetItem($"{line}_1", out var item1))
-            item1.Enabled = on;
+            item1!.Enabled = on;
         if (_inlineRender.TryGetItem($"{line}_2", out var item2))
-            item2.Enabled = on;
+            item2!.Enabled = on;
         if (_inlineRender.TryGetItem($"{line}_3", out var item3))
-            item3.Enabled = on;
+            item3!.Enabled = on;
     }
 
     private void ListValues(string label, float value, float from = 0, string afterFix = "", int size = 8)
     {
-        var smoothValue = new SmoothValue(from, 1);
+        var smoothValue = new SmoothValue(from);
         smoothValue.RealValue = value;
         
         _inlineRender

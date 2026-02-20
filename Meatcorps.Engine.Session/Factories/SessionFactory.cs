@@ -1,4 +1,3 @@
-using System.Globalization;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Session.Data;
 using Meatcorps.Engine.Session.Interfaces;
@@ -76,7 +75,7 @@ public class SessionFactory<TEnumSession, TEnumPlayer>
     public SessionFactory<TEnumSession, TEnumPlayer> RegisterTracker(ISessionTracker<TEnumSession, TEnumPlayer> tracker)
     {
         GlobalObjectManager.ObjectManager.RegisterList<ISessionTracker<TEnumSession, TEnumPlayer>>();
-        GlobalObjectManager.ObjectManager.Add<ISessionTracker<TEnumSession, TEnumPlayer>>(tracker);
+        GlobalObjectManager.ObjectManager.Add(tracker);
         return this;
     }
 }

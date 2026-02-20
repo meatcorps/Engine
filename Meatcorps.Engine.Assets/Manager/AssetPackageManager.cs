@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using Meatcorps.Engine.Assets.Data;
-using Meatcorps.Engine.Assets.Interfaces;
 using Meatcorps.Engine.Core.Interfaces.Security;
 using Newtonsoft.Json;
 
@@ -11,7 +10,7 @@ public class AssetPackageManager
 {
     private readonly string _path;
     private readonly IEncryptDecryptSink _sink;
-    private AssetMapData _map;
+    private AssetMapData _map = null!;
     private const int FIRST_CHUCK_SIZE = 256;
     
     public AssetPackageManager(string path, IEncryptDecryptSink sink)

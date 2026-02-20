@@ -4,7 +4,7 @@ using Meatcorps.Engine.Core.Extensions;
 
 namespace Meatcorps.Engine.Core.Utilities;
 
-public class PrimitivesHelper
+public static class PrimitivesHelper
 {
     public static bool IntersectsSlab(
         float positionCoordinate,
@@ -32,7 +32,7 @@ public class PrimitivesHelper
         out Vector2 minimum,
         out Vector2 maximum)
     {
-        if (points == null || points.Count == 0)
+        if (points.Count == 0)
         {
             minimum = Vector2.Zero;
             maximum = Vector2.Zero;
@@ -58,8 +58,8 @@ public class PrimitivesHelper
         center = transformMatrix.Transform(center);
         float x = halfExtents.X;
         float y = halfExtents.Y;
-        halfExtents.X = (float)(x * Math.Abs(transformMatrix.M11) + y * Math.Abs(transformMatrix.M12));
-        halfExtents.Y = (float)(x * Math.Abs(transformMatrix.M21) + y * Math.Abs(transformMatrix.M22));
+        halfExtents.X = x * Math.Abs(transformMatrix.M11) + y * Math.Abs(transformMatrix.M12);
+        halfExtents.Y = x * Math.Abs(transformMatrix.M21) + y * Math.Abs(transformMatrix.M22);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -25,14 +25,14 @@ public class MainScene: BaseScene
     private Vector2 _mousePosition;
     private ICameraFixedWidthAndHeight _camera = null!;
     private Editor _editor = null!;
-    private Toolbox _toolbox;
+    private Toolbox _toolbox = null!;
     private CameraControllerGameObject _cameraController = null!;
     private UIMessageEmitter _uiMessage = null!;
     public bool EditorIsOpen => VisualData.EditItem != null;
     public DataLoaderService DataLoaderService { get; } = new DataLoaderService();
     public string MouseText { get; set; } = "";
     public bool HideUI = false;
-    private TextManager<FontEnum> _font;
+    private TextManager<FontEnum> _font = null!;
     public bool ValidMove => true;
     
     public Vector2 MousePosition
@@ -186,10 +186,11 @@ public class MainScene: BaseScene
         {
             VisualData.Data.Clear();
 
-            foreach (var item in items)
+            var itemArray = items.ToArray();
+            foreach (var item in itemArray)
                 item.OnInitialize(this);
 
-            VisualData.Data.AddRange(items);
+            VisualData.Data.AddRange(itemArray);
 
             _cameraController.SetZoom(0);
             _cameraController.SetPosition(new Vector2(0, 0));

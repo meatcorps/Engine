@@ -4,7 +4,6 @@ using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.Particles;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Game.ArcadeTemplate.GameEnums;
-using Meatcorps.Game.ArcadeTemplate.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Game.ArcadeTemplate.Particles;

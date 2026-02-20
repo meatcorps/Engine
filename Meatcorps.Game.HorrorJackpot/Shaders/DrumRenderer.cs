@@ -6,7 +6,6 @@ using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Resources;
-using Meatcorps.Game.HorrorJackpot.Data;
 using Meatcorps.Game.HorrorJackpot.GameEnums;
 using Raylib_cs;
 using Rlgl = Raylib_cs.Rlgl;
@@ -18,7 +17,7 @@ public class DrumRenderer
     private readonly OneTexture _textureGlow;
     private readonly OneTexture _textureBase;
     private readonly Shader _shader;
-    private FixedTimer _glowTimer = new(1000);
+    private readonly FixedTimer _glowTimer = new(1000);
 
     // Public controls
     public float Glow { get; set; } // 0..1
@@ -91,8 +90,8 @@ public class DrumRenderer
         Raylib.SetShaderValue(_shader, _locVOff, 0.0f, ShaderUniformDataType.Float);    // choose which half
         Raylib.SetShaderValue(_shader, _locTbDarkness, 0.1f, ShaderUniformDataType.Float); // darkest top/bottom
         Raylib.SetShaderValue(_shader, _locTbPower,    1.0f, ShaderUniformDataType.Float); // curve exponent
-        Raylib.SetShaderValue(_shader, _locGlowMode, 1.0f, Raylib_cs.ShaderUniformDataType.Float); // 0=Add
-        Raylib.SetShaderValue(_shader, _locGlowMask, 1.0f, Raylib_cs.ShaderUniformDataType.Float); // respect base alpha
+        Raylib.SetShaderValue(_shader, _locGlowMode, 1.0f, ShaderUniformDataType.Float); // 0=Add
+        Raylib.SetShaderValue(_shader, _locGlowMask, 1.0f, ShaderUniformDataType.Float); // respect base alpha
         
         Speed = 0.05f;
         Rotation = 0f;
@@ -123,15 +122,15 @@ public class DrumRenderer
         Rlgl.EnableTexture(_textureGlow.Texture.Id);
         Rlgl.ActiveTextureSlot(0);
 
-        var uvOffset = new System.Numerics.Vector2(Rectangle.X / _renderTarget.RenderWidth, Rectangle.Y / _renderTarget.RenderHeight);
-        var uvSize   = new System.Numerics.Vector2(Rectangle.Width / _renderTarget.RenderWidth, Rectangle.Height / _renderTarget.RenderHeight);
+        var uvOffset = new Vector2(Rectangle.X / _renderTarget.RenderWidth, Rectangle.Y / _renderTarget.RenderHeight);
+        var uvSize   = new Vector2(Rectangle.Width / _renderTarget.RenderWidth, Rectangle.Height / _renderTarget.RenderHeight);
 
         Raylib.SetShaderValue(_shader, _locUvOffset, uvOffset, ShaderUniformDataType.Vec2);
         Raylib.SetShaderValue(_shader, _locUvSize,   uvSize,   ShaderUniformDataType.Vec2);
         Raylib.SetShaderValue(_shader, _locRotation, Rotation.Wrap(1), ShaderUniformDataType.Float);
         Raylib.SetShaderValue(_shader, _locGlow, Glow * 0.5f, ShaderUniformDataType.Float);
-        var tint = new System.Numerics.Vector3(GlowColor.R / 255f, GlowColor.G / 255f, GlowColor.B / 255f); // neutral
-        Raylib.SetShaderValue(_shader, _locGlowTint, tint, Raylib_cs.ShaderUniformDataType.Vec3);
+        var tint = new Vector3(GlowColor.R / 255f, GlowColor.G / 255f, GlowColor.B / 255f); // neutral
+        Raylib.SetShaderValue(_shader, _locGlowTint, tint, ShaderUniformDataType.Vec3);
 
         using (_shaderManager.UseShader(GameShaders.Drum))
         {

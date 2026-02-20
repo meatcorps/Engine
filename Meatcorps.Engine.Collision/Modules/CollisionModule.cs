@@ -1,5 +1,4 @@
 using Meatcorps.Engine.Collision.Abstractions;
-using Meatcorps.Engine.Collision.Colliders;
 using Meatcorps.Engine.Collision.Interfaces;
 using Meatcorps.Engine.Collision.Providers;
 using Meatcorps.Engine.Collision.Providers.Colliders;
@@ -7,6 +6,7 @@ using Meatcorps.Engine.Collision.Providers.WorldEntityResource;
 using Meatcorps.Engine.Collision.Services;
 using Meatcorps.Engine.Core.GridSystem;
 using Meatcorps.Engine.Core.ObjectManager;
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace Meatcorps.Engine.Collision.Modules;
 
@@ -74,7 +74,7 @@ public class CollisionModule
         _entityResource ??= new SpatialEntityGridResource(new SpatialEntityGrid(_gridSize));
         var world = new WorldService(_entityResource, _collisionRegistry);
         world.SetResolutionPolicy(_resolutionPolicy);
-        _manager.Register<WorldService>(world);
+        _manager.Register(world);
         return world;
     }
 }

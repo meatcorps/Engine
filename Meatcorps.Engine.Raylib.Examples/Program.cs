@@ -7,6 +7,7 @@ using Meatcorps.Engine.Raylib.Examples.Enums;
 using Meatcorps.Engine.Raylib.Examples.Resources;
 using Meatcorps.Engine.Raylib.Examples.Scenes;
 using Meatcorps.Engine.RayLib.Modules;
+using Meatcorps.Engine.RayLib.PostProcessing;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
 using Meatcorps.Engine.RayLib.Resources;
 

@@ -17,7 +17,7 @@ public class GhostFactory
     {
         var ghost = new Ghost();
         
-        AI.GhostLogic ghostLogic;
+        GhostLogic ghostLogic;
         switch (type)
         {
             case GhostType.Attacker:

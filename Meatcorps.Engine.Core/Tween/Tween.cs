@@ -173,19 +173,19 @@ public static class Tween
 
     private static float EaseInElastic(float t)
     {
-        if (t == 0f || t == 1f) return t;
+        if (t == 0f || t.EqualsSafe(1f)) return t;
         return -MathF.Pow(2f, 10f * (t - 1f)) * MathF.Sin((t - 1.075f) * (2f * MathF.PI) / 0.3f);
     }
 
     private static float EaseOutElastic(float t)
     {
-        if (t == 0f || t == 1f) return t;
+        if (t == 0f || t.EqualsSafe(1f)) return t;
         return MathF.Pow(2f, -10f * t) * MathF.Sin((t - 0.075f) * (2f * MathF.PI) / 0.3f) + 1f;
     }
 
     private static float EaseInOutElastic(float t)
     {
-        if (t == 0f || t == 1f) return t;
+        if (t == 0f || t.EqualsSafe(1f)) return t;
 
         t *= 2f;
         if (t < 1f)
@@ -291,7 +291,7 @@ public static class Tween
         if (MathF.Abs(speed) < minSpeed) speed = 0f;
     }
 
-    // Exponential reel that snaps to symbol center
+    // Exponential reel that snaps to a symbol center
     public static void ReelUpdateExpSnap(ref float rotation01, ref float speed, float halfLife, float minSpeed, float dt, int cellCount)
     {
         rotation01 = AdvanceWrap01(rotation01, speed, dt);

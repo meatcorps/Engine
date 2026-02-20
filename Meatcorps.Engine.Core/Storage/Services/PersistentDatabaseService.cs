@@ -18,7 +18,7 @@ public class PersistentDatabase : Dictionary<string, object>, IKeyValueDatabase<
             var jsonString = (string) jsonDataRaw;
             return defaultValue is string ? defaultValue : JsonSerializer.Deserialize<T>(jsonString) ?? defaultValue;
         }
-        Set<T>(key, defaultValue);
+        Set(key, defaultValue);
         return defaultValue;
     }
     

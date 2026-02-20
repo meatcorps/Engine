@@ -13,11 +13,9 @@
         <ProjectReference Include="..\Meatcorps.Engine.Arcade\Meatcorps.Engine.Arcade.csproj"/>
         <ProjectReference Include="..\Meatcorps.Engine.AsciiScript\Meatcorps.Engine.AsciiScript.csproj"/>
         <ProjectReference Include="..\Meatcorps.Engine.Assets\Meatcorps.Engine.Assets.csproj" />
-        <ProjectReference Include="..\Meatcorps.Engine.Boids\Meatcorps.Engine.Boids.csproj"/>
         <ProjectReference Include="..\Meatcorps.Engine.Hardware.ArduinoController\Meatcorps.Engine.Hardware.ArduinoController.csproj"/>
         <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj"/>
         <ProjectReference Include="..\Meatcorps.Engine.Session\Meatcorps.Engine.Session.csproj"/>
-        <ProjectReference Include="..\Meatcorps.Engine.Assets.Packager\Meatcorps.Engine.Assets.Packager.csproj" />
         <ProjectReference Include="..\Meatcorps.Engine.RayLib.Assets\Meatcorps.Engine.RayLib.Assets.csproj" />
     </ItemGroup>
 

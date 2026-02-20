@@ -10,9 +10,9 @@ public class Player
 {
     public required SessionDataBag<SnakePlayerData> SessionDataBag { get; init; }
     private float _originalTimeMoveTimer;
-    public GameObjects.Snake Snake { get; set; }
-    public PlayerUI PlayerUI { get; set; }
-    public FixedTimer MoveTimer { get; init; }
+    public GameObjects.Snake Snake { get; set; } = null!;
+    public PlayerUI PlayerUI { get; set; } = null!;
+    public FixedTimer MoveTimer { get; init; } = null!;
     public SnakeModifiers Modifiers { get; init; } = new ();
     public bool IsDead { get; set; }
 
@@ -28,10 +28,6 @@ public class Player
     public Color Color { get; init; }
     public float WorldSpeed { get; set; }
 
-    public Player()
-    {
-    }
-    
     public void Initialize()
     {
         _originalTimeMoveTimer = MoveTimer.DurationInMs;

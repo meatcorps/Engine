@@ -4,11 +4,9 @@ using SDL2;
 internal class SDLControllerWatcher : IDisposable
 {
     private readonly bool _initSdl;
-    private List<SDLController> _controllers = new ();
+    private readonly List<SDLController> _controllers = new ();
 
     public int ControllerCount => _controllers.Count;
-    
-    private int _totalControllers;
     
     public SDLControllerWatcher(bool initSdl)
     {
@@ -36,16 +34,9 @@ internal class SDLControllerWatcher : IDisposable
                 case SDL.SDL_EventType.SDL_JOYDEVICEADDED:
                     var controller = new SDLController(e.cdevice.which);
                     if (controller.IsActive)
-                    {
-                        //if (controller.GetSerial() != null)
-                            _controllers.Add(controller);
-                        //else
-                        //    controller.Dispose();
-                    }
+                        _controllers.Add(controller);
                     else
-                    {
                         controller.Dispose();
-                    }
                     break;
                 case SDL.SDL_EventType.SDL_JOYDEVICEREMOVED:
                     foreach (var controllerToRemove in _controllers.Where(x => !x.IsAttached()).ToArray())

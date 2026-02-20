@@ -10,11 +10,11 @@ using Meatcorps.Engine.Core.Interfaces.Input;
 public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T : Enum
 {
     private readonly Dictionary<int, IInputMapper<T>> _playerMappers = new();
-    private List<IInputMapper<T>> _inputMappers = new();
-    private List<int> _profileIds = new();
-    public bool AutoAssign { get; set; } = false;
-    private int _useAutoMapper = 0;
-    private GenericInput _defaultInput = new GenericInput(() => 0, "UNKNOWN");
+    private readonly List<IInputMapper<T>> _inputMappers = new();
+    private readonly List<int> _profileIds = new();
+    public bool AutoAssign { get; set; }
+    private int _useAutoMapper;
+    private readonly GenericInput _defaultInput = new GenericInput(() => 0, "UNKNOWN");
     
     public void AssignMapper(int player, IInputMapper<T> mapper)
     {
@@ -194,7 +194,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
         var counter = 0;
         foreach (var mapper in _inputMappers)
         {
-            if (mapper.AnyInputPressed(out var profileId, out var playerId))
+            if (mapper.AnyInputPressed(out var profileId, out _))
             {
                 mapper.AssignProfile(profileId, 1);
                 _useAutoMapper = counter;

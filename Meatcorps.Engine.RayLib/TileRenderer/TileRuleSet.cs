@@ -26,7 +26,6 @@ public class TileRuleSet<TSprite, TRuleGroup>
 
     public TileRuleBuilder For(TSprite tile)
     {
-        var rule = CreateOrGetRule(tile);
         return new TileRuleBuilder(this, tile);
     }
 
@@ -93,7 +92,7 @@ public class TileRuleSet<TSprite, TRuleGroup>
             return cached is not null;
         }
 
-        // Evaluate rules in order (define order to be priority)
+        // Evaluate rules in order (define order to be a priority)
         foreach (var rule in _rules)
             if (rule.Validate(settings, position))
             {
@@ -167,8 +166,8 @@ public class TileRule<TSprite, TRuleGroup>
     public Dictionary<TRuleGroup, TileRuleCheck> Rules { get; }
 
     /// <summary>
-    ///     A rule passes if, for every (group -> required neighbor offsets),
-    ///     each required neighbor at (position + offset) is valid for that group.
+    ///     A rule passes if, for every (group -> required neighbor offset),
+    ///     each required neighbor at (position and offset) is valid for that group.
     /// </summary>
     public bool Validate(TileRuleSettings<TRuleGroup> settings, PointInt position)
     {
@@ -224,10 +223,7 @@ public class TileRuleSettings<TGroup> where TGroup : struct, Enum
 
     public TileRuleSettings<TGroup> WithIsAllowed(IsAllowedDelegateEvent receiver)
     {
-        if (receiver == null)
-            throw new ArgumentNullException(nameof(receiver));
-
-        IsAllowedReceiver = receiver;
+        IsAllowedReceiver = receiver ?? throw new ArgumentNullException(nameof(receiver));
         return this;
     }
 

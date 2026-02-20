@@ -1,7 +1,6 @@
 using System.Numerics;
 using Meatcorps.Engine.Arcade.Data;
 using Meatcorps.Engine.Arcade.Leaderboard.GameEnums;
-using Meatcorps.Engine.RayLib.GameObjects;
 using Meatcorps.Engine.Arcade.Leaderboard.GameObjects.Abstractions;
 using Meatcorps.Engine.Arcade.RayLib.Utilities;
 using Meatcorps.Engine.Arcade.Services;
@@ -13,7 +12,6 @@ using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
-using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Text;
 using Meatcorps.Engine.RayLib.UI.Data;
 using Raylib_cs;
@@ -22,24 +20,22 @@ namespace Meatcorps.Engine.Arcade.Leaderboard.GameObjects;
 
 public class MainGameObject : ResourceGameObject
 {
-    private PersistentCanvas _canvas = null!;
     private ArcadeDataService _arcadeDataService = null!;
     private IDisposable _subscription = null!;
-    private bool _isDisposed = false;
+    private bool _isDisposed;
     private IReadOnlyList<ArcadePlayer> _players = new List<ArcadePlayer>();
-    private Dictionary<string, SmoothValue> _scorePositions = new();
-    private Dictionary<string, SmoothValue> _scores = new();
-    private FixedTimer _titleTimer;
-    private FixedTimer _backgroundTimer;
-    private FixedTimer _sendMessageTimer = new(5000);
-    private FixedTimer _leaderBlink = new(650);
-    private int _messageIndex = 0;
+    private readonly Dictionary<string, SmoothValue> _scorePositions = new();
+    private readonly Dictionary<string, SmoothValue> _scores = new();
+    private FixedTimer _titleTimer = null!;
+    private FixedTimer _backgroundTimer = null!;
+    private readonly FixedTimer _sendMessageTimer = new(5000);
+    private readonly FixedTimer _leaderBlink = new(650);
+    private int _messageIndex;
     private Color _titleColor;
-    private IRenderTargetStrategy _renderer;
-    private UIMessageEmitter _uiMessage;
+    private UIMessageEmitter _uiMessage = null!;
     private Texture2D _qrCodeTexture;
     private string _qrText = "";
-    private bool _showQr = false;
+    private bool _showQr;
     
     protected override void OnInitialize()
     {
@@ -48,7 +44,6 @@ public class MainGameObject : ResourceGameObject
         _titleTimer = new FixedTimer(3000);
         _backgroundTimer = new FixedTimer(5000);
         _uiMessage = Scene.GetGameObject<UIMessageEmitter>()!;
-        _renderer = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
         _arcadeDataService = GlobalObjectManager.ObjectManager.Get<ArcadeDataService>()!;
         var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!;
         
@@ -75,7 +70,7 @@ public class MainGameObject : ResourceGameObject
             if (!_scorePositions.ContainsKey(player.Id))
                 _scorePositions.Add(player.Id, new SmoothValue(10, 6f, false));
             if (!_scores.ContainsKey(player.Id))
-                _scores.Add(player.Id, new SmoothValue(0, 2f, true));
+                _scores.Add(player.Id, new SmoothValue(0, 2f));
 
             _scorePositions[player.Id].RealValue = position;
             _scores[player.Id].RealValue = player.Points;
@@ -136,7 +131,7 @@ public class MainGameObject : ResourceGameObject
 
     protected override void OnDraw()
     {
-        //Raylib.DrawRectangleGradientH(0, 0, _renderer.RenderWidth, _renderer.RenderHeight, Raylib.ColorFromHSV(_backgroundTimer.NormalizedElapsed * 360, 0.2f, 0.2f), Raylib.ColorFromHSV(_backgroundTimer.NormalizedElapsed * 360, 0.1f, 0.1f));
+        //Raylib.DrawRectangleGradientH(0, 0, RenderTarget!.RenderWidth, RenderTarget!.RenderHeight, Raylib.ColorFromHSV(_backgroundTimer.NormalizedElapsed * 360, 0.2f, 0.2f), Raylib.ColorFromHSV(_backgroundTimer.NormalizedElapsed * 360, 0.1f, 0.1f));
         Sprites.Draw(GameSprites.Background, Vector2.Zero);
         Raylib.DrawTextEx(Fonts.GetFont(), "LEADERBOARD", new Vector2(16, 16), 24f, 1, _titleColor);
         
@@ -164,9 +159,9 @@ public class MainGameObject : ResourceGameObject
             var points = (int)_scores[player.Id].DisplayValue;
             var stringLength = (points == 0 ? 1 : (int)Math.Floor(Math.Log10(Math.Abs(points))) + 1) * 17;
             var startPos = new Vector2(16, 48 + 22 * _scorePositions[player.Id].DisplayValue);
-            var endPos = new Vector2(_renderer.RenderWidth - 192 - stringLength, startPos.Y);
+            var endPos = new Vector2(RenderTarget!.RenderWidth - 192 - stringLength, startPos.Y);
             if (counter > 1)
-                Raylib.DrawRectangle(0, 44 + counter * 22, _renderer.RenderWidth - 192, 2, new Color(0,0,0,0.2f));
+                Raylib.DrawRectangle(0, 44 + counter * 22, RenderTarget!.RenderWidth - 192, 2, new Color(0,0,0,0.2f));
             
             Raylib.DrawTextEx(Fonts.GetFont(), rank.ToString() + "#", startPos, 12f, 1, counter == 1 ? color : Color.Blue);
             Raylib.DrawTextEx(Fonts.GetFont(), player.Name, startPos + new Vector2(48, 0), 16f, 1, color);
@@ -177,12 +172,12 @@ public class MainGameObject : ResourceGameObject
             if (_showQr)
             {
                 Raylib.DrawTextEx(Fonts.GetFont(), _qrText,
-                    new Vector2(_renderer.RenderWidth - 175, _renderer.RenderHeight - 225), 12f, 1,
+                    new Vector2(RenderTarget!.RenderWidth - 175, RenderTarget!.RenderHeight - 225), 12f, 1,
                     new Color(0, 255, 255));
-                Raylib.DrawRectangle(_renderer.RenderWidth - 180, _renderer.RenderHeight - 210, 125, 125,
+                Raylib.DrawRectangle(RenderTarget!.RenderWidth - 180, RenderTarget!.RenderHeight - 210, 125, 125,
                     new Color(0, 0, 0, 1f));
                 Raylib.DrawTextureEx(_qrCodeTexture,
-                    new Vector2(_renderer.RenderWidth - 200, _renderer.RenderHeight - 230), 0, 1f, Color.White);
+                    new Vector2(RenderTarget!.RenderWidth - 200, RenderTarget!.RenderHeight - 230), 0, 1f, Color.White);
             }
 
             if (counter > 9)

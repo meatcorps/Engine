@@ -1,6 +1,5 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Interfaces.Config;
-using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Settings;
 using Meatcorps.Engine.Core.Storage.Data;
@@ -16,22 +15,19 @@ namespace Meatcorps.Engine.RayLib.Game;
 
 public sealed class GameHost : IDisposable, IConfigChangeTracker
 {
-    private readonly List<IBackgroundService> _backgroundServices = new();
     private readonly bool _gameHasAudio = false;
     private readonly TimeService _timeService = new();
     private readonly string _title;
     private int _borderLessPosX;
     private int _borderLessPosY;
-    private IUniversalConfig _config;
-    private bool _disableMouseCursor = false;
+    private IUniversalConfig _config = null!;
     private KeyboardKey _exitKey = KeyboardKey.Escape;
     private List<IGameLoopTask> _gameLoopTasksBackward = new();
     private List<IGameLoopTask> _gameLoopTasksForward = new();
     private bool _isBorderless;
-    private BaseScene? _newSceneToLoad = null;
     private int _targetFps;
-    public FrameTimer RenderLoopTime;
-    public FrameTimer UpdateLoopTime;
+    public FrameTimer RenderLoopTime = null!;
+    public FrameTimer UpdateLoopTime = null!;
 
     public GameHost(int width, int height, string title, int targetFps = 60, ICamera? camera = null)
     {
@@ -41,10 +37,10 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
         _targetFps = targetFps;
 
         GlobalObjectManager.ObjectManager.Register<ITimeService>(_timeService);
-        GlobalObjectManager.ObjectManager.Register<GameHost>(this);
+        GlobalObjectManager.ObjectManager.Register(this);
 
         if (camera != null)
-            GlobalObjectManager.ObjectManager.Register<ICamera>(camera);
+            GlobalObjectManager.ObjectManager.Register(camera);
 
         RenderService = new RenderService(GlobalObjectManager.ObjectManager);
 
@@ -55,8 +51,6 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
 
     public int Width { get; private set; }
     public int Height { get; private set; }
-    public double UpdateTimeInMs { get; private set; }
-    public double RenderTimeInMs { get; private set; }
     public RenderService RenderService { get; }
 
     public void ConfigChanged(string group, string key, object value)
@@ -201,7 +195,6 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
                     RunGameLoopTask(GameLoopType.LateUpdate, false, fixedDeltaTime);
                 }
 
-                UpdateTimeInMs = UpdateLoopTime.AvgMs;
                 totalSteps++;
             }
 
@@ -218,7 +211,7 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
             RunGameLoopTask(GameLoopType.PostRender, false);
             if (MeatcorpsEngineLibSettings.IsDebug) 
                 Raylib.SetWindowTitle(
-                    $"Steps: {totalSteps}, Update time {UpdateLoopTime:F4}, Render time {RenderLoopTime:F4}, FPS {Raylib.GetFPS()}");
+                    $"Steps: {totalSteps}, Update time {UpdateLoopTime}, Render time {RenderLoopTime}, FPS {Raylib.GetFPS()}");
         }
 
         Raylib.CloseWindow();

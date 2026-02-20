@@ -62,6 +62,6 @@ public class OldestMeatSelector : ITargetSelector
             return _level.ToWorldPosition(bestRottenCell);
         }
 
-        return best != null ? _level.ToWorldPosition(bestCell) + new Vector2((float)_level.GridSize / 2, (float)_level.GridSize / 2) : (Vector2?)null;
+        return best != null ? _level.ToWorldPosition(bestCell) + new Vector2((float)_level.GridSize / 2, (float)_level.GridSize / 2) : null;
     }
 }

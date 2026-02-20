@@ -16,7 +16,6 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, IC
     private readonly List<OneSoundManager> _soundManagers = new();
     private readonly Dictionary<TSfx, List<Sound>> _soundPools = new();
     private bool _isDisposed;
-    private object _lock;
 
     public SoundFxManager(int poolSizePerSfx = 4, string name = "SoundEffects")
     {

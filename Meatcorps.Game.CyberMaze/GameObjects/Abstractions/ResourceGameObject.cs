@@ -15,15 +15,15 @@ namespace Meatcorps.Game.CyberMaze.GameObjects.Abstractions;
 
 public abstract class ResourceGameObject : BaseGameObject
 {
-    protected Texture2DItem<GameSprites> Sprites { get; private set; }
-    protected TextManager<DefaultFont> Fonts { get; private set; }
-    protected LevelData LevelData { get; private set; }
-    protected SoundFxManager<GameSounds> Sounds { get; private set; }
-    protected MusicManager<GameMusic> Music { get; private set; }
-    protected IArcadePointsMutator PointMutator { get; private set; }
-    protected WorldService  WorldService { get; private set; }
-    protected CameraControllerGameObject CameraManager { get; private set; }
-    protected UIMessageEmitter MessageUI { get; private set; }
+    protected Texture2DItem<GameSprites> Sprites { get; private set; } = null!;
+    protected TextManager<DefaultFont> Fonts { get; private set; } = null!;
+    protected LevelData LevelData { get; private set; } = null!;
+    protected SoundFxManager<GameSounds> Sounds { get; private set; } = null!;
+    protected MusicManager<GameMusic> Music { get; private set; } = null!;
+    protected IArcadePointsMutator PointMutator { get; private set; } = null!;
+    protected WorldService  WorldService { get; private set; } = null!;
+    protected CameraControllerGameObject CameraManager { get; private set; } = null!;
+    protected UIMessageEmitter MessageUI { get; private set; } = null!;
     protected bool DemoMode { get; private set; }
     
     protected override void OnInitialize()

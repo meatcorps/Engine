@@ -1,4 +1,5 @@
 @page "/admin"
+@using System.Reactive
 @using System.Reactive.Disposables
 @using Meatcorps.Engine.Arcade.Constants
 @using Meatcorps.Engine.Arcade.Data
@@ -27,7 +28,7 @@
         <tr>
             <td>
                 @player.Name <small>(@player.Points)</small><br/>
-                <small style="font-size: 12px; font-family: Arial; opacity: 0.5;">@player.Id</small>
+                <small style="font-size: 12px; font-family: Arial, sans-serif; opacity: 0.5;">@player.Id</small>
             </td>
             <td>
                 <button @onclick="() => PlayerService.MutatePoints(player.Id, 10)">+10</button>
@@ -86,15 +87,14 @@
 
 @code {
 
-    public string RemoveId = "";
-    public string RenameId = "";
-    public string ExactId1 = "";
-    public string ExactPointsAmount = "";
-    public string NewPlayerName = "";
-    public string RenamePlayerName = "";
-    public bool ProcessingInformation;
+    private string RemoveId = "";
+    private string RenameId = "";
+    private string ExactId1 = "";
+    private string ExactPointsAmount = "";
+    private string NewPlayerName = "";
+    private string RenamePlayerName = "";
     private bool _admin;
-    private CancellationDisposable _pageAliveCts = new ();
+    private readonly CancellationDisposable _pageAliveCts = new ();
     private SignalValue<ArcadeAdminActions, MQTTGroup> _adminActions = null!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -108,15 +108,17 @@
                 Nav.NavigateTo("/");
             }
             
-            ArcadeDataService.DataChanged.Subscribe(async _ =>
-            {
-                await InvokeAsync(StateHasChanged);
-            }, _pageAliveCts.Token);
+            ArcadeDataService.DataChanged.Subscribe(OnArcadeDataChanged, _pageAliveCts.Token);
 
             _adminActions = new SignalValue<ArcadeAdminActions, MQTTGroup>(MQTTGroup.Exchange, ArcadeEndpointTopics.ADMIN_ACTIONS, new ArcadeAdminActions());
             
             await InvokeAsync(StateHasChanged);
         }
+    }
+    
+    private void OnArcadeDataChanged(Unit __)
+    {
+        _ = InvokeAsync(StateHasChanged);
     }
     
     public async Task RegisterPlayer()
@@ -133,12 +135,10 @@
             return;
         }
 
-        ProcessingInformation = true;
         await InvokeAsync(StateHasChanged);
         await PlayerService.RegisterPlayerAsync(Guid.NewGuid().ToString(), NewPlayerName.Trim());
         NewPlayerName = "";
         
-        ProcessingInformation = false;
         await InvokeAsync(StateHasChanged);
     }
     

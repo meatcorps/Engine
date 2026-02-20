@@ -12,12 +12,12 @@ namespace Meatcorps.Engine.Arcade;
 public sealed class ArcadeGameSystem: IPlayerCheckin, IArcadePointsMutator, IBackgroundService, IDisposable
 {
     public ArcadeGame Game => _gameSignal.Value;
-    private SignalValue<ArcadeGame, MQTTGroup> _gameSignal;
-    private SignalValue<ArcadePlayer, MQTTGroup> _playerSignalIn;
-    private List<ArcadePlayer> _players = new();
+    private readonly SignalValue<ArcadeGame, MQTTGroup> _gameSignal;
+    private readonly SignalValue<ArcadePlayer, MQTTGroup> _playerSignalIn;
+    private readonly List<ArcadePlayer> _players = new();
     private readonly SignalValue<ArcadePointChange, MQTTGroup> _pointChangeSignal;
     private readonly SignalValue<ArcadePlayer, MQTTGroup> _playerSignalOut;
-    private FixedTimer _pushTimer = new FixedTimer(1000);
+    private readonly FixedTimer _pushTimer = new FixedTimer(1000);
     private int _sessionTotalPlayers = 1;
     
     public void SetTotalPlayerSessions(int total)
@@ -39,7 +39,7 @@ public sealed class ArcadeGameSystem: IPlayerCheckin, IArcadePointsMutator, IBac
     private void PlayerSignedIn(ArcadePlayer player)
     {
         // To many players kick the last one out no money penality of-course
-        if (_players.Count >= _sessionTotalPlayers && player.CurrentGame == Game.Code && !_players.Any(x => x.Id == player.Id))
+        if (_players.Count >= _sessionTotalPlayers && player.CurrentGame == Game.Code && _players.All(x => x.Id != player.Id))
         {
             Console.WriteLine("KICKING PLAYER: " + player.Name);
             _playerSignalOut.Value = new ArcadePlayer
@@ -90,17 +90,17 @@ public sealed class ArcadeGameSystem: IPlayerCheckin, IArcadePointsMutator, IBac
 
     public void SignPlayerOut(int player)
     {
-        if (TryGetPlayer(player, out var current))
+        if (!TryGetPlayer(player, out var current)) 
+            return;
+        
+        _players.Remove(current!);
+        _playerSignalOut.Value = new ArcadePlayer
         {
-            _players.Remove(current!);
-            _playerSignalOut.Value = new ArcadePlayer
-            {
-                Id = current.Id,
-                Name = current.Name,
-                Points = current.Points,
-                CurrentGame = 0,
-            };
-        }
+            Id = current!.Id,
+            Name = current.Name,
+            Points = current.Points,
+            CurrentGame = 0,
+        };
     }
     
     public void PreUpdate(float deltaTime)
@@ -156,7 +156,7 @@ public sealed class ArcadeGameSystem: IPlayerCheckin, IArcadePointsMutator, IBac
         if (current!.Points < points)
             return false;
         
-        current!.Points -= points;
+        current.Points -= points;
         _pointChangeSignal.Value = new ArcadePointChange
         {
             Value = -points,

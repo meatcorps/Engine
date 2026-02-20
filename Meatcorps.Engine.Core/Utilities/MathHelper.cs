@@ -53,7 +53,7 @@ public static class MathHelper
     }
 
     /// <summary>Deterministic random unit vector using provided RNG.</summary>
-    public static Vector2 RandomUnitVector(System.Random rng)
+    public static Vector2 RandomUnitVector(Random rng)
     {
         // Uniform angle in [0, 2π)
         var angle = (float)(rng.NextDouble() * MathF.PI * 2f);
@@ -61,7 +61,7 @@ public static class MathHelper
     }
 
     /// <summary>Random point inside unit circle using rejection sampling.</summary>
-    public static Vector2 RandomInsideUnitCircle(System.Random rng)
+    public static Vector2 RandomInsideUnitCircle(Random rng)
     {
         while (true)
         {

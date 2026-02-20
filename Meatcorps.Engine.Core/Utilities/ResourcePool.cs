@@ -5,8 +5,8 @@ public sealed class ResourcePool<T> : IDisposable
     private readonly bool _autoSize;
     private readonly Func<T> _createItem;
     private readonly Action<T> _resetItem;
-    private Queue<T> _itemsReady = new();
-    private List<T> _itemsInUse = new();
+    private readonly Queue<T> _itemsReady = new();
+    private readonly List<T> _itemsInUse = new();
     
     public ResourcePool(int initialPoolSize, bool autoSize, Func<T> createItem, Action<T> resetItem)
     {

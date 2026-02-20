@@ -97,6 +97,6 @@ public class BasicScreenRenderTarget : BaseRenderTarget, IDisposable
         }
 
         if (_useRenderTexture)
-            _postProcessingRenderer.End(PostProcessors!);
+            _postProcessingRenderer.End(PostProcessors);
     }
 }

@@ -13,9 +13,9 @@ namespace Meatcorps.Engine.RayLib.GameObjects.UI;
 public class MainMenuGameObject<TInput>: BaseGameObject where TInput : Enum
 {
     private readonly IGuiSettings _guiSettings;
-    private GuiServiceComponent _gui;
-    private GuiMenuComponent _guiMenu;
-    private List<Tuple<string, Action>> _actions = new();
+    private GuiServiceComponent _gui = null!;
+    private GuiMenuComponent _guiMenu = null!;
+    private readonly List<Tuple<string, Action>> _actions = new();
 
     public MainMenuGameObject(IGuiSettings guiSettings)
     {
@@ -73,11 +73,6 @@ public class MainMenuGameObject<TInput>: BaseGameObject where TInput : Enum
         _guiMenu.Stop();
         _gui.CloseItem();
         _gui.CloseItem();
-    }
-
-    protected override void OnDraw()
-    {
-        base.OnDraw();
     }
 
     protected override void OnDispose()

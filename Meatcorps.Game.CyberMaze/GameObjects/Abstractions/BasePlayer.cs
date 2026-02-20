@@ -9,7 +9,7 @@ namespace Meatcorps.Game.CyberMaze.GameObjects.Abstractions;
 
 public abstract class BasePlayer : ResourceGameObject
 {
-    protected readonly IArcadePointsMutator PointMutator;
+    protected new readonly IArcadePointsMutator PointMutator;
     protected readonly IPlayerCheckin PlayerCheckin;
     protected readonly PlayerInputRouter<GameInput> Controller;
     public Player Player { get; }

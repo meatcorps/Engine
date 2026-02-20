@@ -6,7 +6,7 @@ public class TruthDareItem
     public int ItemId { get; set; }
     public string Category { get; set; } = "";
     public string Description { get; set; } = "";
-    public int RandomValue { get; set; } = 0;
+    public int RandomValue { get; set; }
 }
 
 public enum TruthDareType

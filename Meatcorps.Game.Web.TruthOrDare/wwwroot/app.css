@@ -12,8 +12,9 @@ html, body {
 body {
     height: 100vh;
     font-family: 'Press Start 2P', monospace, "Noto Color Emoji";
-    background: url('bg.png') center/cover no-repeat fixed;
-    background-color: rgba(0,0,0,0.4); /* dark overlay */
+    /* dark overlay */
+    background: rgba(0, 0, 0, 0.4) url('bg.png') no-repeat fixed center;
+    background-size: cover;
     background-blend-mode: multiply;
     color: #eee;
     line-height: 1.4;

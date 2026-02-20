@@ -1,4 +1,3 @@
-using Meatcorps.Engine.Arcade.Interfaces;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Input;
 using Meatcorps.Engine.Core.ObjectManager;
@@ -8,7 +7,6 @@ using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Audio;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.Session;
-using Meatcorps.Engine.Session.Data;
 using Meatcorps.Game.Snake.Data;
 using Meatcorps.Game.Snake.GameObjects.UI;
 using Meatcorps.Game.Snake.Resources;
@@ -17,8 +15,8 @@ namespace Meatcorps.Game.Snake.Scenes;
 
 public class EndScene : BaseScene
 {
-    private TimerOn _timer = new(16000);
-    private PlayerInputRouter<SnakeInput> _controller;
+    private readonly TimerOn _timer = new(16000);
+    private PlayerInputRouter<SnakeInput> _controller = null!;
 
     public int TimeLeft => (int)(_timer.TimeRemaining / 1000);
     

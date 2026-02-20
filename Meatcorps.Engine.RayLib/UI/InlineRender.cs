@@ -13,7 +13,6 @@ public class InlineRender : IDisposable
     private readonly List<InlineItem> _items = new();
     private readonly Dictionary<int, List<InlineItem>> _lineItems = new();
     private readonly Dictionary<int, PointInt> _lineSize = new();
-    private InlineItem? _currentItem;
     private PointInt _currentPosition;
     private PointInt _currentSize;
 
@@ -35,8 +34,8 @@ public class InlineRender : IDisposable
     public Rect Bounds { get; set; }
     public VAlign VAlign { get; set; } = VAlign.Middle;
     public HAlign HAlign { get; set; } = HAlign.Left;
-    public int ItemSpacing { get; set; } = 0; // extra space between items on the same line
-    public int LineSpacing { get; set; } = 0; // extra pixels between lines
+    public int ItemSpacing { get; set; } // extra space between items on the same line
+    public int LineSpacing { get; set; } // extra pixels between lines
 
     public void Dispose()
     {
@@ -108,7 +107,6 @@ public class InlineRender : IDisposable
     public void Update(float deltaTime = 0)
     {
         // Reset per-frame state
-        _currentItem = null;
         _currentPosition = new PointInt();
         _currentSize = new PointInt();
         _newLine = false;
@@ -123,7 +121,6 @@ public class InlineRender : IDisposable
         // First pass: measure & partition into lines
         foreach (var item in _items)
         {
-            _currentItem = item;
             if (!item.Enabled)
                 continue;
 
@@ -195,11 +192,9 @@ public class InlineRender : IDisposable
         // Second pass: per-line placement, then per-item slot & inner alignment
         for (var i = 0; i < _lineCount; i++)
         {
-            var totalSize = _lineSize[i];
-
             var fillSize = CalculateFillSize(i, Bounds.Size);
 
-            // Set starting position along the flow axis for this line
+            // Set the starting position along the flow axis for this line
             if (NewLineOrientation == Orientation.Horizontal)
                 _currentPosition.X = GetLineStartX(i);
             else
@@ -334,7 +329,7 @@ public class InlineRender : IDisposable
         if (NewLineOrientation == Orientation.Vertical && item.FillHeight && outer.Y < filledSize)
             outer.Y = filledSize;
 
-        return outer; // OUTER size (content + margins, with fill applied on flow axis)
+        return outer; // OUTER size (content + margins, with fill applied on the flow axis)
     }
 
     private int CalculateFillSize(int i, PointInt totalSize)
@@ -420,7 +415,7 @@ public class InlineRender : IDisposable
             _ => Bounds.Left
         };
 
-        // cursor sits on the leading edge for the current direction
+        // the cursor sits on the leading edge for the current direction
         return Direction.X > 0 ? anchor : anchor + span;
     }
 

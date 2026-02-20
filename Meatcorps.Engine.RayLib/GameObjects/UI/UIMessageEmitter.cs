@@ -15,10 +15,10 @@ namespace Meatcorps.Engine.RayLib.GameObjects.UI;
 
 internal sealed class UIPayload
 {
-    public TweenStackColor ColorTween;
+    public TweenStackColor ColorTween = null!;
     public Action OnStart = () => { };
-    public TweenStackVector2 PositionTween;
-    public TweenStack SizeTween;
+    public TweenStackVector2 PositionTween = null!;
+    public TweenStack SizeTween = null!;
     public required TextStyle Style;
     public string Text = "";
     public float TotalLifeTime;

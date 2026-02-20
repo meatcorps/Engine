@@ -6,27 +6,24 @@ namespace Meatcorps.Engine.Core.Server;
 public class ServerApplication
 {
     public bool Running;
-    public CancellationToken Active;
-    
-    private CancellationTokenSource _cts = new();
-    private TaskCompletionSource _tcs = new();
+    private readonly TaskCompletionSource _tcs = new();
     
     public ServerApplication()
     {
         Running = true;
         GlobalObjectManager.ObjectManager.Register(this);
         
-        Console.CancelKeyPress += (sender, eventArgs) =>
+        Console.CancelKeyPress += (_, _) =>
         {
             _tcs.TrySetResult();
         };
 
-        AssemblyLoadContext.Default.Unloading += context =>
+        AssemblyLoadContext.Default.Unloading += _ =>
         {
             _tcs.TrySetResult();
         };
 
-        AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+        AppDomain.CurrentDomain.ProcessExit += (_, _) =>
         {
             _tcs.TrySetResult();
         };

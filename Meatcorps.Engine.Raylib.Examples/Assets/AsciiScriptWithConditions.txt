@@ -1,0 +1,17 @@
+// See if it works
+
+SAY=Hello!
+
+IF Whatever
+SAY=Whatever Yes!
+ELSE
+Say=Whatever No!
+GOTO END
+ENDIF
+
+IF Whatever
+SAY=Whatever Yes2!
+ENDIF
+
+LABEL END
+STOP

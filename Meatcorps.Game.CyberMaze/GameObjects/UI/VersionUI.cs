@@ -1,8 +1,6 @@
-using System.Reflection;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Utilities;
-using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Game.CyberMaze.GameObjects.Abstractions;
@@ -33,7 +31,7 @@ public class VersionUI: ResourceGameObject
         var bg = rectText;
         bg.Inflate(4, 4);
         bg.DrawFilled(Color.Black);
-        Raylib_cs.Raylib.DrawTextEx(Fonts.GetFont(), text, rectCanvas.Align(rectText, UVHelper.RightTop).Position, 8, 1, Color.Red);
+        Raylib.DrawTextEx(Fonts.GetFont(), text, rectCanvas.Align(rectText, UVHelper.RightTop).Position, 8, 1, Color.Red);
         base.OnDraw();
     }
 

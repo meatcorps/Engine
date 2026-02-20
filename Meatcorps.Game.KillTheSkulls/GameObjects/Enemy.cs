@@ -1,5 +1,4 @@
 using System.Numerics;
-using Meatcorps.Engine.Arcade.Enums;
 using Meatcorps.Engine.Arcade.Interfaces;
 using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.ObjectManager;
@@ -28,10 +27,10 @@ public class Enemy : ResourceGameObject
     public bool Attacked;
     public float DieNormal => _dieTimer.NormalizedElapsed;
     public bool InRange => _getNormalValue > 0.3f;
-    public ParticleSystemBuilder _smokeParticle;
-    private OneSoundManager _dieSound;
-    private float _pitchOffset;
-    private OneSoundManager _blipSound;
+    public ParticleSystemBuilder _smokeParticle = null!;
+    private OneSoundManager _dieSound = null!;
+    private readonly float _pitchOffset;
+    private OneSoundManager _blipSound = null!;
     private GameSounds _attackSound = GameSounds.Attacking;
     private GameSprites _normalSprite = GameSprites.Skull;
     private GameSprites _chargedSprite = GameSprites.SkullCharged;
@@ -53,7 +52,7 @@ public class Enemy : ResourceGameObject
         _dieSound.Pitch = 0.9f + _pitchOffset;
         Layer = 3;
 
-        if (GlobalObjectManager.ObjectManager.Get<IPlayerCheckin>().GetPlayerName(1).Trim() == "FILLINARANDOMNAME:)")
+        if (GlobalObjectManager.ObjectManager.Get<IPlayerCheckin>()!.GetPlayerName(1).Trim() == "FILLINARANDOMNAME:)")
         {
             _attackSound = GameSounds.Attack2;
             _normalSprite = GameSprites.ExSkull;

@@ -23,15 +23,15 @@ public class FlockController
 
     private float _retargetTimer;
     private Vector2? _cachedTarget;
-    private const float NearTargetEpsilon = 8f; // adjust as you like
-    private const float SlowArrivalRadius = 64f; // optional Arrive radius
+    private const float NearTargetEpsilon = 8f; 
+    private const float SlowArrivalRadius = 64f; 
 
     private readonly Dictionary<IBoidAgent, BurstState> _burst = new();
     private readonly Random _rng = new(1337);
 
     public event Action<IBoidAgent, Vector2>? OnNearTarget;
 
-    private float _frenzy; // 0..1
+    private float _frenzy; 
 
     private static float Mix(float a, float b, float t) => a + (b - a) * t;
 
@@ -56,7 +56,7 @@ public class FlockController
     public void SetTargetSelector(ITargetSelector selector)
     {
         _selector = selector;
-        _retargetTimer = 0f; // force refresh on next update
+        _retargetTimer = 0f; 
     }
 
     public void AddAgent(IBoidAgent agent, IGridItem gridItemForAgent)
@@ -92,7 +92,7 @@ public class FlockController
 
     public void Clear()
     {
-        foreach (var (agent, item) in _agents)
+        foreach (var (_, item) in _agents)
             _grid.Remove(item);
 
         _agents.Clear();
@@ -101,7 +101,6 @@ public class FlockController
 
     public void Update(float deltaTime, float nowSeconds)
     {
-        // ---- effective knobs (baseline -> frenzy) ----
         var effMaxSpeed = Mix(_cfg.MaxSpeed, _cfg.MaxSpeed * 1.10f, _frenzy);
         var effMaxForce = Mix(_cfg.MaxForce, _cfg.MaxForce * 1.50f, _frenzy);
 
@@ -121,7 +120,6 @@ public class FlockController
         var effBurstMin = Mix(_cfg.BurstIntervalSeconds.min, _cfg.BurstIntervalSeconds.min * 0.60f, _frenzy);
         var effBurstMax = Mix(_cfg.BurstIntervalSeconds.max, _cfg.BurstIntervalSeconds.max * 0.70f, _frenzy);
 
-        // 1) Retarget (low frequency)
         _retargetTimer -= deltaTime;
         if (_retargetTimer <= 0f)
         {
@@ -129,16 +127,13 @@ public class FlockController
             _cachedTarget = _selector?.GetTarget(nowSeconds);
         }
 
-        var nr = _cfg.NeighborRadius; // radius itself stays as‑is (feel free to mix it too)
+        var nr = _cfg.NeighborRadius; 
         var nr2 = nr * 2f;
 
-        // 2) Agents update
-        for (var i = 0; i < _agents.Count; i++)
+        foreach (var (agent, item) in _agents)
         {
-            var (agent, item) = _agents[i];
             if (!agent.IsActive) continue;
 
-            // 2a) Neighborhood
             var aabb = new RectF(agent.Position.X - nr, agent.Position.Y - nr, nr2, nr2);
             var hits = _grid.Query(aabb);
 
@@ -149,7 +144,6 @@ public class FlockController
                 if (h is IBoidAgent b && b.IsActive) _neighbors.Add(b);
             }
 
-            // 2b) Steering
             var seek = Vector2.Zero;
             if (_cachedTarget.HasValue)
             {
@@ -166,7 +160,6 @@ public class FlockController
             var coh = BoidBehaviors.Cohesion(agent.Position, _neighbors, _cfg.NeighborRadius, effMaxSpeed);
             var wan = BoidBehaviors.Wander(agent.Velocity, effWanderJit, nowSeconds);
 
-            // tangent steer near target (uses NearTargetRadius + effTangentW)
             var tangentSteer = Vector2.Zero;
             if (_cachedTarget.HasValue)
             {
@@ -185,7 +178,6 @@ public class FlockController
                 }
             }
 
-            // 2b-Extra) Burst behavior (single, fixed block)
             var bst = _burst[agent];
 
             if (nowSeconds >= bst.NextBurstAt)
@@ -199,14 +191,12 @@ public class FlockController
             var burstAccel = Vector2.Zero;
             if (nowSeconds < bst.BurstEndsAt)
             {
-                // impulse in ACCEL units: MaxForce * BurstStrength
                 burstAccel = bst.Dir * (effMaxForce * effBurstStr);
-                seek *= 0.65f; // let burst visibly win
+                seek *= 0.65f; 
             }
 
             _burst[agent] = bst;
 
-            // blend with effective weights
             var accel =
                 (seek * effWSeek) +
                 (sep * effWSep) +
@@ -221,11 +211,9 @@ public class FlockController
 
             accel += burstAccel;
 
-            // 2c) Integrate
             var newVelocity = (agent.Velocity + accel * deltaTime).LimitMagnitude(effMaxSpeed);
             var newPosition = agent.Position + newVelocity * deltaTime;
 
-            // 2d) Bounds policy
             if (_bounds.HasValue)
             {
                 if (_policy == BoidBoundsPolicy.Clamp)
@@ -234,12 +222,10 @@ public class FlockController
                     newPosition = _bounds.Value.WrapPoint(newPosition);
             }
 
-            // 2e) Commit via grid
             agent.Velocity = newVelocity;
             agent.Position = newPosition;
             _grid.Update(item);
 
-            // 2f) Near-target event
             if (_cachedTarget.HasValue)
             {
                 var dSq = agent.Position.DistanceSquared(_cachedTarget.Value);
@@ -253,6 +239,6 @@ public class FlockController
     {
         public float NextBurstAt;
         public float BurstEndsAt;
-        public Vector2 Dir; // unit vector
+        public Vector2 Dir; 
     }
 }

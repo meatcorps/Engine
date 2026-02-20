@@ -14,16 +14,16 @@ public class ArcadeResponseService : IBackgroundService, IDisposable
 {
     private readonly SignalValue<ArcadeQuestion, MQTTGroup> _questionTracker;
     private readonly SignalValue<ArcadeResponse, MQTTGroup> _questionResponse;
-    private HashSet<string> _answeredQuestions = new();
+    private readonly HashSet<string> _answeredQuestions = new();
     private string _currentQuestion = string.Empty;
     private TimerOn _timeoutTimer = new TimerOn(1000);
-    private FixedTimer _updateTickingTimer = new FixedTimer(100);
+    private readonly FixedTimer _updateTickingTimer = new FixedTimer(100);
     private bool _questionRunning;
-    private Subject<Unit> _questionChangeSubject = new();
+    private readonly Subject<Unit> _questionChangeSubject = new();
     public IObservable<Unit> QuestionChange => _questionChangeSubject.AsObservable();
-    private Subject<float> _timeoutTickingSubject = new();
+    private readonly Subject<float> _timeoutTickingSubject = new();
     public IObservable<float> TimeoutTicking => _timeoutTickingSubject.Where(_ => _questionRunning).AsObservable();
-    private object _lock = new();
+    private readonly object _lock = new();
     
     public ArcadeResponseService()
     {

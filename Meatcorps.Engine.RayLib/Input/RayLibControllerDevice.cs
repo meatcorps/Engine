@@ -13,15 +13,14 @@ namespace Meatcorps.Engine.RayLib.Input;
 
 public class RayLibControllerDevice : IControllerDevice
 {
-    private readonly IUniversalConfig _config;
     private readonly float _deadZone;
     private readonly Dictionary<ControllerInputEnum, IInput> _inputs = new();
     private readonly IInput _nothingInput = new GenericInput(() => 0, "Nothing");
 
     public RayLibControllerDevice(int id)
     {
-        _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new FallbackConfig();
-        _deadZone = _config.GetOrDefault("Input", "ControllerAxisDeadZone", 0.1f);
+        var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new FallbackConfig();
+        _deadZone = config.GetOrDefault("Input", "ControllerAxisDeadZone", 0.1f);
         Id = id;
         _inputs.Add(
             ControllerInputEnum.DPadDown,

@@ -2,6 +2,8 @@ using System.Numerics;
 using Meatcorps.Engine.RayLib.PostProcessing.Abstractions;
 using Raylib_cs;
 
+namespace Meatcorps.Engine.RayLib.PostProcessing;
+
 public class FixedPalettePostProcessorTex : BasePostProcessor
 {
     private readonly Color[] _palettePixels = new Color[32];
@@ -12,11 +14,10 @@ public class FixedPalettePostProcessorTex : BasePostProcessor
 
     public FixedPalettePostProcessorTex()
         : base("Assets/Shaders/fixedpalette_tex.fx",
-            new[]
-            {
-                "paletteTex", "paletteSize", "ditherStrength", "ditherScale", "ditherOffset", "exactEpsilon",
+        [
+            "paletteTex", "paletteSize", "ditherStrength", "ditherScale", "ditherOffset", "exactEpsilon",
                 "usePerceptual"
-            })
+        ])
     {
     }
 

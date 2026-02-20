@@ -1,10 +1,5 @@
 using System.Numerics;
-using Meatcorps.Engine.Core.Data;
-using Meatcorps.Engine.Core.Extensions;
-using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Extensions;
-using Meatcorps.Engine.RayLib.GameObjects;
-using Meatcorps.Game.KillTheSkulls.Data;
 using Meatcorps.Game.KillTheSkulls.GameEnums;
 using Meatcorps.Game.KillTheSkulls.GameObjects.Abstractions;
 using Raylib_cs;

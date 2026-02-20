@@ -21,25 +21,25 @@ public class DefaultGuiSettings<TGameInput, TGameAudio> : IGuiSettings, IResourc
     }
 
     public bool UseDefaultKeyBindings { get; set; } = true;
-    public TGameAudio? SelectionSound { get; set; } = null;
-    public TGameAudio? NavigationSound { get; set; } = null;
-    public TGameAudio? ErrorSound { get; set; } = null;
-    public TGameAudio? NotificationSound { get; set; } = null;
+    public TGameAudio? SelectionSound { get; set; }
+    public TGameAudio? NavigationSound { get; set; }
+    public TGameAudio? ErrorSound { get; set; }
+    public TGameAudio? NotificationSound { get; set; }
 
     public int PlayerInputId { get; set; } = 1;
-    public TGameInput? UpKey { get; set; } = default;
-    public TGameInput? DownKey { get; set; } = default;
-    public TGameInput? LeftKey { get; set; } = default;
-    public TGameInput? RightKey { get; set; } = default;
-    public TGameInput? OnSelectionPressed { get; set; } = default;
-    public TGameInput? BackPressed { get; set; } = default;
+    public TGameInput? UpKey { get; set; }
+    public TGameInput? DownKey { get; set; }
+    public TGameInput? LeftKey { get; set; }
+    public TGameInput? RightKey { get; set; }
+    public TGameInput? OnSelectionPressed { get; set; }
+    public TGameInput? BackPressed { get; set; }
 
-    private GenericInput _upInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Up) ? 1 : 0, nameof(_upInput)); 
-    private GenericInput _downInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Down) ? 1 : 0, nameof(_downInput)); 
-    private GenericInput _leftInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Left) ? 1 : 0, nameof(_leftInput)); 
-    private GenericInput _rightInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Right) ? 1 : 0, nameof(_rightInput)); 
-    private GenericInput _selectionInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Enter) ? 1 : 0, nameof(_selectionInput)); 
-    private GenericInput _backInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Escape) ? 1 : 0, nameof(_backInput)); 
+    private readonly GenericInput _upInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Up) ? 1 : 0, nameof(_upInput)); 
+    private readonly GenericInput _downInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Down) ? 1 : 0, nameof(_downInput)); 
+    private readonly GenericInput _leftInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Left) ? 1 : 0, nameof(_leftInput)); 
+    private readonly GenericInput _rightInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Right) ? 1 : 0, nameof(_rightInput)); 
+    private readonly GenericInput _selectionInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Enter) ? 1 : 0, nameof(_selectionInput)); 
+    private readonly GenericInput _backInput = new GenericInput(() => Raylib.IsKeyDown(KeyboardKey.Escape) ? 1 : 0, nameof(_backInput)); 
     
     public Font Font { get; set; }
     public Color TextColor { get; set; } = Color.Gray;

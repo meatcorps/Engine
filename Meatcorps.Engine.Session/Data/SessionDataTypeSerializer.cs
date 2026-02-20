@@ -54,14 +54,14 @@ internal class SessionDataTypeSerializerString : ISessionDataTypeSerializer
     {
         if (data is not ISessionDataValue<string> v)
             throw new Exception("Invalid type");
-        return v.Value ?? string.Empty;
+        return v.Value;
     }
 
     public void Deserialize(string value, ISessionDataItem data)
     {
         if (data is not ISessionDataValue<string> v)
             throw new Exception("Invalid type");
-        v.Value = value ?? string.Empty;
+        v.Value = value;
     }
 }
 

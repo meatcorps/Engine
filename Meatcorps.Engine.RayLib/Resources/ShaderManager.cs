@@ -78,11 +78,9 @@ public sealed class ShaderManager<T> : IResourceLoadOnInit, IDisposable where T 
 
 public class ShaderDisposable : IDisposable
 {
-    private readonly Shader _shader;
 
     public ShaderDisposable(Shader shader)
     {
-        _shader = shader;
         Raylib.BeginShaderMode(shader);
     }
 

@@ -4,6 +4,7 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
+// ReSharper disable NotAccessedField.Local
 
 namespace Meatcorps.Engine.RayLib.Audio;
 
@@ -52,7 +53,7 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
                 {
                     _current = next;
                     _currentKey = _pendingKey.Value;
-                    _pendingKey = default;
+                    _pendingKey = null;
                     _volume = 0f;
 
                     Raylib.PlayMusicStream(_current.Value);
@@ -101,7 +102,7 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
 
         // Stop fades/overrides to avoid late updates tickling unloaded resources
         _isFadingOut = false;
-        _pendingKey = default;
+        _pendingKey = null;
         _pendingSeekSeconds = null;
         _snapshotStack.Clear();
 
@@ -109,7 +110,7 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
         {
             Raylib.StopMusicStream(_current.Value);
             _current = null;
-            _currentKey = default;
+            _currentKey = null;
         }
 
         foreach (var kv in _tracks) Raylib.UnloadMusicStream(kv.Value);
@@ -154,8 +155,8 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
     public MusicManager<TTrack> Stop()
     {
         InternalStop();
-        _currentKey = default;
-        _pendingKey = default;
+        _currentKey = null;
+        _pendingKey = null;
         _pendingSeekSeconds = null;
         _isFadingOut = false;
         _volume = 0f;
@@ -229,11 +230,11 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
 
         var snap = _snapshotStack.Pop();
 
-        // Play previous and seek to exact moment we paused
+        // Play previous and seek to an exact moment we paused
         PlayInternal(snap.Key, fadeSpeed, snap.PositionSeconds);
 
-        // Optionally restore the previous volume curve’s target;
-        // current fade routine will ease us back toward 1.0 anyway.
+        // Optionally, restore the previous volume curve’s target;
+        // the current fade routine will ease us back toward 1.0 anyway.
     }
 
     // -----------------------
@@ -260,7 +261,7 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
 
         if (_currentKey.HasValue && EqualityComparer<TTrack>.Default.Equals(_currentKey.Value, key))
         {
-            // If caller asks to start at a specific time on the same track, seek immediately.
+            // If the caller asks to start at a specific time on the same track, seek immediately.
             if (startAtSeconds.HasValue) Raylib.SeekMusicStream(_current.Value, startAtSeconds.Value);
 
             return this;

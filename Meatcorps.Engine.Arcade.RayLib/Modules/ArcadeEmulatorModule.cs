@@ -18,22 +18,20 @@ public class ArcadeEmulatorModule
     public static ArcadeEmulatorModule Load(ArcadeGame game, MQTTModule? mqttModule, string serverUrl = "http://localhost:8080/", bool standaloneMode = false)
     {
         var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new FallbackConfig();
-        GlobalObjectManager.ObjectManager.Register<ArcadeGame>(game);
-        var fallback = new FallbackArcadeSystem();
-        
-        if (standaloneMode)
-            fallback.RemovePlayersAtIdle = false;
-        else
-            fallback.RemovePlayersAtIdle = config.GetOrDefault("Debug", "RemovePlayersAtIdle", true);
-        
-        GlobalObjectManager.ObjectManager.Register<ArcadeServer>(new ArcadeServer
+        GlobalObjectManager.ObjectManager.Register(game);
+        var fallback = new FallbackArcadeSystem
+        {
+            RemovePlayersAtIdle = !standaloneMode && config.GetOrDefault("Debug", "RemovePlayersAtIdle", true)
+        };
+
+        GlobalObjectManager.ObjectManager.Register(new ArcadeServer
         {
             Url = serverUrl
         });
         GlobalObjectManager.ObjectManager.Register<IArcadePointsMutator>(fallback);
         GlobalObjectManager.ObjectManager.Register<IPlayerCheckin>(fallback);
         GlobalObjectManager.ObjectManager.Add<IBackgroundService>(fallback);
-        GlobalObjectManager.ObjectManager.Register<FallbackArcadeSystem>(fallback);
+        GlobalObjectManager.ObjectManager.Register(fallback);
         if (config.GetOrDefault("Debug", "ArcadeVisualDebugger", true)  && !standaloneMode) // 
         {
             GlobalObjectManager.ObjectManager.Add<IBackgroundService>(new ArcadeVisualDebugger());

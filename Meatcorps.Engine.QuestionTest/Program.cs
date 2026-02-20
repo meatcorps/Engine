@@ -12,14 +12,13 @@ using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.MQTT;
 using Meatcorps.Engine.MQTT.Modules;
 using Meatcorps.Engine.QuestionTest;
-using Meatcorps.Game.CyberPlayer.GameEnums;
 
 LoggingModule.Load();
 var serverApplication = new ServerApplication();
 var simpleGameLoop = new SimpleGameLoop();
 CoreModule.Load();
 GlobalObjectManager.ObjectManager.Register(simpleGameLoop);
-var settings = GameConfig<GameSettings>.Create();
+GameConfig<GameSettings>.Create();
 
 var mqtt = MQTTModule.Load();
 mqtt.RegisterComplexObject(ArcadeEndpointTopics.QUESTION, false, true, new ArcadeQuestion(), false);

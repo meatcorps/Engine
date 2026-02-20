@@ -4,23 +4,21 @@ using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
+// ReSharper disable RedundantAssignment
 
 namespace Meatcorps.Engine.RayLib.Game.GameTasks;
 
 public class SceneTask : IGameLoopTask
 {
-    private GameHost _host;
-    private Guid _instanceId = Guid.NewGuid();
+    private GameHost _host = null!;
     private BaseScene? _newSceneToLoad;
-
-    private BaseScene _scene;
 
     public SceneTask(int priority = 50)
     {
-        priority = 50;
+        Priority = priority;
     }
 
-    public int Priority { get; } = 50;
+    public int Priority { get; }
     public bool Enabled { get; set; } = false;
     public bool IsInitialized { get; private set; }
 
@@ -42,10 +40,6 @@ public class SceneTask : IGameLoopTask
                 {
                     currentScene.Dispose();
                     GlobalObjectManager.ObjectManager.Remove<BaseScene>();
-                }
-                else
-                {
-                    _scene = currentScene!;
                 }
 
                 GlobalObjectManager.ObjectManager.Register(_newSceneToLoad);

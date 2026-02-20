@@ -12,10 +12,9 @@ namespace Meatcorps.Engine.SDL.Controller;
 
 public class SDLControllerDevice : IControllerDevice
 {
-    private SDLController _device;
-    private Dictionary<ControllerInputEnum, IInput> _inputs = new();
+    private SDLController _device = null!;
+    private readonly Dictionary<ControllerInputEnum, IInput> _inputs = new();
     private readonly IInput _nothingInput = new GenericInput(() => 0, "Nothing");
-    private readonly IUniversalConfig _config;
     private readonly float _deadZone;
 
     public int Id => _device.ControllerIndex;
@@ -121,8 +120,8 @@ public class SDLControllerDevice : IControllerDevice
     
     public SDLControllerDevice()
     {
-        _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new FallbackConfig();
-        _deadZone = _config.GetOrDefault("Input", "ControllerAxisDeadZone", 0.1f);
+        var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new FallbackConfig();
+        _deadZone = config.GetOrDefault("Input", "ControllerAxisDeadZone", 0.1f);
     }
 
     private float GetAxisWithDeadZone(float axis)

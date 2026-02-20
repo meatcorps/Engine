@@ -8,7 +8,7 @@ public class CyberPlayerTargetFinder: BaseGridDistanceResource
 {
     public override Rect Bounds { get; }
     private readonly LevelData _levelData;
-    private PointInt[] _directions = new[] { new PointInt(0, 1), new PointInt(1, 0), new PointInt(0, -1), new PointInt(-1, 0) };
+    private readonly PointInt[] _directions = new[] { new PointInt(0, 1), new PointInt(1, 0), new PointInt(0, -1), new PointInt(-1, 0) };
     public CyberPlayerTargetFinder(LevelData levelData)
     {
         _levelData = levelData;

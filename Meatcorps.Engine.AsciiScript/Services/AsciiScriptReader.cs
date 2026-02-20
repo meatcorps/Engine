@@ -12,10 +12,10 @@ public class AsciiScriptReader
     private readonly string[] _blocks;
     private readonly string[] _commands;
     private readonly string[] _variables;
-    private StringBuilder _data = new StringBuilder();
-    private List<AsciiScriptItem> _items = new();
+    private readonly StringBuilder _data = new StringBuilder();
+    private readonly List<AsciiScriptItem> _items = new();
     private int _lineNumber;
-    private IResource _resource;
+    private readonly IResource _resource;
     
     public AsciiScriptReader(string[] blocks, string[] commands, string[] variables)
     {
@@ -58,19 +58,99 @@ public class AsciiScriptReader
         return true;
     }
 
+    public int SearchAll(Func<AsciiScriptItem, bool> condition)
+    {
+        var line = 0;
+        foreach (var item in _items)
+        {
+            if (condition(item))
+                return line;
+                
+            line++;
+        }
+        return -1;
+    }
+
+    public void SearchAfter(Func<AsciiScriptItem, int, bool> condition)
+    {
+        var line = _lineNumber;
+        foreach (var item in _items.Skip(_lineNumber))
+        {
+            if (condition(item, line))
+                return;
+                
+            line++;
+        }
+    }
+
     public void Read(string data)
     {
-        var lines = data.Replace("\r", "").Split("\n");
+        var lines = data.Replace("\r", "").Split("\n").Select(line => line.TrimEnd()).ToArray();
         var isBlock = false;
         var blockName = "";
         var currentLineNumber = 0;
-        foreach (var line in lines.Select(line => line.TrimEnd()))
+        var conditionDepth = 0;
+        foreach (var line in lines)
         {
             currentLineNumber++;
             if (line.Length > 2 && line.StartsWith("//"))
                 continue;
-            
-            if (line.EndsWith(":"))
+
+            if (line.StartsWith("IF "))
+            {
+                conditionDepth++;
+                
+                _items.Add(new AsciiScriptItem
+                {
+                    Type = AsciiScriptItemType.Condition,
+                    Command = line[2..].Trim(),
+                    Value = "",
+                    LineNumber = currentLineNumber
+                });
+            }
+            else if (line.StartsWith("ELSE") && conditionDepth > 0)
+            {
+                _items.Add(new AsciiScriptItem
+                {
+                    Type = AsciiScriptItemType.ConditionElse,
+                    Command = "",
+                    Value = "",
+                    LineNumber = currentLineNumber
+                });
+                continue;
+            }
+            else if (line.StartsWith("ENDIF") &&  conditionDepth > 0)
+            {
+                conditionDepth--;
+                _items.Add(new AsciiScriptItem
+                {
+                    Type = AsciiScriptItemType.ConditionEnd,
+                    Command = "",
+                    Value = "",
+                    LineNumber = currentLineNumber
+                });
+            }
+            else if (line.StartsWith("GOTO "))
+            {
+                _items.Add(new AsciiScriptItem
+                {
+                    Type = AsciiScriptItemType.Goto,
+                    Command = "",
+                    Value = line[5..].Trim(),
+                    LineNumber = currentLineNumber
+                });
+            }
+            else if (line.StartsWith("LABEL "))
+            {
+                _items.Add(new AsciiScriptItem
+                {
+                    Type = AsciiScriptItemType.GotoLabel,
+                    Command = "",
+                    Value = line[5..].Trim(),
+                    LineNumber = currentLineNumber
+                });
+            }
+            else if (line.EndsWith(":"))
             {
                 var name = line[..^1]; // without trailing ':'
                 if (_blocks.Contains(name, StringComparer.Ordinal))
@@ -100,9 +180,7 @@ public class AsciiScriptReader
                     _data.AppendLine(line);
                 }
                 continue;
-            }
-
-            if (_commands.Contains(line, StringComparer.Ordinal))
+            } else if (_commands.Contains(line, StringComparer.Ordinal))
             {
                 _items.Add(new AsciiScriptItem
                 {
@@ -133,5 +211,7 @@ public class AsciiScriptReader
         
         if (isBlock)
             throw new Exception("Block not closed");
+        if (conditionDepth != 0)
+            throw new Exception("Condition not closed");
     }
 }

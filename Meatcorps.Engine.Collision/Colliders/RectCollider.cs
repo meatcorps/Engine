@@ -1,7 +1,4 @@
-using System.Numerics;
-using Meatcorps.Engine.Collision.Data;
 using Meatcorps.Engine.Collision.Interfaces;
-using Meatcorps.Engine.Collision.Providers.Bodies;
 using Meatcorps.Engine.Core.Data;
 
 namespace Meatcorps.Engine.Collision.Colliders;

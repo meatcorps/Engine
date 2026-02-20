@@ -22,7 +22,7 @@ public sealed class Texture2DItem<T> : IResourceLoadOnInit, IDisposable where T 
         _path = path;
     }
 
-    public string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
 
     public Texture2D Texture { get; private set; }
     public Rectangle TextureRect { get; private set; }

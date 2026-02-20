@@ -10,10 +10,8 @@ using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Engine.RayLib.Text;
 using Meatcorps.Engine.Session;
-using Meatcorps.Game.ArcadeTemplate.Data;
 using Meatcorps.Game.ArcadeTemplate.GameEnums;
 using Meatcorps.Game.ArcadeTemplate.GameObjects.UI;
-using Meatcorps.Game.ArcadeTemplate.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Game.ArcadeTemplate.Scenes;
@@ -21,17 +19,16 @@ namespace Meatcorps.Game.ArcadeTemplate.Scenes;
 public class IntroScene: BaseScene
 {
     private Font _font;
-    private UIMessageEmitter _uiMessage;
-    private PlayerInputRouter<GameInput> _controller;
-    private TimerOn _startTimer = new(2000);
-    private FixedTimer _sliderTimer = new(10000);
-    private int currentSlide = 0;
-    private MusicManager<GameMusic> _musicManager;
-    private SoundFxManager<GameSounds> _soundManager;
-    private TextManager<DefaultFont> _fontManager;
-    private SessionService<GameSessionData, GamePlayerData> _sessionService;
-    public int TotalPlayersReady { get; set; } = 0;
-    private bool _waitingForPlayers = false;
+    private UIMessageEmitter _uiMessage = null!;
+    private PlayerInputRouter<GameInput> _controller = null!;
+    private readonly TimerOn _startTimer = new(2000);
+    private readonly FixedTimer _sliderTimer = new(10000);
+    private int currentSlide;
+    private MusicManager<GameMusic> _musicManager = null!;
+    private SoundFxManager<GameSounds> _soundManager = null!;
+    private SessionService<GameSessionData, GamePlayerData> _sessionService = null!;
+    public int TotalPlayersReady { get; set; }
+    private bool _waitingForPlayers;
 
     protected override void OnInitialize()
     {
@@ -55,7 +52,6 @@ public class IntroScene: BaseScene
         _controller.GetState(2, GameInput.Action).Animation = new BlinkAnimation(250);
         _musicManager = GlobalObjectManager.ObjectManager.Get<MusicManager<GameMusic>>()!;
         _soundManager = GlobalObjectManager.ObjectManager.Get<SoundFxManager<GameSounds>>()!;
-        _fontManager = GlobalObjectManager.ObjectManager.Get<TextManager<DefaultFont>>()!;
         _musicManager.Play(GameMusic.IntroOutro);
         _sessionService.StartSession();
     }

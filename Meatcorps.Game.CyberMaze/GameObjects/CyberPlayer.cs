@@ -21,23 +21,21 @@ namespace Meatcorps.Game.CyberMaze.GameObjects;
 
 public class CyberPlayer: BasePlayer, ICollisionEventsFiltered
 {
-    private bool _collided;
     private Vector2 _lastVelocity;
-    private BufferedDirection _bufferedDirection;
-    private FixedTimer _animationTimer = new(300);
-    private ParticleSystemBuilder _bloodParticle;
-    private ParticleSystemBuilder _smokeParticle;
-    private ParticleSystemBuilder _scoreParticle;
-    private ParticleSystemBuilder _explosionParticle;
-    private TimerOn _diedTimer1 = new(3000);
-    private TimerOn _diedTimer2 = new(3000);
+    private readonly BufferedDirection _bufferedDirection;
+    private readonly FixedTimer _animationTimer = new(300);
+    private ParticleSystemBuilder _bloodParticle = null!;
+    private ParticleSystemBuilder _smokeParticle = null!;
+    private ParticleSystemBuilder _scoreParticle = null!;
+    private ParticleSystemBuilder _explosionParticle = null!;
+    private readonly TimerOn _diedTimer1 = new(3000);
+    private readonly TimerOn _diedTimer2 = new(3000);
     private bool _diedSecondFase;
     private bool _died;
-    private bool _renderCyberPlayer;
-    private EdgeDetector _GhostScaredEdgeDetector;
+    private EdgeDetector _ghostScaredEdgeDetector = null!;
     private Vector2 _previousRaw;
     
-    public CyberPlayer(Player _player) : base(_player)
+    public CyberPlayer(Player player) : base(player)
     {
         _bufferedDirection = new BufferedDirection(500);
     }
@@ -46,7 +44,7 @@ public class CyberPlayer: BasePlayer, ICollisionEventsFiltered
     {
         base.OnInitialize();
         LevelData.Players.Add(Player);
-        _GhostScaredEdgeDetector = new EdgeDetector();
+        _ghostScaredEdgeDetector = new EdgeDetector();
         _bloodParticle = LevelData.DutchMode ? Particles.DutchParticle.GenerateParticleSystem(Sprites) : Particles.BloodParticle.GenerateParticleSystem();
         _smokeParticle = Particles.SmokeParticle.GenerateParticleSystem(Sprites);
         _scoreParticle = Particles.ScoreParticle.GenerateParticleSystem(Color.White, Fonts.GetFont());
@@ -72,16 +70,10 @@ public class CyberPlayer: BasePlayer, ICollisionEventsFiltered
 
     protected override void OnUpdate(float deltaTime)
     {
-        _GhostScaredEdgeDetector.Update(LevelData.GhostScared);
-        if (!DemoMode)
-            if (LevelData.GhostScared)
-            {
-                Music.Play(GameMusic.LevelHeavy);
-            }
-            else
-            {
-                Music.Play(GameMusic.LevelAmbient);
-            }
+        _ghostScaredEdgeDetector.Update(LevelData.GhostScared);
+        if (!DemoMode) Music.Play(LevelData.GhostScared 
+            ? GameMusic.LevelHeavy 
+            : GameMusic.LevelAmbient);
         _diedTimer1.Update(_died, deltaTime);
         _diedTimer2.Update(_diedTimer1.Output, deltaTime);
         _scoreParticle.Update(deltaTime);
@@ -119,7 +111,7 @@ public class CyberPlayer: BasePlayer, ICollisionEventsFiltered
             return;
         }
 
-        var raw = Vector2.Zero;
+        Vector2 raw;
         if (!DemoMode)
         {
             raw = Controller.GetAxis(Player.PlayerId);
@@ -142,8 +134,6 @@ public class CyberPlayer: BasePlayer, ICollisionEventsFiltered
         
         Player.Body.SetMaxSpeed(250);
         Player.Body.Position = Player.Body.Position.Warp(LevelData.LevelWidth * (LevelData.GridSize), LevelData.LevelHeight * (LevelData.GridSize));
-        
-        _collided = false;
         
         if (LevelData.GhostScared)
             _smokeParticle.Emit(1, Player.Body.BoundingBox.Center - Player.Body.Velocity.NormalizedCopy() * 8);
@@ -335,7 +325,7 @@ public class CyberPlayer: BasePlayer, ICollisionEventsFiltered
             }
             else
             {
-                if (ghost.State != GhostState.Eaten)
+                if (ghost is not null && ghost.State != GhostState.Eaten)
                 {
                     AddScore(500 * (LevelData.TotalGhostEaten + 1));
                     Player.AddValue(GamePlayerData.GhostEaten);

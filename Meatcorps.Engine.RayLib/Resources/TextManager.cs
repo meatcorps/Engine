@@ -46,6 +46,7 @@ public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultF
     {
         if (_isLoaded)
             return;
+        _isLoaded = true;
         foreach (var fontToBeLoaded in _fontPaths)
         {
             var font = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadFontEx(fontToBeLoaded.Item1,
@@ -61,10 +62,9 @@ public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultF
     }
 
     public TextManager<T> AddFont(string fontPath, T type, int size = 32, TextureFilter filter = TextureFilter.Point,
-        int[] codePoints = null)
+        int[]? codePoints = null)
     {
-        if (_defaultFont == null)
-            _defaultFont = type;
+        _defaultFont ??= type;
 
         _fontPaths.Add((fontPath, type, size, filter, codePoints));
         return this;
@@ -79,7 +79,7 @@ public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultF
 public static class TextManager
 {
     /// <summary>
-    ///     Will be generated with the Enum DefaultFont. You can request it with 'TextManager&lt;DefaultFont&gt;'
+    ///     Will be generated with the Enum DefaultFont. You can request it with 'TextManager&lt;DefaultFont&gt;';
     /// </summary>
     /// <param name="fontPath">Font location</param>
     /// <param name="size">Size of the atlas (default = 32)</param>

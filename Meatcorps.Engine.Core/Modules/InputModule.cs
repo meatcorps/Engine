@@ -7,9 +7,9 @@ namespace Meatcorps.Engine.Core.Modules;
 
 public class InputModule<T> where T : Enum
 {
-    private List<IInputMapper<T>> _inputMappers = new List<IInputMapper<T>>();
+    private readonly List<IInputMapper<T>> _inputMappers = new List<IInputMapper<T>>();
     private bool _autoAssign; 
-    private ObjectManager.ObjectManager _objectManager;
+    private readonly ObjectManager.ObjectManager _objectManager;
         
     public static void CreateOnlyKeyboardMouseMapper(GenericMapper<T> mapper, int maxPlayers) 
     {
@@ -67,7 +67,7 @@ public class InputModule<T> where T : Enum
             playerInputRouter.AddMapper(mapper);
             
             if (mapper is IBackgroundService backgroundService)
-                _objectManager.Add<IBackgroundService>(backgroundService);
+                _objectManager.Add(backgroundService);
         }
 
         playerInputRouter.AutoAssign = _autoAssign;

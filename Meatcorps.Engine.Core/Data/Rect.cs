@@ -167,7 +167,7 @@ public struct Rect : IEquatable<Rect>
     
     public static Rect Intersect(Rect value1, Rect value2)
     {
-        Rect.Intersect(ref value1, ref value2, out var result);
+        Intersect(ref value1, ref value2, out var result);
         return result;
     }
 

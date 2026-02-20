@@ -12,7 +12,6 @@ public class TimerOn
     public float TotalTime => _delay;
     public float TimeRemaining => Math.Max(0, _delay - _elapsed);
     public float NormalizedElapsed => Math.Min(1f, _elapsed / _delay);
-    private bool _active;
 
     public bool Output { get; private set; }
 
@@ -34,8 +33,6 @@ public class TimerOn
             _elapsed = 0;
             Output = false;
         }
-
-        _active = input;
     }
 
     public void Reset()

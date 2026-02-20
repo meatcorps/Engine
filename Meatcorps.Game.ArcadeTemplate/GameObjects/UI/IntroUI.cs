@@ -1,19 +1,16 @@
 using System.Numerics;
 using Meatcorps.Engine.Arcade.Data;
 using Meatcorps.Engine.Core.Enums;
-using Meatcorps.Engine.Core.Input;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
-using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Text;
 using Meatcorps.Engine.RayLib.UI.Data;
 using Meatcorps.Game.ArcadeTemplate.GameEnums;
 using Meatcorps.Game.ArcadeTemplate.GameObjects.Abstractions;
-using Meatcorps.Game.ArcadeTemplate.Resources;
 using Meatcorps.Game.ArcadeTemplate.Scenes;
 using Raylib_cs;
 
@@ -21,23 +18,20 @@ namespace Meatcorps.Game.ArcadeTemplate.GameObjects.UI;
 
 public class IntroUI: ResourceGameObject, IIntroSlide
 {
-    private IRenderTargetStrategy _renderer;
-    private FixedTimer _timer = new(1000);
-    private FixedTimer _buttonTimer = new(250);
-    private FixedTimer _fastTimer = new(50);
-    private FixedTimer _messageTimer = new(3000);
-    private UIMessageEmitter _uiMessage;
-    private int _counter = 0;
-    private PlayerInputRouter<GameInput> _controller;
-    private IntroScene _introScene;
-    private ArcadeGame _game;
+    private readonly FixedTimer _timer = new(1000);
+    private readonly FixedTimer _buttonTimer = new(250);
+    private readonly FixedTimer _fastTimer = new(50);
+    private readonly FixedTimer _messageTimer = new(3000);
+    private UIMessageEmitter _uiMessage = null!;
+    private int _counter;
+    private IntroScene _introScene = null!;
+    private ArcadeGame _game = null!;
 
     protected override void OnInitialize()
     {
         base.OnInitialize();
         Layer = 1;
         Camera = CameraLayer.UI;
-        _renderer = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
         _game = GlobalObjectManager.ObjectManager.Get<ArcadeGame>()!;
         _uiMessage = Scene.GetGameObject<UIMessageEmitter>()!;
         _introScene = (IntroScene)Scene;
@@ -101,8 +95,8 @@ public class IntroUI: ResourceGameObject, IIntroSlide
     {
         var targetWidth = 440;
         var targetHeight = 240;
-        var startPosX = (_renderer.RenderWidth - targetWidth) / 2;
-        var startPosY = (_renderer.RenderHeight - targetHeight) / 2;
+        var startPosX = (RenderTarget!.RenderWidth - targetWidth) / 2;
+        var startPosY = (RenderTarget!.RenderHeight - targetHeight) / 2;
 
         var targetOffsetStart = -5;
         var targetOffsetEnd = 5;
@@ -140,7 +134,7 @@ public class IntroUI: ResourceGameObject, IIntroSlide
         }
         
         
-        Raylib.DrawRectangleGradientV(0, _renderer.RenderHeight - 64, _renderer.RenderWidth, 80, Raylib.ColorAlpha(Color.Black, 0f), Color.Black);
+        Raylib.DrawRectangleGradientV(0, RenderTarget!.RenderHeight - 64, RenderTarget!.RenderWidth, 80, Raylib.ColorAlpha(Color.Black, 0f), Color.Black);
     }
 
     protected override void OnDispose()

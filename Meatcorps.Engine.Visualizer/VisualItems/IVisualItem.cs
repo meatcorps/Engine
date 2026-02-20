@@ -2,7 +2,6 @@
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Visualizer.GameObjects;
 using Meatcorps.Engine.Visualizer.Scenes;
-using Raylib_cs;
 
 namespace Meatcorps.Engine.Visualizer.VisualItems;
 

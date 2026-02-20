@@ -4,7 +4,6 @@ using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.Particles;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Game.HorrorJackpot.GameEnums;
-using Meatcorps.Game.HorrorJackpot.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Game.HorrorJackpot.Particles;

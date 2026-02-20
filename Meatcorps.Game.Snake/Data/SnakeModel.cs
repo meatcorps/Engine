@@ -1,6 +1,5 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
-using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Resources;
@@ -28,14 +27,14 @@ public class SnakeModel
     public int BodyCount => _snake.Count;
     public PointInt HeadDirection => _snake.Count > 0 ? _snake[0].Direction : PointInt.Zero;
 
-    private List<SnakeBodyListItem> _snake = new();
+    private readonly List<SnakeBodyListItem> _snake = new();
     public IReadOnlyList<SnakeBodyListItem> Segments => _snake;
-    private List<SnakeSprites> _snakeSprites = new();
-    private Queue<Rectangle> _snakeRenderSourcePosition = new();
-    private Queue<Rectangle> _snakeRenderDestinationPosition = new();
+    private readonly List<SnakeSprites> _snakeSprites = new();
+    private readonly Queue<Rectangle> _snakeRenderSourcePosition = new();
+    private readonly Queue<Rectangle> _snakeRenderDestinationPosition = new();
     private readonly FixedTimer _animationTimer = new(250);
     private int _renderIndex;
-    private List<SnakeBodyListItem> _tempSnake = new();
+    private readonly List<SnakeBodyListItem> _tempSnake = new();
 
     public SnakeModel(Texture2DItem<SnakeSprites> sprites, LevelData level, PointInt[] startPositions, PointInt startDirection)
     {

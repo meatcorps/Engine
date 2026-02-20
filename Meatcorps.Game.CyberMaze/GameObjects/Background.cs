@@ -1,5 +1,4 @@
 using System.Numerics;
-using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.GameObjects;
@@ -12,13 +11,11 @@ namespace Meatcorps.Game.CyberMaze.GameObjects;
 public class Background : ResourceGameObject
 {
     private PersistentCanvas _canvas = null!;
-    private TimerOn _timer = new(2000);
-    private Dictionary<PointInt, float> _multiplier = new();
-    private Dictionary<PointInt, bool> _playSound = new();
-    private FixedTimer _smokeBackground = new(10000);
-    private FixedTimer _smokeBackground2 = new(20000);
-    private EdgeDetector _animationDone = new();
-    private List<Vector2> _cars = new List<Vector2>();
+    private readonly TimerOn _timer = new(2000);
+    private readonly FixedTimer _smokeBackground = new(10000);
+    private readonly FixedTimer _smokeBackground2 = new(20000);
+    private readonly EdgeDetector _animationDone = new();
+    private readonly List<Vector2> _cars = new List<Vector2>();
 
     protected override void OnInitialize()
     {
@@ -28,14 +25,6 @@ public class Background : ResourceGameObject
         for (var i = 0; i < 10; i++)
         {
             _cars.Add(new Vector2(Raylib.GetRandomValue(260, 420), Raylib.GetRandomValue(0, 720)));
-        }
-        
-        for (var x = 0; x < LevelData.LevelWidth; x++)
-        {
-            for (var y = 0; y < LevelData.LevelHeight; y++)
-            {
-                _multiplier.Add(new PointInt(x, y), 1 + ((float)Raylib.GetRandomValue(0, 100) / 100f));
-            }
         }
     }
 

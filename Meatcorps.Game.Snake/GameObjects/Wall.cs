@@ -14,23 +14,23 @@ namespace Meatcorps.Game.Snake.GameObjects;
 
 public class Wall: SnakeGameObject
 {
-    private PointInt _position = new(-1, -1);
+    private readonly PointInt _position;
     private readonly bool _placeDirect;
-    public SnakeSprites Sprite { get; private set; }
-    private bool _movingToPosition = false;
-    private bool _movingAway = false;
+    private readonly SnakeSprites _sprite;
+    private bool _movingToPosition;
+    private bool _movingAway;
     private bool _waitingToPosition = true;
     private Vector2 _flyFromPosition = Vector2.Zero;
     private Vector2 _flyToPosition = Vector2.Zero;
     private Vector2 _flyPosition = Vector2.Zero;
     private FixedTimer _flyTimer; 
-    private FixedTimer _warningPulse; 
-    private TimerOn _waitForPlacementTimer;
-    private CameraControllerGameObject _cameraController;
+    private readonly FixedTimer _warningPulse; 
+    private readonly TimerOn _waitForPlacementTimer;
+    private CameraControllerGameObject _cameraController = null!;
 
     public Wall(float waitUntilWallIsPlaced, PointInt position, bool placeDirect = false, SnakeSprites sprite = SnakeSprites.Wall)
     {
-        Sprite = sprite;
+        _sprite = sprite;
         _waitForPlacementTimer = new TimerOn(waitUntilWallIsPlaced);
         _flyTimer = new FixedTimer(Raylib.GetRandomValue(250, 750));
         _warningPulse = new FixedTimer(500);
@@ -121,14 +121,14 @@ public class Wall: SnakeGameObject
         } 
         else if (_movingToPosition || _movingAway)
         {
-            Sprites.Draw(Sprite, _flyPosition, Color.Gray);
+            Sprites.Draw(_sprite, _flyPosition, Color.Gray);
             
             if (!_movingAway)
                 Sprites.Draw(SnakeSprites.Warning, LevelData.ToWorldPosition(_position), Raylib.ColorAlpha(Color.Red, 1 - _flyTimer.NormalizedElapsed));
         }
         else
         {
-            Sprites.Draw(Sprite, LevelData.ToWorldPosition(_position), Color.White);
+            Sprites.Draw(_sprite, LevelData.ToWorldPosition(_position), Color.White);
         }
         base.OnDraw();
     }

@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meatcorps.Engine.Arcade.Constants;
 using Meatcorps.Engine.Arcade.Data;
 using Meatcorps.Engine.Arcade.Modules;
@@ -27,9 +25,9 @@ var simpleGameLoop = new SimpleGameLoop();
 GlobalObjectManager.ObjectManager.Register(simpleGameLoop);
 var mqttModule = MQTTModule.Load();
 ArcadeRegisterEndpointModule.Load(mqttModule);
-mqttModule.RegisterComplexObject<ArcadeQuestion>(ArcadeEndpointTopics.QUESTION, true, false, new ArcadeQuestion(), false);
-mqttModule.RegisterComplexObject<ArcadeResponse>(ArcadeEndpointTopics.QUESTIONRESPONSE, false, true, new ArcadeResponse(), false);
-mqttModule.RegisterComplexObject<ArcadeAdminActions>(ArcadeEndpointTopics.ADMIN_ACTIONS, false, true, new ArcadeAdminActions(), false);
+mqttModule.RegisterComplexObject(ArcadeEndpointTopics.QUESTION, true, false, new ArcadeQuestion(), false);
+mqttModule.RegisterComplexObject(ArcadeEndpointTopics.QUESTIONRESPONSE, false, true, new ArcadeResponse(), false);
+mqttModule.RegisterComplexObject(ArcadeEndpointTopics.ADMIN_ACTIONS, false, true, new ArcadeAdminActions(), false);
 mqttModule.Create();
 
 GlobalObjectManager.ObjectManager.Register(new ArcadeResponseService());
@@ -42,8 +40,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddSingleton<TestService>(GlobalObjectManager.ObjectManager.Get<TestService>()!);
-builder.Services.AddSingleton<ArcadeResponseService>(GlobalObjectManager.ObjectManager.Get<ArcadeResponseService>()!);
+builder.Services.AddSingleton(GlobalObjectManager.ObjectManager.Get<TestService>()!);
+builder.Services.AddSingleton(GlobalObjectManager.ObjectManager.Get<ArcadeResponseService>()!);
 builder.Services.AddScoped<IUserIdProvider, BrowserUserIdProvider>();
 builder.Services.AddSingleton<ArcadeDataService>();
 builder.Services.AddSingleton<PlayerService>();

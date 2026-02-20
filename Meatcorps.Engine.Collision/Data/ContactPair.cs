@@ -40,7 +40,7 @@ public readonly struct ContactPair : IEquatable<ContactPair>
     
     public bool ContainsOwner(object owner) => A.Body.Owner == owner || B.Body.Owner == owner;
 
-    public bool TryGetOwner<T>(out T owner)
+    public bool TryGetOwner<T>(out T? owner)
     {
         owner = default;
         if (A.Body.Owner is T t)
@@ -61,7 +61,7 @@ public readonly struct ContactPair : IEquatable<ContactPair>
     private static int ColliderIndex(ICollider c)
     {
         // If you can expose a collider index, use it.
-        // Otherwise, fall back to reference hash; stable enough for runtime session
+        // Otherwise, fall back to reference hash; stable enough for the runtime session
         return RuntimeHelpers.GetHashCode(c);
     }
 }

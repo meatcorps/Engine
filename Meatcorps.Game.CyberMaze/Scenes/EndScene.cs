@@ -15,9 +15,9 @@ namespace Meatcorps.Game.CyberMaze.Scenes;
 
 public class EndScene : BaseScene
 {
-    private TimerOn _timer = new(16000);
-    private PlayerInputRouter<GameInput> _controller;
-    private DefaultGuiSettings<GameInput, GameSounds>? _guiSettings = null;
+    private readonly TimerOn _timer = new(16000);
+    private PlayerInputRouter<GameInput> _controller = null!;
+    private DefaultGuiSettings<GameInput, GameSounds>? _guiSettings;
 
     public int TimeLeft => (int)(_timer.TimeRemaining / 1000);
 

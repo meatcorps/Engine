@@ -3,8 +3,8 @@ namespace Meatcorps.Game.Snake.Data;
 public class SnakePerkManager
 {
     private readonly Player _player;
-    private List<IConsumableItem> _perks = new();
-    private List<int> _perkIds = new();
+    private readonly List<IConsumableItem> _perks = new();
+    private readonly List<int> _perkIds = new();
 
     public IReadOnlyList<IConsumableItem> Perks => _perks;
 

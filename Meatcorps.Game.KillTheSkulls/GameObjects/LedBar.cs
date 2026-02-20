@@ -11,12 +11,12 @@ namespace Meatcorps.Game.KillTheSkulls.GameObjects;
 public class LedBar: ResourceGameObject
 {
     private readonly Color _color;
-    private Color[] _renderColor;
-    private SmoothColor[] _setRenderColor;
-    private FixedTimer _blinkTimer = new(250);
-    private FixedTimer _waveTimer = new(500);
+    private readonly Color[] _renderColor;
+    private readonly SmoothColor[] _setRenderColor;
+    private readonly FixedTimer _blinkTimer = new(250);
+    private readonly FixedTimer _waveTimer = new(500);
 
-    public float Charge { get; set; } = 0;
+    public float Charge { get; set; }
     public LedBarMode Mode { get; set; } = LedBarMode.On;
     
     public LedBar(Vector2 position, Color color)

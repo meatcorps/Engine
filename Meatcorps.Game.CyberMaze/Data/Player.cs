@@ -12,11 +12,11 @@ public class Player
     public required SessionDataBag<GamePlayerData> SessionDataBag { get; init; }
     public bool IsDead { get; set; }
 
-    public Body Body { get; set; }
+    public Body Body { get; set; } = null!;
     
-    public CyberPlayer CyberPlayer { get; set; }
+    public CyberPlayer CyberPlayer { get; set; } = null!;
     
-    public PlayerUI Ui { get; set; }
+    public PlayerUI Ui { get; set; } = null!;
     
     public int Score
     {
@@ -29,10 +29,6 @@ public class Player
     public float WorldSpeed { get; set; } = 1;
 
     public Color Color { get; init; }
-
-    public Player()
-    {
-    }
 
     public void Initialize()
     {

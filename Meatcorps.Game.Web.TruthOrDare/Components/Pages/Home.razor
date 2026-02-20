@@ -7,8 +7,8 @@
 @using Meatcorps.Engine.Core.ObjectManager
 @using Meatcorps.Engine.Core.Utilities
 @using Meatcorps.Engine.Session
-@using Meatcorps.Game.CyberPlayer.GameEnums
 @using Meatcorps.Game.Web.TruthOrDare.Data
+@using Meatcorps.Game.Web.TruthOrDare.GameEnums
 @using Meatcorps.Game.Web.TruthOrDare.Services
 @using Meatcorps.Game.Web.TruthOrDare.Utilities
 @inject TruthOrDareService TruthOrDareService
@@ -78,14 +78,14 @@
             break;
         case InternalGameState.ConfirmTask:
             <div class="page-enter"> 
-                <h2><br/><br/><br/><br/><br/>@(TruthOrDare.ToString().ToUpper()) > @(TruthDare.Category):<br/></h2>
+                <h2><br/><br/><br/><br/><br/>@(TruthOrDare.ToString().ToUpper()) > @(TruthDare!.Category):<br/></h2>
                 <h1>YOU WILL LOSE POINTS IF NOBODY VOTE!<br/>YELL TO EVERYONE TO BE READY!<br/>YOU HAVE 2 MINUTES!</h1>
                 <button @onpointerdown="() => ConfirmTask()"disabled="@InputLocked">YEAH YEAH JUST START!</button>
             </div>
             break;
         case InternalGameState.DoTask:
             <div class="page-enter"> 
-                <h2><br/><br/><br/><br/><br/>@(TruthOrDare.ToString().ToUpper()) > @(TruthDare.Category):</h2>
+                <h2><br/><br/><br/><br/><br/>@(TruthOrDare.ToString().ToUpper()) > @(TruthDare!.Category):</h2>
                 <h1 style="padding-top: 1rem;">@(TruthDare.Description)</h1>
                 <button @onpointerdown="() => IAmDone()" disabled="@InputLocked">I AM DONE WITH THIS!</button>
             </div>
@@ -205,10 +205,10 @@
 
 @code
 {
-    public List<ReceiveItem> ReceiveItems = new List<ReceiveItem>();
+    public readonly List<ReceiveItem> ReceiveItems = new List<ReceiveItem>();
     public InternalGameState GameState = InternalGameState.Idle;
     public TruthDareType TruthOrDare = TruthDareType.Truth;
-    public TruthDareItem? TruthDare = null;
+    public TruthDareItem? TruthDare;
     public string LinkToAppQr = "";
     public string LinkToAppWithOutSignInQr = "";
     public string Error = string.Empty;
@@ -217,16 +217,16 @@
     private IArcadePointsMutator _pointMutator = null!;
     private ArcadeGame _gameInfo = null!;
     private ArcadeServer _arcadeServer = null!;
-    private CancellationDisposable _aliveToken = new ();
+    private readonly CancellationDisposable _aliveToken = new ();
     private CancellationDisposable _stateToken = new();
     private InternalGameState _previousGameState;
     private TimerOn _timeoutTimer = new TimerOn(1000);
-    private TimerOn _releaseLockTimer = new TimerOn(1000);
-    private FixedTimer _updateTimer = new FixedTimer(100);
+    private readonly TimerOn _releaseLockTimer = new TimerOn(1000);
+    private readonly FixedTimer _updateTimer = new FixedTimer(100);
     private SessionService<GameSessionData, GamePlayerData> _sessionService = null!;
     private bool firstVote;
-    public int TruthVote = 0;
-    public int DareVote = 0;
+    public int TruthVote;
+    public int DareVote;
     public bool PlayerVoted;
     public bool InputLocked;
     

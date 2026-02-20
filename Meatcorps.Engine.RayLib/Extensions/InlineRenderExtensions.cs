@@ -21,10 +21,10 @@ public static class InlineRenderExtensions
             Identifier = id,
             CacheSize = true,
             Margin = margin ?? Insets.Zero,
-            Initialize = (_, __) => { },
-            GetSize = (_, __) => new PointInt(width, height),
-            Draw = (_, __, ____) => { },
-            Destroy = (_, __) => { }
+            Initialize = (_, _) => { },
+            GetSize = (_, _) => new PointInt(width, height),
+            Draw = (_, _, _) => { },
+            Destroy = (_, _) => { }
         });
         return ir;
     }
@@ -37,10 +37,10 @@ public static class InlineRenderExtensions
             Identifier = id,
             CacheSize = true,
             NewLine = true,
-            Initialize = (_, __) => { },
-            GetSize = (_, __) => new PointInt(0, 0),
-            Draw = (_, __, ____) => { },
-            Destroy = (_, __) => { }
+            Initialize = (_, _) => { },
+            GetSize = (_, _) => new PointInt(0, 0),
+            Draw = (_, _, _) => { },
+            Destroy = (_, _) => { }
         });
         return ir;
     }
@@ -67,16 +67,16 @@ public static class InlineRenderExtensions
             FillHeight = fixedHeight,
             CacheSize = true,
             Margin = margin ?? new Insets(0),
-            Initialize = (_, __) => { },
-            GetSize = (_, __) => new PointInt(width, height),
-            Draw = (_, __, rect) =>
+            Initialize = (_, _) => { },
+            GetSize = (_, _) => new PointInt(width, height),
+            Draw = (_, _, rect) =>
             {
                 Raylib.DrawRectangle((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height, fill);
                 if (stroke.HasValue)
                     Raylib.DrawRectangleLines((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height,
                         stroke.Value);
             },
-            Destroy = (_, __) => { }
+            Destroy = (_, _) => { }
         });
         return ir;
     }
@@ -104,14 +104,14 @@ public static class InlineRenderExtensions
             VAlign = vAlign,
             CacheSize = true,
             Margin = margin ?? Insets.Zero,
-            Initialize = (_, __) => { },
-            GetSize = (_, __) => rawSize,
-            Draw = (_, __, rect) =>
+            Initialize = (_, _) => { },
+            GetSize = (_, _) => rawSize,
+            Draw = (_, _, rect) =>
             {
                 var dest = new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
                 Raylib.DrawTexturePro(texture, src, dest, Vector2.Zero, 0f, useTint);
             },
-            Destroy = (_, __) => { }
+            Destroy = (_, _) => { }
         });
 
         return ir;
@@ -162,19 +162,19 @@ public static class InlineRenderExtensions
             VAlign = vAlign,
             CacheSize = true,
             Margin = margin ?? Insets.Zero,
-            Initialize = (_, __) => { },
-            GetSize = (_, __) => desiredSize.Value,
-            Update = (i, item, delta) =>
+            Initialize = (_, _) => { },
+            GetSize = (_, _) => desiredSize.Value,
+            Update = (_, _, delta) =>
             {
                 if (internalTimer)
                     timer.Update(delta);
             },
-            Draw = (_, __, rect) =>
+            Draw = (_, _, rect) =>
             {
                 var dest = new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
                 spriteSet.DrawAnimationWithNormal(spriteKey, timer.NormalizedElapsed, dest, useTint);
             },
-            Destroy = (_, __) => { }
+            Destroy = (_, _) => { }
         });
 
         return ir;
@@ -207,7 +207,7 @@ public static class InlineRenderExtensions
             CacheSize = cacheSize, // false => remeasure each frame (text can change)
             Margin = margin ?? Insets.Zero,
             Data = new LabelData(text, fontSize, color, spacing),
-            Initialize = (_, __) => { },
+            Initialize = (_, _) => { },
             GetSize = (_, item) =>
             {
                 var d = (LabelData)item.Data!;
@@ -219,7 +219,7 @@ public static class InlineRenderExtensions
                 var d = (LabelData)item.Data!;
                 Raylib.DrawTextEx(font, d.Text, new Vector2(rect.X, rect.Y), d.FontSize, d.Spacing, d.Color);
             },
-            Destroy = (_, __) => { }
+            Destroy = (_, _) => { }
         });
 
         return ir;
@@ -248,7 +248,7 @@ public static class InlineRenderExtensions
             CacheSize = false,
             Margin = margin ?? Insets.Zero,
             Data = new LabelData<SmoothValue>(value, floatParseSettings, fontSize, color, spacing),
-            Initialize = (_, item) => { },
+            Initialize = (_, _) => { },
             GetSize = (_, item) =>
             {
                 var d = (LabelData<SmoothValue>)item.Data!;
@@ -266,7 +266,7 @@ public static class InlineRenderExtensions
                 Raylib.DrawTextEx(font, d.Data.DisplayValue.ToString(d.Text), new Vector2(rect.X, rect.Y), d.FontSize,
                     d.Spacing, d.Color);
             },
-            Destroy = (_, __) => { }
+            Destroy = (_, _) => { }
         });
 
         return ir;
@@ -300,10 +300,10 @@ public static class InlineRenderExtensions
                     CacheSize = true,
                     NewLine = true,
                     Margin = Insets.Zero,
-                    Initialize = (_, __) => { },
-                    GetSize = (_, __) => new PointInt(0, 0),
-                    Draw = (_, __, ____) => { },
-                    Destroy = (_, __) => { }
+                    Initialize = (_, _) => { },
+                    GetSize = (_, _) => new PointInt(0, 0),
+                    Draw = (_, _, _) => { },
+                    Destroy = (_, _) => { }
                 });
                 continue;
             }
@@ -340,14 +340,14 @@ public static class InlineRenderExtensions
                 Identifier = tokenId,
                 CacheSize = true,
                 Margin = margin,
-                Initialize = (_, __) => { },
-                GetSize = (_, __) => Measure(tokenCopy),
-                Draw = (_, __, rect) =>
+                Initialize = (_, _) => { },
+                GetSize = (_, _) => Measure(tokenCopy),
+                Draw = (_, _, rect) =>
                 {
                     if (!isSpace)
                         Raylib.DrawTextEx(font, tokenCopy, new Vector2(rect.X, rect.Y), fontSize, spacing, color);
                 },
-                Destroy = (_, __) => { }
+                Destroy = (_, _) => { }
             });
         }
 
@@ -411,8 +411,8 @@ public static class InlineRenderExtensions
                 CacheSize = true,
                 NewLine = isEnter,
                 Margin = margin,
-                Initialize = (_, __) => { },
-                GetSize = (_, __) =>
+                Initialize = (_, _) => { },
+                GetSize = (_, _) =>
                 {
                     if (isEnter)
                         return new PointInt(0, 0);
@@ -421,13 +421,13 @@ public static class InlineRenderExtensions
                     // ensure height is line-height for all glyphs
                     return new PointInt((int)m.X, (int)mA.Y);
                 },
-                Draw = (_, __, rect) =>
+                Draw = (_, _, rect) =>
                 {
-                    // skip drawing “true spaces” to avoid overdraw, but preserve measured width
+                    // skip drawing “true spaces” to avoid overdrawing, but preserve measured width
                     if (ch != ' ')
                         Raylib.DrawTextEx(font, s, new Vector2(rect.X, rect.Y), fontSize, spacing, color);
                 },
-                Destroy = (_, __) => { }
+                Destroy = (_, _) => { }
             });
         }
 
@@ -460,17 +460,17 @@ public static class InlineRenderExtensions
             HAlign = hAlign,
             VAlign = vAlign,
             Margin = useMargin,
-            Initialize = (_, __) => { },
-            GetSize = (_, __) =>
+            Initialize = (_, _) => { },
+            GetSize = (_, _) =>
             {
                 var m = Raylib.MeasureTextEx(font, iconGlyph, fontSize, spacing);
                 return new PointInt((int)m.X, (int)m.Y);
             },
-            Draw = (_, __, rect) =>
+            Draw = (_, _, rect) =>
             {
                 Raylib.DrawTextEx(font, iconGlyph, new Vector2(rect.X, rect.Y), fontSize, spacing, color);
             },
-            Destroy = (_, __) => { }
+            Destroy = (_, _) => { }
         });
 
         return ir;

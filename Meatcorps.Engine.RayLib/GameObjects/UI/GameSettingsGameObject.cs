@@ -22,25 +22,24 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
 {
     private readonly IGuiSettings _guiSettings;
     private readonly string[]? _ratios;
-    private ScreenResolutionIterator _screenResolutionIterator;
-    private IUniversalConfig _config;
-    private GuiServiceComponent _gui;
-    private GuiMenuComponent _guiMenu;
+    private ScreenResolutionIterator _screenResolutionIterator = null!;
+    private IUniversalConfig _config = null!;
+    private GuiServiceComponent _gui = null!;
+    private GuiMenuComponent _guiMenu = null!;
 
     private string? _currentGroup;
     
-    private int _resolutionIndex = 0;
+    private int _resolutionIndex;
     private int _monitor;
-    private int _modeIndex = 0;
-    private string[] _modes = { "Windowed", "Fullscreen", "Borderless" };
+    private int _modeIndex;
+    private readonly string[] _modes = ["Windowed", "Fullscreen", "Borderless"];
     private string[] _groups = null!;
-    private GenericMapper<TInput> _input;
-    private RaylibKeyboardBinder<TInput> _keyboardBinder;
+    private GenericMapper<TInput> _input = null!;
+    private RaylibKeyboardBinder<TInput> _keyboardBinder = null!;
 
     private int _currentKeyboardProfile = -1;
-    private EdgeDetector _rebindTrigger = new();
-    public Queue<TInput> _toRebind = new();
-    private PlayerInputRouter<TInput> _playerInput = null!;
+    private readonly EdgeDetector _rebindTrigger = new();
+    private readonly Queue<TInput> _toRebind = new();
 
     public GameSettingsGameObject(IGuiSettings guiSettings, string[]? ratios = null)
     {
@@ -60,7 +59,6 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
         _guiMenu = AddComponent(new GuiMenuComponent(_guiSettings));
         _keyboardBinder = GlobalObjectManager.ObjectManager.Get<RaylibKeyboardBinder<TInput>>()!;
         _input = GlobalObjectManager.ObjectManager.Get<GenericMapper<TInput>>()!;
-        _playerInput = GlobalObjectManager.ObjectManager.Get<PlayerInputRouter<TInput>>()!;
         Camera = CameraLayer.UI;
         Layer = 11;
         var groupItems = _config.GetGroups().ToList();
@@ -79,7 +77,7 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
         
         if (Raylib.IsWindowFullscreen())
             _modeIndex = 1;
-        else if (Raylib.GetScreenWidth() == Raylib_cs.Raylib.GetMonitorWidth(_monitor) && Raylib_cs.Raylib.GetScreenHeight() == Raylib_cs.Raylib.GetMonitorHeight(_monitor))
+        else if (Raylib.GetScreenWidth() == Raylib.GetMonitorWidth(_monitor) && Raylib.GetScreenHeight() == Raylib.GetMonitorHeight(_monitor))
             _modeIndex = 2;
         else
             _modeIndex = 0;
@@ -122,7 +120,7 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
 
     private void HandleLeftInfo()
     {
-        _gui.AddItem(new StackElement(new RectF(), 4));
+        _gui.AddItem(new StackElement(new RectF()));
         _gui.AddItem(new PanelElement(new RectF(0,0, 300, (_currentGroup == null ? 16 : 10) * _guiSettings.FontScaleSize), UVHelper.LeftTop, false, false));
         _gui.AddItem(new TextElement(_guiSettings.TextColor, _guiSettings.Font, "Settings", (_currentGroup == null ? 16 : 10) * _guiSettings.FontScaleSize, 1, UVHelper.LeftTop));
         _gui.CloseItem();
@@ -166,7 +164,7 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
                 return;
             }
 
-            if (_rebindTrigger.IsRisingEdge)
+            if (_rebindTrigger.IsRisingEdge && key != null)
                 _input.SetInput(_currentKeyboardProfile, _toRebind.Dequeue(), key);
             
             return;
@@ -313,7 +311,7 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
             _guiMenu.MenuOptions("Resolution", resolutions.Select(x => x.ToString()).ToArray(), ref _resolutionIndex);
 
         if (_guiMenu.MenuIntSlider("Monitor", ref _monitor, minValue: -1,
-                maxValue: Raylib_cs.Raylib.GetMonitorCount() - 1))
+                maxValue: Raylib.GetMonitorCount() - 1))
         {
             _screenResolutionIterator.Load(_monitor);
             _resolutionIndex = _screenResolutionIterator.GetModeIndex(Scene.GameHost.Width, Scene.GameHost.Height);

@@ -1,7 +1,6 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Runtime.CompilerServices;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Signals.Data;
 using Meatcorps.Engine.Signals.Interfaces;
@@ -14,7 +13,7 @@ public abstract class BaseSignalValueEvent<TGroup>: IBackgroundService, ISignalV
     private readonly Dictionary<string, object> _subjects = new ();
     private readonly CancellationDisposable  _cancellationDisposable = new();
     protected CancellationToken AliveToken => _cancellationDisposable.Token;
-    private bool _disposed = false;
+    private bool _disposed;
     private readonly object _gate = new();
     
     public void PreUpdate(float deltaTime)
@@ -35,8 +34,8 @@ public abstract class BaseSignalValueEvent<TGroup>: IBackgroundService, ISignalV
     {
         lock (_gate)
         {
-            if (_subjects.ContainsKey(topic))
-                return (Subject<TValueType>)_subjects[topic];
+            if (_subjects.TryGetValue(topic, out var subject1))
+                return (Subject<TValueType>)subject1;
 
             var subject = new Subject<TValueType>();
 
@@ -59,17 +58,14 @@ public abstract class BaseSignalValueEvent<TGroup>: IBackgroundService, ISignalV
             
             var havingAValue = TryGetValue<TValueType>(value.Topic, out var existingValue);
             
-            if (havingAValue)
+            if (havingAValue && existingValue is not null)
                 value.UpdateValueFromTracker(existingValue);
 
             IsValueTypeOk(value);
             
             _values[value.Value!.GetType()].Add(value);
 
-            if (havingAValue)
-                currentValue = value.Value;
-            else
-                currentValue = default;
+            currentValue = havingAValue ? value.Value : default;
             
             return havingAValue;
         }
@@ -112,7 +108,7 @@ public abstract class BaseSignalValueEvent<TGroup>: IBackgroundService, ISignalV
             return;
         lock (_gate)
         {
-            foreach (var item in _values[value!.GetType()])
+            foreach (var item in _values[value.GetType()])
             {
                 if (item is not ISignalValueTracker other)
                     continue;

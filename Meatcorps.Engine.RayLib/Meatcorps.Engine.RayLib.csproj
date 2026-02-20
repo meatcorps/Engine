@@ -30,7 +30,6 @@
         <PackageReference Include="Meatcorps.Engine.Hardware.Controllers" Version="[0.1.0,)" />
         <ProjectReference Include="..\Meatcorps.Engine.Hardware.Controllers\Meatcorps.Engine.Hardware.Controllers.csproj"/>
         <PackageReference Include="Meatcorps.Engine.Logging" Version="[0.1.0,)" />
-        <ProjectReference Include="..\Meatcorps.Engine.Logging\Meatcorps.Engine.Logging.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

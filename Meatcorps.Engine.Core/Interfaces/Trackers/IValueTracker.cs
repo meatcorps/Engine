@@ -1,6 +1,6 @@
 namespace Meatcorps.Engine.Core.Interfaces.Trackers;
 
-public interface IValueTracker<TGroup> where TGroup : Enum
+public interface IValueTracker
 {
     void Change<T>(string name, T value);
     T Get<T>(string name);

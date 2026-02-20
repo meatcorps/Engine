@@ -2,10 +2,8 @@ using Meatcorps.Engine.Arcade.Services;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
-using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Extensions;
-using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.UI;
 using Meatcorps.Game.Snake.GameObjects.Abstractions;
 using Raylib_cs;
@@ -14,13 +12,12 @@ namespace Meatcorps.Game.Snake.GameObjects.UI;
 
 public class Leaderboard : SnakeGameObject, IIntroSlide
 {
-    private IRenderTargetStrategy _renderer;
-    private InlineRender _scoreRenderer;
-    private TimerOn _iterateTimer;
-    private FixedTimer _timer;
+    private InlineRender _scoreRenderer = null!;
+    private TimerOn _iterateTimer = null!;
+    private FixedTimer _timer = null!;
     private int _totalItems;
     private int _previousLine = - 1;
-    private InlineRenderExtensions.LabelData  _labelData;
+    private InlineRenderExtensions.LabelData  _labelData = null!;
 
     protected override void OnInitialize()
     {
@@ -29,9 +26,8 @@ public class Leaderboard : SnakeGameObject, IIntroSlide
         Layer = 1;
         Camera = CameraLayer.UI;
         _iterateTimer = new TimerOn(2000);
-        _renderer = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
         var scores = GlobalObjectManager.ObjectManager.Get<HighScoreService>()!.GetLeaderboard(9);
-        var bounds = new Rect(48, 32, _renderer.RenderWidth - 96, _renderer.RenderHeight - 128);
+        var bounds = new Rect(48, 32, RenderTarget!.RenderWidth - 96, RenderTarget!.RenderHeight - 128);
         _scoreRenderer = new InlineRender
             {
                 Bounds = bounds,
@@ -97,7 +93,7 @@ public class Leaderboard : SnakeGameObject, IIntroSlide
 
     protected override void OnDraw()
     {
-        Raylib.DrawRectangle(32,32, _renderer.RenderWidth - 64, _renderer.RenderHeight - 80, Raylib.ColorAlpha(Color.Black, 0.5f));
+        Raylib.DrawRectangle(32,32, RenderTarget!.RenderWidth - 64, RenderTarget!.RenderHeight - 80, Raylib.ColorAlpha(Color.Black, 0.5f));
         _scoreRenderer.Draw();
     }
 

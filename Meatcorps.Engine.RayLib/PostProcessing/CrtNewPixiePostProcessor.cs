@@ -4,6 +4,9 @@ using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.PostProcessing.Abstractions;
 using Raylib_cs;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
+namespace Meatcorps.Engine.RayLib.PostProcessing;
 
 public class CrtNewPixiePostProcessor : BaseFinalPostProcessor, IConfigChangeTracker
 {
@@ -13,11 +16,10 @@ public class CrtNewPixiePostProcessor : BaseFinalPostProcessor, IConfigChangeTra
 
     public CrtNewPixiePostProcessor()
         : base("Assets/Shaders/crt_newpixie.fx",
-            new[]
-            {
-                "resolution", "time", "curvature", "wiggleToggle", "scanroll", "vignette", "ghosting", "useFrame",
+        [
+            "resolution", "time", "curvature", "wiggleToggle", "scanroll", "vignette", "ghosting", "useFrame",
                 "frameTex"
-            })
+        ])
     {
         
         Enabled = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!.GetOrDefault("Graphics", "CRT Effect", true); 

@@ -1,5 +1,3 @@
-using System.Numerics;
-using Meatcorps.Engine.Core.Data;
 using Meatcorps.Game.KillTheSkulls.GameObjects;
 
 namespace Meatcorps.Game.KillTheSkulls.Data;

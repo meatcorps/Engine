@@ -8,7 +8,7 @@ public class InputManager<T> : IBackgroundService where T : Enum
 {
     private int _totalPlayers;
     private readonly PlayerInputRouter<T> _router;
-    private Dictionary<int, PlayerInputStatus> _inputStatus = new Dictionary<int, PlayerInputStatus>();
+    private readonly Dictionary<int, PlayerInputStatus> _inputStatus = new Dictionary<int, PlayerInputStatus>();
 
     public int TotalPlayers
     {

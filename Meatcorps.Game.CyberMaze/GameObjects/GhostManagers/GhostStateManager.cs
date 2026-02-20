@@ -7,13 +7,13 @@ namespace Meatcorps.Game.CyberMaze.GameObjects.GhostManagers;
 public class GhostStateManager
 {
     private LevelData LevelData { get; }
-    private GhostBehaviour _behaviour;
+    private readonly GhostBehaviour _behaviour;
     private readonly List<PointInt> _breadCrumb;
     private GhostState _state;
     private GhostState _previousState;
-    private TimerOn _chaseTimer;
-    private TimerOn _scatterTimer;
-    private TimerOn _startTimer;
+    private TimerOn _chaseTimer = null!;
+    private TimerOn _scatterTimer = null!;
+    private TimerOn _startTimer = null!;
     private TimerOn _scaredTimer = new(10000);
     private TimerOn _stayHomeTimer = new(3000);
 

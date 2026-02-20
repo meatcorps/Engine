@@ -55,8 +55,8 @@ public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
         }
 
         var destinationRect = GetScreenRect();
-        if (_renderTextureFinal is null || _renderTextureFinal.Value.Texture.Width != destinationRect.Width ||
-            _renderTextureFinal.Value.Texture.Height != destinationRect.Height)
+        if (_renderTextureFinal is null || _renderTextureFinal.Value.Texture.Width != (int)destinationRect.Width ||
+            _renderTextureFinal.Value.Texture.Height != (int)destinationRect.Height)
         {
             if (_renderTextureFinal is not null)
                 Raylib.UnloadRenderTexture(_renderTextureFinal.Value);
@@ -145,6 +145,6 @@ public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
         if (targetTexture is not null)
             Raylib.EndTextureMode();
 
-        _postProcessingRenderer.End(PostProcessors!);
+        _postProcessingRenderer.End(PostProcessors);
     }
 }

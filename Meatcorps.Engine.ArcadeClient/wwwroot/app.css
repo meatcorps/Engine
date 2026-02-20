@@ -2,8 +2,9 @@
 
 body {
     font-family: 'Press Start 2P', monospace;
-    background: url('bg.jpg') center/cover no-repeat fixed;
-    background-color: rgba(0,0,0,0.4); /* dark overlay */
+    /* dark overlay */
+    background: rgba(0, 0, 0, 0.4) url('bg.jpg') no-repeat fixed center;
+    background-size: cover;
     background-blend-mode: multiply;
     color: #eee;
     line-height: 1.4;

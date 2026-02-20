@@ -12,7 +12,7 @@ public class SnakeTailSmokeParticle
 {
     private readonly PulseTimer _emitRedSmoke;
     private readonly SnakeModel _snakeModel;
-    private bool _smokeEmitToggle = false;
+    private bool _smokeEmitToggle;
 
     public SnakeTailSmokeParticle(PulseTimer emitRedSmoke, SnakeModel snakeModel)
     {
@@ -33,10 +33,10 @@ public class SnakeTailSmokeParticle
                 {
                     if (_emitRedSmoke.Output)
                         return Raylib.ColorLerp(Color.Red, Color.Black,
-                            ((float)Raylib.GetRandomValue(0, 100)) / 100f);
+                            Raylib.GetRandomValue(0, 100) / 100f);
 
                     return Raylib.ColorLerp(Color.Gray, Color.DarkGray,
-                        ((float)Raylib.GetRandomValue(0, 100)) / 100f);
+                        Raylib.GetRandomValue(0, 100) / 100f);
                 })
                 .WithEndValue(Raylib.ColorAlpha(Color.Black, 0)))
             .SetSpawnLogic(() => new Particle

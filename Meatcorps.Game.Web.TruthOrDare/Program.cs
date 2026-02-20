@@ -8,9 +8,8 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Server;
 using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.MQTT.Modules;
-using Meatcorps.Game.CyberPlayer.Data;
-using Meatcorps.Game.CyberPlayer.GameEnums;
 using Meatcorps.Game.Web.TruthOrDare.Components;
+using Meatcorps.Game.Web.TruthOrDare.Data;
 using Meatcorps.Game.Web.TruthOrDare.GameEnums;
 using Meatcorps.Game.Web.TruthOrDare.Services;
 
@@ -49,10 +48,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddSingleton<ObjectManager>(GlobalObjectManager.ObjectManager);
+builder.Services.AddSingleton(GlobalObjectManager.ObjectManager);
 builder.Services.AddSingleton<TruthOrDareService>();
 builder.Services.AddScoped<SfxService>();
-builder.Services.AddSingleton<ArcadeQuestionService>(GlobalObjectManager.ObjectManager.Get<ArcadeQuestionService>()!);;
+builder.Services.AddSingleton(GlobalObjectManager.ObjectManager.Get<ArcadeQuestionService>()!);
 
 var app = builder.Build();
 

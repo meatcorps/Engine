@@ -2,8 +2,8 @@ namespace Meatcorps.Engine.Core.Utilities;
 
 public class RandomEnum<T> where T : Enum
 {
-    private List<Group> _values = new();
-    private Random _random = Random.Shared;
+    private readonly List<Group> _values = new();
+    private readonly Random _random = Random.Shared;
 
     public RandomEnum()
     {
@@ -46,6 +46,6 @@ public class RandomEnum<T> where T : Enum
     private class Group
     {
         public List<(T, int)> Values { get; } = new();
-        public int Total { get; set; } = 0;
+        public int Total { get; set; }
     }
 }

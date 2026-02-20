@@ -9,7 +9,7 @@ public static class FixedPaletteExtension
     public static RayLibModule SetupProcessingFixedPalette8(this RayLibModule module, params Vector3[] palette01)
     {
         var fx = new FixedPalettePostProcessor8();
-        // fill up to 8 entries; extra are ignored, missing are repeated from last
+        // fill up to 8 entries; extra is ignored, missing are repeated from last
         for (var i = 0; i < fx.Palette.Length; i++)
             fx.Palette[i] = i < palette01.Length
                 ? palette01[i]
@@ -156,10 +156,11 @@ public static class FixedPaletteExtension
     }
 
     /// <summary>
-    ///     Sets up a fixed-palette post processor with texture-based palette lookup and ordered dithering.
+    ///     Sets up a fixed-palette post-processor with texture-based palette lookup and ordered dithering.
     /// </summary>
     /// <param name="module">The RayLib module instance</param>
     /// <param name="ditherStrength">Strength of 4x4 Bayer dithering (default 1/255)</param>
+    /// <param name="ditherScale">how much scaling to apply to dithering (default 2)</param>
     /// <param name="palette">One or more RGB colors in 0..1 space</param>
     public static RayLibModule SetupProcessingFixedPaletteTex(
         this RayLibModule module,
@@ -177,11 +178,11 @@ public static class FixedPaletteExtension
             DitherScale = ditherScale
         };
 
-        // Fill palette entries; repeat last color if fewer than 32
+        // Fill palette entries; repeat the last color if fewer than 32
         for (var i = 0; i < fx.Palette.Length; i++)
             fx.Palette[i] = i < palette.Length
                 ? palette[i]
-                : palette[palette.Length - 1];
+                : palette[^1];
 
         module.SetProcessing(fx);
         return module;
@@ -301,16 +302,16 @@ public static class FixedPaletteExtension
         return module.SetupProcessingFixedPaletteTex(
             16f / 255f, // dither strength (change if needed)
             1,
-            new Vector3(0f, 0f, 0f), // 0  black
-            new Vector3(0f, 0f, 0.666f), // 1  blue
-            new Vector3(0f, 0.666f, 0f), // 2  green
-            new Vector3(0f, 0.666f, 0.666f), // 3  cyan
-            new Vector3(0.666f, 0f, 0f), // 4  red
-            new Vector3(0.666f, 0f, 0.666f), // 5  magenta
-            new Vector3(0.666f, 0.333f, 0f), // 6  brown
-            new Vector3(0.666f, 0.666f, 0.666f), // 7  light gray
-            new Vector3(0.333f, 0.333f, 0.333f), // 8  dark gray
-            new Vector3(0.333f, 0.333f, 1f), // 9  bright blue
+            new Vector3(0f, 0f, 0f), // 0 black
+            new Vector3(0f, 0f, 0.666f), // 1 blue
+            new Vector3(0f, 0.666f, 0f), // 2 green
+            new Vector3(0f, 0.666f, 0.666f), // 3 cyan
+            new Vector3(0.666f, 0f, 0f), // 4 red
+            new Vector3(0.666f, 0f, 0.666f), // 5 magenta
+            new Vector3(0.666f, 0.333f, 0f), // 6 brown-color
+            new Vector3(0.666f, 0.666f, 0.666f), // 7 light gray
+            new Vector3(0.333f, 0.333f, 0.333f), // 8 dark gray
+            new Vector3(0.333f, 0.333f, 1f), // 9 bright blue
             new Vector3(0.333f, 1f, 0.333f), // 10 bright green
             new Vector3(0.333f, 1f, 1f), // 11 bright cyan
             new Vector3(1f, 0.333f, 0.333f), // 12 bright red
@@ -323,7 +324,7 @@ public static class FixedPaletteExtension
             new Vector3(0.333f, 0f, 0f), // 19 dark red 2
             new Vector3(0.333f, 0f, 0.333f), // 20 dark magenta 2
             new Vector3(0.333f, 0.166f, 0f), // 21 dark brown
-            new Vector3(0.2f, 0.2f, 0.2f), // 22 dark gray repeat (keeps 32 count consistent)
+            new Vector3(0.2f, 0.2f, 0.2f), // 22 dark gray repeats (keeps 32 counts consistent)
             new Vector3(0.5f, 0.5f, 0.5f), // 23 medium gray
             new Vector3(0.5f, 0.5f, 1f), // 24 pastel blue
             new Vector3(0.5f, 1f, 0.5f), // 25 pastel green

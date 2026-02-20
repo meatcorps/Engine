@@ -1,21 +1,20 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using System.Runtime.Loader;
+﻿using System.Runtime.Loader;
 using Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;
+// ReSharper disable RedundantAssignment
 
 var running = true;
 
-Console.CancelKeyPress += (sender, eventArgs) =>
+Console.CancelKeyPress += (_, _) =>
 {
     running = false;
 };
 
-AssemblyLoadContext.Default.Unloading += context =>
+AssemblyLoadContext.Default.Unloading += _ =>
 {
     running = false;
 };
 
-AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+AppDomain.CurrentDomain.ProcessExit += (_, _) =>
 {
     running = false;
 };
@@ -23,8 +22,6 @@ AppDomain.CurrentDomain.ProcessExit += (s, e) =>
 var controller = new ArduinoControllerCommunication(args[0]);
 ControllerInputEnum previousState1 = 0;
 ControllerInputEnum previousState2 = 0;
-ButtonLightsEnum lightState1 = 0;
-ButtonLightsEnum lightState2 = 0;
 
 while (running)
 {
@@ -40,7 +37,7 @@ while (running)
         }
         Console.WriteLine();
 
-        setLights(ref lightState1, controller.ControllerState1, [
+        setLights(out var lightState1, controller.ControllerState1, [
             ControllerInputEnum.Button1,
             ControllerInputEnum.Button2,
             ControllerInputEnum.Button3,
@@ -56,7 +53,7 @@ while (running)
             ButtonLightsEnum.Button5,
             ButtonLightsEnum.Button6
         ]);
-        setLights(ref lightState2, controller.ControllerState2, [
+        setLights(out var lightState2, controller.ControllerState2, [
             ControllerInputEnum.Button1,
             ControllerInputEnum.Button2,
             ControllerInputEnum.Button3,
@@ -91,8 +88,9 @@ while (running)
     await Task.Delay(10);
 }
 Console.WriteLine("Hello, World!");
+return;
 
-void setLights(ref ButtonLightsEnum state, ControllerInputEnum input, Enum[] targets, Enum[] mapsTo)
+void setLights(out ButtonLightsEnum state, ControllerInputEnum input, Enum[] targets, Enum[] mapsTo)
 {
     state = 0;
     for (var i = 0; i < targets.Length; i++)

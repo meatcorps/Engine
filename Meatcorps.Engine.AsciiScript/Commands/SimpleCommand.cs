@@ -1,4 +1,3 @@
-using System.Globalization;
 using Meatcorps.Engine.AsciiScript.Data;
 using Meatcorps.Engine.AsciiScript.Enums;
 using Meatcorps.Engine.AsciiScript.Interfaces;

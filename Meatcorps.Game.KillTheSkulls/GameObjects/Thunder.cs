@@ -1,11 +1,7 @@
 using System.Numerics;
-using Meatcorps.Engine.Core.Data;
-using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Audio;
 using Meatcorps.Engine.RayLib.Extensions;
-using Meatcorps.Engine.RayLib.GameObjects;
-using Meatcorps.Game.KillTheSkulls.Data;
 using Meatcorps.Game.KillTheSkulls.GameEnums;
 using Meatcorps.Game.KillTheSkulls.GameObjects.Abstractions;
 using Raylib_cs;
@@ -19,7 +15,7 @@ public class Thunder : ResourceGameObject
     private readonly FixedTimer _runningAnimation = new(180);
     private readonly TimerOn _offTimer = new(180);
     private readonly FixedTimer _blinkTimer = new(64);
-    private OneSoundManager _beamSoundManager;
+    private OneSoundManager _beamSoundManager = null!;
     
     public ThunderState State { get; private set; } = ThunderState.Idle;
 

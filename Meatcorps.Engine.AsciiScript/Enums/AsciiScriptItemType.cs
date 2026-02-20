@@ -4,5 +4,10 @@ public enum AsciiScriptItemType
 {
     Block,
     Command,
-    Variable
+    Variable,
+    Condition,
+    ConditionElse,
+    ConditionEnd,
+    Goto,
+    GotoLabel
 }

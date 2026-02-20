@@ -7,7 +7,7 @@ namespace Meatcorps.Game.KillTheSkulls.GameObjects.Abstractions;
 
 public abstract class BasePlayer : ResourceGameObject
 {
-    protected readonly IArcadePointsMutator PointMutator;
+    protected new readonly IArcadePointsMutator PointMutator;
     protected readonly IPlayerCheckin PlayerCheckin;
     public Player Player { get; }
 

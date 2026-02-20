@@ -13,7 +13,7 @@ using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.UI;
-using Meatcorps.Engine.Session;
+using Meatcorps.Engine.Session.Interfaces;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.Arcade.RayLib.GameObjects;
@@ -24,20 +24,20 @@ public class WaitForPlayersGameObject: BaseGameObject
     private readonly BaseScene _jumpToScene;
     private readonly BaseScene _timeOutToScene;
     private readonly int _fontScale;
-    private IDefaultFont _font;
-    private IRenderTargetStrategy _renderTarget;
-    private ISessionService _sessionService;
-    private IPlayerCheckin _playerCheckin;
-    private Dictionary<int, bool> _playerCheckins = new();
-    private Dictionary<int, bool> _playerCanPay = new();
+    private IDefaultFont _font = null!;
+    private IRenderTargetStrategy _renderTarget = null!;
+    private ISessionService _sessionService = null!;
+    private IPlayerCheckin _playerCheckin = null!;
+    private readonly Dictionary<int, bool> _playerCheckins = new();
+    private readonly Dictionary<int, bool> _playerCanPay = new();
     private bool _startingGame;
-    private TimerOn _timeoutTimer = new(20000);
-    private TimerOn _startTimer = new(3000);
-    private InlineRender _inlineRender = new();
+    private readonly TimerOn _timeoutTimer = new(20000);
+    private readonly TimerOn _startTimer = new(3000);
+    private readonly InlineRender _inlineRender = new();
     private Texture2D _qrCodeTexture;
-    private ArcadeServer _arcadeServer;
-    private ArcadeGame _arcadeGame;
-    private IArcadePointsMutator _arcadePointMutator;
+    private ArcadeServer _arcadeServer = null!;
+    private ArcadeGame _arcadeGame = null!;
+    private IArcadePointsMutator _arcadePointMutator = null!;
 
     public WaitForPlayersGameObject(int totalPlayersRequested, BaseScene jumpToScene, BaseScene timeOutToScene, int fontScale = 1)
     {

@@ -9,10 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Compile Remove="Assets/**/*"/>
     </ItemGroup>
 
@@ -20,6 +16,10 @@
         <Content Include="Assets/**/*.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
     </ItemGroup>
 
 </Project>

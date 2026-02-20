@@ -11,7 +11,6 @@ public class RayLibControllerDeviceManager : IControllerDeviceManager
     private readonly Dictionary<int, int> _assignedDevices = new();
     private readonly FixedTimer _checkTimer = new(1000f);
     private readonly List<RayLibControllerDevice> _devices = new();
-    private Dictionary<string, ControllerType> _deviceMapping = new();
 
     public IControllerDevice? GetDevice(int player)
     {

@@ -9,7 +9,7 @@ public static class TextManagerExtensions
 {
     public static bool HasFont<T>(this TextManager<T> manager, T fontType) where T : Enum
     {
-        return manager != null && manager.TryGetFont(fontType, out _);
+        return manager.TryGetFont(fontType, out _);
     }
 
     public static bool TryGetFont<T>(this TextManager<T> manager, T fontType, out Font font) where T : Enum

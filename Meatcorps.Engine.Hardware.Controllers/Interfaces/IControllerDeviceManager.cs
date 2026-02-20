@@ -1,5 +1,3 @@
-using Meatcorps.Engine.Hardware.Controllers.Enums;
-
 namespace Meatcorps.Engine.Hardware.Controllers.Interfaces;
 
 public interface IControllerDeviceManager

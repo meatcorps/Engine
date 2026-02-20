@@ -12,8 +12,8 @@ using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.Raylib.Examples.Enums;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
-using Meatcorps.Engine.RayLib.Input;
 using Meatcorps.Engine.RayLib.Resources;
+using Meatcorps.Engine.SDL.Controller;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.Raylib.Examples.GameObjects;
@@ -24,8 +24,8 @@ public class InputLocalMultiPlayerExample : BaseGameObject
 {
     private TextManager<DefaultFont> _fonts = null!;
     private readonly List<InputEntity> _inputEntities = new();
-    private InputManager<GameInput> _inputManager;
-    private IInputMapper<GameInput> _inputRouter;
+    private InputManager<GameInput> _inputManager = null!;
+    private IInputMapper<GameInput> _inputRouter = null!;
     private readonly int _totalPlayers = 2;
 
     protected override void OnInitialize()

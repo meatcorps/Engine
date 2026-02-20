@@ -1,19 +1,15 @@
-using System.Runtime.InteropServices;
 using Meatcorps.Engine.Core.Utilities;
-using Meatcorps.Engine.Hardware.Controllers.Enums;
 using Meatcorps.Engine.Hardware.Controllers.Interfaces;
 using Meatcorps.Engine.Hardware.Controllers.Mapper;
-using Meatcorps.Engine.SDL.Controller;
 
-namespace Meatcorps.Engine.RayLib.Input;
+namespace Meatcorps.Engine.SDL.Controller;
 
 public class SDLControllerDeviceManager: IControllerDeviceManager, IDisposable
 {
-    private List<SDLControllerDevice> _devices = new();
-    private FixedTimer _checkTimer = new(1000f);
-    private Dictionary<int, int> _assignedDevices = new();
-    private Dictionary<string, ControllerType> _deviceMapping = new();
-    private SDLControllerWatcher _watcher = new SDLControllerWatcher(true);
+    private readonly List<SDLControllerDevice> _devices = new();
+    private readonly FixedTimer _checkTimer = new(1000f);
+    private readonly Dictionary<int, int> _assignedDevices = new();
+    private readonly SDLControllerWatcher _watcher = new (true);
     private int _totalDevices;
     
     public IControllerDevice? GetDevice(int player)

@@ -1,4 +1,4 @@
-namespace Meatcorps.Engine.Session;
+namespace Meatcorps.Engine.Session.Interfaces;
 
 public interface ISessionService
 {

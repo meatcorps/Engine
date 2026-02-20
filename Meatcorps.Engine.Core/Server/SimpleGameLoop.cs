@@ -7,10 +7,15 @@ namespace Meatcorps.Engine.Core.Server;
 public class SimpleGameLoop: IDisposable
 {
     private Timer _timer;
-    private Stopwatch _sw = new();
+    private readonly Stopwatch _sw = new();
     private List<IBackgroundService> _services = new();
-    private bool _runningUpdate = false;
+    private bool _runningUpdate;
 
+    public SimpleGameLoop()
+    {
+        _timer = new Timer(Update, null, TimeSpan.FromMilliseconds(0), TimeSpan.FromMilliseconds(1000f / 60f));
+    }
+    
     private void Update(object? state)
     {
         if (_runningUpdate) 
@@ -41,7 +46,7 @@ public class SimpleGameLoop: IDisposable
         }
         catch (Exception e)
         {
-            Console.WriteLine("Error happend " + e.ToString());
+            Console.WriteLine("Error happend " + e);
         }
         finally
         {
@@ -53,7 +58,6 @@ public class SimpleGameLoop: IDisposable
     {
         _services = GlobalObjectManager.ObjectManager.GetList<IBackgroundService>()!;
         _sw.Start();
-        _timer = new Timer(Update, null, TimeSpan.FromMilliseconds(0), TimeSpan.FromMilliseconds(1000f / 60f));
         return this;
     }
     

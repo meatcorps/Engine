@@ -1,29 +1,23 @@
 using System.Numerics;
-using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Extensions;
-using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Game.KillTheSkulls.GameEnums;
 using Meatcorps.Game.KillTheSkulls.GameObjects.Abstractions;
-using Meatcorps.Game.KillTheSkulls.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Game.KillTheSkulls.GameObjects.UI;
 
 public class GuidePage : ResourceGameObject, IIntroSlide
 {
-    private IRenderTargetStrategy _renderer;
-    private FixedTimer _pokeTimer = new(500);
-    private FixedTimer _flyAnimation = new(50);
+    private readonly FixedTimer _pokeTimer = new(500);
+    private readonly FixedTimer _flyAnimation = new(50);
 
     protected override void OnInitialize()
     {
         base.OnInitialize();
         Layer = 1;
         Camera = CameraLayer.UI;
-
-        _renderer = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
     }
 
     protected override void OnUpdate(float deltaTime)
@@ -34,7 +28,7 @@ public class GuidePage : ResourceGameObject, IIntroSlide
 
     protected override void OnDraw()
     {
-        Raylib.DrawRectangle(0, 0, _renderer.RenderWidth, _renderer.RenderHeight,
+        Raylib.DrawRectangle(0, 0, RenderTarget!.RenderWidth, RenderTarget!.RenderHeight,
             Raylib.ColorAlpha(Color.DarkGray, 0.5f));
 
         Raylib.DrawTextEx(Fonts.GetFont(), "HOW TO PLAY THIS GAME", new Vector2(16, 16), 24, 0, Color.Magenta);

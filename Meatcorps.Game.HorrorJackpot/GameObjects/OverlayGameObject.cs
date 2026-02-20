@@ -10,12 +10,12 @@ namespace Meatcorps.Game.HorrorJackpot.GameObjects;
 
 public class OverlayGameObject: ResourceGameObject
 {
-    private OverlaySettings _settings;
+    private readonly OverlaySettings _settings;
     private TimerOn _showHideTimer;
     private Color _overlayColor = new Color(0, 0, 0, 0);
     private OverlayState _state = OverlayState.Appearing;
-    private TimerOn _overlayTimer = new(30000);
-    public bool Done { get; set; } = false;
+    private readonly TimerOn _overlayTimer;
+    public bool Done { get; set; }
     
     public OverlayGameObject(OverlaySettings settings)
     {
@@ -95,7 +95,7 @@ public class OverlayGameObject: ResourceGameObject
 
 public class OverlaySettings
 {
-    public Action<float, Color> OnDrawLayer { get; set; } = (_, __) => { };
+    public Action<float, Color> OnDrawLayer { get; set; } = (_, _) => { };
     public float AppearTimeMs { get; set; } = 1000;
     public float DisappearTimeMs { get; set; } = 1000;
     public float DurationMs { get; set; } = 30000;

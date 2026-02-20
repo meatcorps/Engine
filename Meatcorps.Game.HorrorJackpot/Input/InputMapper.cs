@@ -2,7 +2,6 @@ using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;
 using Meatcorps.Game.HorrorJackpot.GameEnums;
-using Meatcorps.Game.HorrorJackpot.Resources;
 
 namespace Meatcorps.Game.HorrorJackpot.Input;
 

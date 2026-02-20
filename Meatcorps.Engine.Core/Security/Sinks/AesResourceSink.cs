@@ -5,7 +5,7 @@ namespace Meatcorps.Engine.Core.Security.Sinks;
 
 public class AesResourceSink: IEncryptDecryptSink
 {
-    private string _password;
+    private readonly string _password;
 
     public AesResourceSink(string password)
     {

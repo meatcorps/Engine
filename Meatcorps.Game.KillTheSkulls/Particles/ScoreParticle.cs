@@ -11,7 +11,7 @@ public static class ScoreParticle
 {
     public static ParticleSystemBuilder GenerateParticleSystem(Color color, Font font)
     {
-        return new ParticleSystemBuilder().SetMaxParticles(10)
+        return new ParticleSystemBuilder().SetMaxParticles()
             .AddMutator(() => new ParticleColorLerp(EaseType.EaseOut)
                 .WithStartValue(color).WithEndValue(Raylib.ColorAlpha(color, 0.5f)))
             .SetSpawnLogic(() => new Particle

@@ -12,12 +12,12 @@ public class DelayCommand : IAsciiScriptCommand
 {
     public AsciiScriptItemType ScriptType => AsciiScriptItemType.Variable;
     public string Command { get; }
-    private TimerOn _timer;
-    private Action<TimerOn, bool> _action;
+    private TimerOn _timer = null!;
+    private readonly Action<TimerOn, bool> _action;
     
     public DelayCommand(string command = "DELAY", Action<TimerOn, bool>? action = null)
     {
-        _action = action ?? ((x, y) => { });
+        _action = action ?? ((_, _) => { });
         Command = command;
     }
     

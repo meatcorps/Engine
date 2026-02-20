@@ -1,4 +1,3 @@
-using System.Drawing;
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 
@@ -56,7 +55,7 @@ public static class Vector2Extensions
 
     public static void Normalize(this Vector2 value)
     {
-        value = Vector2.Normalize(value);
+        Vector2.Normalize(value);
     }
 
     public static Vector2 PerpendicularClockwise(this Vector2 value)
@@ -245,7 +244,7 @@ public static class Vector2Extensions
         return v;
     }
 
-    /// <summary>Returns a vector with exact length if possible; zero stays zero.</summary>
+    /// <summary>Returns a vector with an exact length if possible; zero stays zero.</summary>
     public static Vector2 WithLength(this Vector2 v, float length)
     {
         var lenSq = v.X * v.X + v.Y * v.Y;
@@ -259,7 +258,7 @@ public static class Vector2Extensions
         return Vector2.Zero;
     }
 
-    /// <summary>Project vector a onto vector b (returns 0 if b is ~zero).</summary>
+    /// <summary>Project vector an onto vector b (returns 0 if b is ~zero).</summary>
     public static Vector2 ProjectOn(this Vector2 a, Vector2 b)
     {
         var bLenSq = b.X * b.X + b.Y * b.Y;

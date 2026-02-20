@@ -6,8 +6,8 @@ namespace Meatcorps.Engine.RayLib.Resources;
 
 public static class AudioEnumBinder
 {
-    private static readonly string[] SoundExt = { ".wav", ".ogg" };
-    private static readonly string[] MusicExt = { ".ogg", ".mp3", ".wav" };
+    private static readonly string[] SoundExt = [".wav", ".ogg"];
+    private static readonly string[] MusicExt = [".ogg", ".mp3", ".wav"];
 
     public static SoundFxResource<T> BindAllSounds<T>(SoundFxResource<T> res, string baseDir, bool strict = false)
         where T : struct, Enum
@@ -18,20 +18,20 @@ public static class AudioEnumBinder
             ? resourceLoader.GetFiles(baseDir, "*.*", SearchOption.TopDirectoryOnly)
             : Array.Empty<string>();
 
-        var map = files.ToLookup(f => Path.GetFileName(f)!.ToLowerInvariant());
+        var map = files.ToLookup(f => Path.GetFileName(f).ToLowerInvariant());
 
         var nonExistent = new List<string>();
 
         foreach (var value in Enum.GetValues(typeof(T)).Cast<T>())
         {
-            var name = value.ToString()!;
+            var name = value.ToString();
             var candidates = Variants(name, SoundExt);
 
             var match = candidates.Select(c => c.ToLowerInvariant()).FirstOrDefault(map.Contains);
             if (match != null)
             {
                 var full = files.First(f =>
-                    Path.GetFileName(f)!.Equals(match, StringComparison.OrdinalIgnoreCase));
+                    Path.GetFileName(f).Equals(match, StringComparison.OrdinalIgnoreCase));
 
                 if (resourceLoader.Exists(full) == false)
                     if (strict)
@@ -57,19 +57,19 @@ public static class AudioEnumBinder
             ? resourceLoader.GetFiles(baseDir, "*.*", SearchOption.TopDirectoryOnly)
             : Array.Empty<string>();
 
-        var map = files.ToLookup(f => Path.GetFileName(f)!.ToLowerInvariant());
+        var map = files.ToLookup(f => Path.GetFileName(f).ToLowerInvariant());
 
         var nonExistent = new List<string>();
         foreach (var value in Enum.GetValues(typeof(T)).Cast<T>())
         {
-            var name = value.ToString()!;
+            var name = value.ToString();
             var candidates = Variants(name, MusicExt);
 
             var match = candidates.Select(c => c.ToLowerInvariant()).FirstOrDefault(map.Contains);
             if (match != null)
             {
                 var full = files.First(f =>
-                    Path.GetFileName(f)!.Equals(match, StringComparison.OrdinalIgnoreCase));
+                    Path.GetFileName(f).Equals(match, StringComparison.OrdinalIgnoreCase));
 
                 if (resourceLoader.Exists(full) == false)
                     if (strict)
@@ -78,6 +78,9 @@ public static class AudioEnumBinder
                 res.AddMusic(value, full);
             }
         }
+        
+        if (nonExistent.Any())
+            Console.WriteLine(string.Join('\n', nonExistent));
 
         return res;
     }

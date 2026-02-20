@@ -45,7 +45,7 @@ public class TextElement : BaseGuiItem
 
     private Vector2 TextSize()
     {
-        return Raylib_cs.Raylib.MeasureTextEx(_font, _text, _size, _spacing);
+        return Raylib.MeasureTextEx(_font, _text, _size, _spacing);
     }
 
     public override void UpdateChildren(BaseGuiItem parent)
@@ -69,7 +69,7 @@ public class TextElement : BaseGuiItem
                 textBound = (ElementBound + Padding).Align(textBound, _uv);
             }
 
-            Raylib_cs.Raylib.DrawTextEx(_font, _text, textBound.Position + Offset, _size, _spacing, Color);
+            Raylib.DrawTextEx(_font, _text, textBound.Position + Offset, _size, _spacing, Color);
         });
     }
 }

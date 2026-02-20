@@ -1,4 +1,4 @@
-namespace Meatcorps.Game.CyberPlayer.GameEnums;
+namespace Meatcorps.Engine.QuestionTest;
 
 public enum GameSettings
 {

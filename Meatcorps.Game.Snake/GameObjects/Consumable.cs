@@ -21,33 +21,33 @@ public class Consumable: SnakeGameObject
     public IConsumableItem Item { get; }
     private readonly bool _autoRespawn;
     private PointInt _position = new(-1, -1);
-    public SnakeSprites Sprite { get; private set; }
-    public int ScoreAmount { get => IsRotten ? -_scoreAmount : (int)(_scoreAmount * (1 - RotState)); }
+    private SnakeSprites _sprite { get; set; }
+    public int ScoreAmount => IsRotten ? -_scoreAmount : (int)(_scoreAmount * (1 - _rotState));
     public int OriginalScore => _scoreAmount;
     
     public float SpawnTimeSeconds { get; private set; }  // for "oldest" targeting
     public bool IsMeat => Item.CanDecay && !IsRotten;
 
-    public bool IsRotten => RotState.EqualsSafe(1);
-    public float RottenNormalized => RotState;
+    public bool IsRotten => _rotState.EqualsSafe(1);
+    public float RottenNormalized => _rotState;
 
-    public float RotState { get; private set; } = 0;
+    private float _rotState;
     
-    private int _scoreAmount = 10;
+    private int _scoreAmount;
     private bool _movingToPosition = true;
     private Vector2 _flyFromPosition = Vector2.Zero;
     private Vector2 _flyToPosition = Vector2.Zero;
     private Vector2 _flyPosition = Vector2.Zero;
     private TimerOn _flyTimer = new(500); 
-    private FixedTimer _blinkTimer = new(50); 
-    private CameraControllerGameObject _cameraController;
+    private readonly FixedTimer _blinkTimer = new(50); 
+    private CameraControllerGameObject _cameraController = null!;
     private ParticleSystemBuilder _bloodParticle = new();
     private ParticleSystemBuilder _meatRotterParticle = new();
-    private PersistentCanvas _canvas;
+    private PersistentCanvas _canvas = null!;
 
-    private bool _isBitten = false;
-    private FixedTimer _bittenTimer = new(100);
-    private FixedTimer _rotationEffectTimer = new(1500);
+    private bool _isBitten;
+    private readonly FixedTimer _bittenTimer = new(100);
+    private readonly FixedTimer _rotationEffectTimer = new(1500);
     private TimerOn? lifetimeTimer;
     private bool _flyAway;
     private bool _blink;
@@ -58,7 +58,7 @@ public class Consumable: SnakeGameObject
         _autoRespawn = autoRespawn;
         if (position != null)
             _position = position.Value;
-        Sprite = item.Sprite;
+        _sprite = item.Sprite;
         _scoreAmount = item.Points;
     }
     
@@ -96,17 +96,17 @@ public class Consumable: SnakeGameObject
             }
         }
 
-        if (Sprite == SnakeSprites.Background)
+        if (_sprite == SnakeSprites.Background)
         {
             var randomItem = Raylib.GetRandomValue(0, 100);
             if (randomItem < 50)
             {
-                Sprite = SnakeSprites.Meat1;
+                _sprite = SnakeSprites.Meat1;
                 _scoreAmount = 50;
             }
             else
             {
-                Sprite = SnakeSprites.Meat2;
+                _sprite = SnakeSprites.Meat2;
                 _scoreAmount = 100;
             }
         }
@@ -262,9 +262,9 @@ public class Consumable: SnakeGameObject
         {
             Sounds.Play(SnakeSounds.Flybit, 0.2f);
             _isBitten = false;
-            RotState = MathF.Min(1, RotState + 0.01f);
+            _rotState = MathF.Min(1, _rotState + 0.01f);
             _bloodParticle.Emit(1, LevelData.ToWorldPosition(_position, true));
-            if (RotState.EqualsSafe(1))
+            if (_rotState.EqualsSafe(1))
                 Sounds.Play(SnakeSounds.Meatonground, 1f, 0.5f);
             else
                 Sounds.Play(SnakeSounds.Flybit, 0.2f);
@@ -276,16 +276,16 @@ public class Consumable: SnakeGameObject
         if (_movingToPosition || _flyAway)
         {
             var rotation = float.Lerp(_flyFromPosition.ToDistance(_flyToPosition), 0, _flyTimer.NormalizedElapsed);
-            Sprites.Draw(Sprite, _flyPosition, Color.White, rotation);
+            Sprites.Draw(_sprite, _flyPosition, Color.White, rotation);
             
             if (_movingToPosition)
                 Sprites.Draw(SnakeSprites.Warning, LevelData.ToWorldPosition(_position), Raylib.ColorAlpha(Color.Green, 1 - _flyTimer.NormalizedElapsed));
         }
         else
         {
-            var sourceRect = Sprites.GetSprite(Sprite);
+            var sourceRect = Sprites.GetSprite(_sprite);
             var tweenOffset = 0f;
-            var color = Raylib.ColorLerp(Color.White, new Color(0, 25, 0), RotState);
+            var color = Raylib.ColorLerp(Color.White, new Color(0, 25, 0), _rotState);
             if (_blink)
                 color = Color.Black;
             

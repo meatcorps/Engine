@@ -42,9 +42,9 @@ public class RayLibModule
         if (raylibResource is null || MeatcorpsEngineLibSettings.IsDebug)
             raylibResource = new FileResourceLoader();
 
-        GlobalObjectManager.ObjectManager.Register<IRaylibResource>(raylibResource);
+        GlobalObjectManager.ObjectManager.Register(raylibResource);
         GlobalObjectManager.ObjectManager.Register<IResource>(raylibResource);
-        GlobalObjectManager.ObjectManager.Register<ResourceManager>(new ResourceManager());
+        GlobalObjectManager.ObjectManager.Register(new ResourceManager());
         return new RayLibModule();
     }
 
@@ -143,9 +143,9 @@ public class RayLibModule
         GlobalObjectManager.ObjectManager.Add<IResourceLoadOnInit>(postProcessor);
         
         if (postProcessor is IConfigChangeTracker tracker)
-            GlobalObjectManager.ObjectManager.Add<IConfigChangeTracker>(tracker);
+            GlobalObjectManager.ObjectManager.Add(tracker);
         
-        GlobalObjectManager.ObjectManager.Register<T>(postProcessor);
+        GlobalObjectManager.ObjectManager.Register(postProcessor);
         return this;
     }
 
@@ -196,7 +196,7 @@ public class RayLibModule
 
     public RayLibModule RegisterRenderTargetStrategy(IRenderTargetStrategy renderTargetStrategy, string tag = "default")
     {
-        GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(renderTargetStrategy, tag);
+        GlobalObjectManager.ObjectManager.Register(renderTargetStrategy, tag);
         GlobalObjectManager.ObjectManager.Add(renderTargetStrategy);
         return this;
     }

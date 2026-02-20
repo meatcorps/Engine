@@ -2,7 +2,6 @@ using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;
 using Meatcorps.Engine.Arcade.Leaderboard.GameEnums;
-using Meatcorps.Engine.Arcade.Leaderboard.Resources;
 
 namespace Meatcorps.Engine.Arcade.Leaderboard.Input;
 

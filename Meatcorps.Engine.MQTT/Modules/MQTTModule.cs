@@ -1,5 +1,4 @@
 using Meatcorps.Engine.Core.Interfaces.Config;
-using Meatcorps.Engine.Core.Interfaces.Trackers;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.MQTT.Enums;
 using Meatcorps.Engine.MQTT.Services;
@@ -11,13 +10,13 @@ namespace Meatcorps.Engine.MQTT.Modules;
 public class MQTTModule
 {
     private readonly MQTTClient _client;
-    private MQTTSignalValueEvent _tracker;
+    private readonly MQTTSignalValueEvent _tracker;
     private readonly IUniversalConfig _settings;
     private const string GROUP = "MQTT";
 
     public static MQTTModule Load()
     {
-        var settings = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>();
+        var settings = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>()!;
         var client = new MQTTClient(settings.GetOrDefault(GROUP, "host", "localhost", false));
         GlobalObjectManager.ObjectManager.Register(client);
         return new MQTTModule(client);
@@ -34,7 +33,7 @@ public class MQTTModule
     }
 
     public MQTTModule Register<TValueType>(string topic, Func<object, string> getConverter,
-        Func<string, object?> setAction, TValueType defaultValue = default)
+        Func<string, object?> setAction, TValueType? defaultValue = default)
     {
         var valueTracker = new SignalValue<TValueType, MQTTGroup>(MQTTGroup.Exchange, topic, defaultValue, GlobalObjectManager.ObjectManager);
         GlobalObjectManager.ObjectManager.Add<IDisposable>(valueTracker);

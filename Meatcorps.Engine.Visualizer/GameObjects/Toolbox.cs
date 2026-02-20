@@ -1,7 +1,6 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.ObjectManager;
-using Meatcorps.Engine.Core.Tween;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Enums;
@@ -18,8 +17,8 @@ public class Toolbox: BaseGameObject
     public List<ToolboxItem> Items { get; set; } = new();
     private RectF _size;
     private Vector2 _mousePosition;
-    private ICameraFixedWidthAndHeight _camera;
-    private TextManager<FontEnum> _font;
+    private ICameraFixedWidthAndHeight? _camera;
+    private TextManager<FontEnum> _font = null!;
     private bool _ignoreMouse;
 
     public bool IsMouseOverToolbox { get; private set; }
@@ -35,7 +34,7 @@ public class Toolbox: BaseGameObject
     protected override void OnUpdate(float deltaTime)
     {
         _mousePosition = Raylib.GetMousePosition() /
-                         ((float) Scene.GameHost.Width / _camera.TargetWidth);
+                         ((float) Scene.GameHost.Width / _camera?.TargetWidth ?? 1);
         
         var totalHeight = 0;
         
@@ -66,14 +65,13 @@ public class Toolbox: BaseGameObject
         _size = new RectF(32, 32, 40, totalHeight);
         IsMouseOverToolbox = _size.Contains(_mousePosition);
         
-        var screen = new RectF(0, 0, _camera.TargetWidth, _camera.TargetHeight);
+        var screen = new RectF(0, 0, _camera?.TargetWidth ?? 1, _camera?.TargetHeight ?? 1);
         if (screen.Contains(_mousePosition))
             Raylib.HideCursor();
     }
 
     protected override void OnDraw()
     {
-        var totalX = 32;
         var position = new Vector2(32, 32);
         var toolText = "";
         foreach (var item in Items)
@@ -98,29 +96,27 @@ public class Toolbox: BaseGameObject
                 _font.DrawRemixIcon(FontEnum.Icons, item.Icon.Value, position + new Vector2(4, 4), 32, color);
 
                 if (item.IsMouseOver)
-                {
                     toolText = item.Name;
-                }
             }
 
             position += new Vector2(0, item.Icon is null ? 4 : 42);
         }
-        
-        if (IsMouseOverToolbox)
-        {
-            Raylib.DrawTriangleLines(_mousePosition, _mousePosition + new Vector2(5, 30),
-                _mousePosition + new Vector2(30, 15), Color.White);
-            Raylib.DrawTriangleLines(_mousePosition + new Vector2(1, 1), _mousePosition + new Vector2(6, 31),
-                _mousePosition + new Vector2(31, 16), Color.White);
 
-            if (!string.IsNullOrEmpty(toolText))
-            {
-                var size = Raylib.MeasureTextEx(_font.GetFont(), toolText, 8, 1);
-                Raylib.DrawRectangleRec(new Rectangle(_mousePosition + new Vector2(8, 0), size + new Vector2(2, 2)),
-                    Color.Black);
-                Raylib.DrawTextEx(_font.GetFont(), toolText, _mousePosition + new Vector2(9, 1), 8, 1, Color.White);
-            }
-        }
+        if (!IsMouseOverToolbox) 
+            return;
+        
+        Raylib.DrawTriangleLines(_mousePosition, _mousePosition + new Vector2(5, 30),
+            _mousePosition + new Vector2(30, 15), Color.White);
+        Raylib.DrawTriangleLines(_mousePosition + new Vector2(1, 1), _mousePosition + new Vector2(6, 31),
+            _mousePosition + new Vector2(31, 16), Color.White);
+
+        if (string.IsNullOrEmpty(toolText)) 
+            return;
+        
+        var size = Raylib.MeasureTextEx(_font.GetFont(), toolText, 8, 1);
+        Raylib.DrawRectangleRec(new Rectangle(_mousePosition + new Vector2(8, 0), size + new Vector2(2, 2)),
+            Color.Black);
+        Raylib.DrawTextEx(_font.GetFont(), toolText, _mousePosition + new Vector2(9, 1), 8, 1, Color.White);
     }
 
     protected override void OnDispose()
@@ -130,12 +126,12 @@ public class Toolbox: BaseGameObject
 
 public class ToolboxItem
 {
-    public string Name { get; set; } = "";
-    public RemixIcon? Icon { get; set; }
-    public Action Action { get; set; } = () => { };
+    public string Name { get; init; } = "";
+    public RemixIcon? Icon { get; init; }
+    public Action Action { get; init; } = () => { };
     public Func<bool> Enabled { get; set; } = () => true;
-    public Func<bool> Highlight { get; set; } = () => false;
-    public bool IsMouseOver { get; set; } = false;
+    public Func<bool> Highlight { get; init; } = () => false;
+    public bool IsMouseOver { get; set; }
     public int Order { get; set; } = 0;
     public TimerOn ClickTimer { get; set; } = new TimerOn(500);
 }

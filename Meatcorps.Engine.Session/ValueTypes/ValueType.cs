@@ -1,4 +1,5 @@
 using Meatcorps.Engine.Session.Utilities;
+// ReSharper disable StaticMemberInGenericType
 
 namespace Meatcorps.Engine.Session.ValueTypes;
 
@@ -12,7 +13,7 @@ public struct ValueType<T>: IValueType, IEquatable<T>
     }
 
     // All PlayerId tags are equal (no internal state)
-    public bool Equals(T other)
+    public bool Equals(T? other)
     {
         return true;
     }

@@ -12,14 +12,14 @@ namespace Meatcorps.Game.CyberMaze.GameObjects;
 
 public class TargetSeekerGameObject: ResourceGameObject
 {
-    private GridDistanceCalculator _gridDistanceCalculator;
+    private GridDistanceCalculator _gridDistanceCalculator = null!;
     private PointInt _previousPosition;
-    private Dictionary<int, List<PointInt>> _ghostToCyberPlayerPath = new();
-    private Dictionary<int, PointInt> _previousGhostPositions = new();
-    private CyberPlayerTargetFinder _cyberPlayerTargetFinder;
-    private TimerOn _animationTimer = new(1000);
-    private FixedTimer _animationBlinkTimer = new(50);
-    private TimerOn _showTargetTimer = new(3000);
+    private readonly Dictionary<int, List<PointInt>> _ghostToCyberPlayerPath = new();
+    private readonly Dictionary<int, PointInt> _previousGhostPositions = new();
+    private CyberPlayerTargetFinder _cyberPlayerTargetFinder = null!;
+    private readonly TimerOn _animationTimer = new(1000);
+    private readonly FixedTimer _animationBlinkTimer = new(50);
+    private readonly TimerOn _showTargetTimer = new(3000);
     private bool _renderCircle;
 
     protected override void OnInitialize()
@@ -100,7 +100,7 @@ public class TargetSeekerGameObject: ResourceGameObject
             if (path.Count() < 4)
                 continue;
             var previous = LevelData.ToWorldRectangle(path[0]).Center.ToVector2();
-            var totalPathsToRender = (int)((float)(path.Count - 2) * _animationTimer.NormalizedElapsed);
+            var totalPathsToRender = (int)((path.Count - 2) * _animationTimer.NormalizedElapsed);
             for (var i = 1; i <= totalPathsToRender; i++)
             {
                 var current = LevelData.ToWorldRectangle(path[i]).Center.ToVector2();

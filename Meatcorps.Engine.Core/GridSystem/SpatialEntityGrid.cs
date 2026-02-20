@@ -1,9 +1,6 @@
-using System.Buffers;
 using System.Collections.Concurrent;
-using System.Drawing;
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
-using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Interfaces.Grid;
 using Meatcorps.Engine.Core.Utilities;
 
@@ -22,8 +19,6 @@ public class SpatialEntityGrid : ISpatialEntityGrid
         CellSize = cellSize;
         _grid = new ConcurrentDictionary<(int, int), ThreadSafeList<IGridItem>>();
         _previousPositions = new ConcurrentDictionary<IGridItem, RectF>();
-        var _test = new HashSet<int>();
-       // _test.GetEnumerator(5)
     }
 
     public void Add(IGridItem collider)

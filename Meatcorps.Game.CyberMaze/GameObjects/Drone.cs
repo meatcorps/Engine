@@ -16,17 +16,17 @@ namespace Meatcorps.Game.CyberMaze.GameObjects;
 public class Drone: ResourceGameObject
 {
     private Vector2 _startPosition = new(320, -100);
-    private Vector2 _endPosition = new(320, 180);
-    private GameSprites _pickupSprite = GameSprites.CyberPlayerDown1;
-    private FixedTimer _timer;
-    private FixedTimer _animationTimer = new(100);
-    private Vector2 _currentPosition = new Vector2();
-    private bool _showPickup = false;
-    private bool _pickedUp = false;
-    private ParticleSystemBuilder _smokeParticle;
-    private EdgeDetector _edgeDetector = new();
-    private Action _onPickupOrDrop = () => { };
-    private Action _onDone = () => { };
+    private readonly Vector2 _endPosition;
+    private readonly GameSprites _pickupSprite;
+    private FixedTimer _timer = null!;
+    private readonly FixedTimer _animationTimer = new(100);
+    private Vector2 _currentPosition;
+    private bool _showPickup;
+    private readonly bool _pickedUp;
+    private ParticleSystemBuilder _smokeParticle = null!;
+    private readonly EdgeDetector _edgeDetector = new();
+    private readonly Action _onPickupOrDrop;
+    private readonly Action _onDone;
     private TimerOn _startDelay;
     private bool _quickStart;
 

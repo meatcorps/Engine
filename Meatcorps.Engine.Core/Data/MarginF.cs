@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meatcorps.Engine.Core.Extensions;
 
 namespace Meatcorps.Engine.Core.Data;
@@ -102,6 +103,6 @@ public struct MarginF
 
     public override string ToString()
     {
-        return "Padding: {L:" + _left + " R:" + _right + " T:" + _top + " B:" + _bottom + "}";
+        return "Padding: {L:" + _left.ToString(CultureInfo.InvariantCulture) + " R:" + _right.ToString(CultureInfo.InvariantCulture)  + " T:" + _top.ToString(CultureInfo.InvariantCulture)  + " B:" + _bottom.ToString(CultureInfo.InvariantCulture)  + "}";
     }
 }

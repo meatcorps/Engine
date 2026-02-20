@@ -121,7 +121,7 @@ public struct LineF: IEquatable<LineF>
         
         lerpValue1 = line1StartLine2Start.Cross(line2EndStart) / line1EndStart.Cross(line2EndStart);
         lerpValue2 = line1StartLine2Start.Cross(line1EndStart) / line1EndStart.Cross(line2EndStart);
-        var isIntersecting = lerpValue1.Between01() && lerpValue2.Between01();;
+        var isIntersecting = lerpValue1.Between01() && lerpValue2.Between01();
 
         if (clamp)
         {

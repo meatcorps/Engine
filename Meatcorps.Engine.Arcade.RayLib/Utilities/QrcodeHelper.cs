@@ -1,4 +1,3 @@
-using System.Collections;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.UI;
@@ -74,8 +73,8 @@ public static class QrcodeHelper
         using var gen = new QRCodeGenerator();
         using var data = gen.CreateQrCode(text, ecc);
 
-        // QRCoder exposes a list of BitArray rows; convert to bool[,]
-        var rows = data.ModuleMatrix.Select(row => ((BitArray)row).Cast<bool>().ToArray()).ToArray();
+        // QRCoder exposes a list of BitArray rows; convert to bool[, ]
+        var rows = data.ModuleMatrix.Select(row => row.Cast<bool>().ToArray()).ToArray();
         var n = rows.Length;
         var result = new bool[n, n];
         for (var y = 0; y < n; y++)
@@ -107,13 +106,13 @@ public static class QrcodeHelper
             VAlign = vAlign,
             CacheSize = true,
             Margin = margin ?? Insets.Zero,
-            Initialize = (_, __) =>
+            Initialize = (_, _) =>
             {
                 tex = CreateTexture(text, scale, quietZone, fg, bg);
                 size = new PointInt(tex.Value.Width, tex.Value.Height);
             },
-            GetSize = (_, __) => size,
-            Draw = (_, __, rect) =>
+            GetSize = (_, _) => size,
+            Draw = (_, _, rect) =>
             {
                 if (tex.HasValue)
                     Raylib.DrawTexturePro(tex.Value,
@@ -121,7 +120,7 @@ public static class QrcodeHelper
                         new Rectangle(rect.X, rect.Y, rect.Width, rect.Height),
                         System.Numerics.Vector2.Zero, 0f, Color.White);
             },
-            Destroy = (_, __) =>
+            Destroy = (_, _) =>
             {
                 if (tex.HasValue) Raylib.UnloadTexture(tex.Value);
             }

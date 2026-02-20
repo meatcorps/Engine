@@ -301,7 +301,7 @@ public class GuiMenuComponent : IRaylibGameComponent
 
         _gui.AddItem(
             new TextElement(color, _guiSettings.Font, name, _fontSize, 1, UVHelper.Left).SetPadding(_textPadding));
-        _gui.AddItem(new TextElement(GetColor(Raylib_cs.Raylib.ColorLerp(Color.Red, Color.Green, value)),
+        _gui.AddItem(new TextElement(GetColor(Raylib.ColorLerp(Color.Red, Color.Green, value)),
             _guiSettings.Font, sliderText, _fontSize, 1, UVHelper.Right).SetPadding(_textPadding));
         DefaultComponentStop();
         
@@ -398,7 +398,7 @@ public class GuiMenuComponent : IRaylibGameComponent
         return oldValue != value;
     }
 
-    private Color DefaultComponentStart(bool IsSelectable = false)
+    private Color DefaultComponentStart()
     {
         var color = GetColor(_nonActiveColor);
 
@@ -407,9 +407,9 @@ public class GuiMenuComponent : IRaylibGameComponent
             if (_selected)
                 color = _animationTimer.Output ? _activeColor : Color.Blank;
             else
-                color = GetColor(IsActive!
+                color = GetColor(IsActive
                     ? _activeColor
-                    : Raylib_cs.Raylib.ColorLerp(Raylib_cs.Raylib.ColorAlpha(_activeColor, 0.2f), _activeColor,
+                    : Raylib.ColorLerp(Raylib.ColorAlpha(_activeColor, 0.2f), _activeColor,
                         Tween.ApplyEasing(Tween.NormalToUpDown(_focusAnimation.NormalizedElapsed),
                             EaseType.EaseInOut)));
 
@@ -425,7 +425,7 @@ public class GuiMenuComponent : IRaylibGameComponent
 
     private Color GetColor(Color color)
     {
-        return _disabledMenuItem ? Raylib_cs.Raylib.ColorAlpha(color, 0.5f) : color;
+        return _disabledMenuItem ? Raylib.ColorAlpha(color, 0.5f) : color;
     }
 
     private void DefaultComponentStop()

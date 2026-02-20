@@ -6,14 +6,14 @@ public static class SessionDataBagExtensions
 {
     public static int Inc<TEnum>(this SessionDataBag<TEnum> bag, TEnum key, int delta) where TEnum : Enum
     {
-        var cur = bag.GetOrDefault<int>(key, 0) + delta;
+        var cur = bag.GetOrDefault(key, 0) + delta;
         bag.Set(key, cur);
         return cur;
     }
 
     public static int ClampInt<TEnum>(this SessionDataBag<TEnum> bag, TEnum key, int min, int max) where TEnum : Enum
     {
-        var cur = Math.Clamp(bag.GetOrDefault<int>(key, 0), min, max);
+        var cur = Math.Clamp(bag.GetOrDefault(key, 0), min, max);
         bag.Set(key, cur);
         return cur;
     }

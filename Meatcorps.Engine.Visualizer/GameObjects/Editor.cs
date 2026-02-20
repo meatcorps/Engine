@@ -4,8 +4,6 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.ImGuiTools;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.Visualizer.Scenes;
-using Meatcorps.Engine.Visualizer.Services;
-using Meatcorps.Engine.Visualizer.VisualItems;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.Visualizer.GameObjects;
@@ -14,13 +12,13 @@ public class Editor: BaseImGuiGameObject
 {
     public bool BlockTheEditor => _editName || _openFile || _scene.VisualData.EditItem != null;
 
-    private bool _editName = false;
-    private bool _openFile = false;
+    private bool _editName;
+    private bool _openFile;
 
     private string[] _fileItems = [];
-    private int _currentFileIndex = 0;
-    private ICameraFixedWidthAndHeight _camera;
-    private MainScene _scene;
+    private int _currentFileIndex;
+    private ICameraFixedWidthAndHeight _camera = null!;
+    private MainScene _scene = null!;
     
     protected override void OnGuiInitialize()
     {

@@ -1,6 +1,7 @@
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Game;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Meatcorps.Engine.RayLib.Abstractions;
 
@@ -21,7 +22,7 @@ public abstract class BaseScene : IDisposable
         SceneObjectManager.RegisterList<IBackgroundService>();
     }
 
-    public GameHost GameHost { get; private set; }
+    public GameHost GameHost { get; private set; } = null!;
     public int Layer { get; set; } = 0;
     public ObjectManager SceneObjectManager { get; } = new();
     public bool Paused { get; set; }
@@ -94,7 +95,7 @@ public abstract class BaseScene : IDisposable
         return SceneObjectManager.GetList<BaseGameObject>()!.FirstOrDefault(x => x.Name.Equals(name));
     }
 
-    public IEnumerable<BaseGameObject>? GetGameObjectsByName(string name)
+    public IEnumerable<BaseGameObject> GetGameObjectsByName(string name)
     {
         return SceneObjectManager.GetList<BaseGameObject>()!.Where(x => x.Name.Equals(name));
     }

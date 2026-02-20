@@ -36,7 +36,6 @@ public class ControllerInput: GenericInput
                         default:
                             return _originalLabel;
                     }
-                    break;
                 case ControllerType.PlayStation:
                     switch (_originalLabel)
                     {
@@ -63,7 +62,6 @@ public class ControllerInput: GenericInput
                         default:
                             return _originalLabel;
                     }
-                    break;
                 default:
                     return _originalLabel;
             }

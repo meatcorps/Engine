@@ -17,7 +17,7 @@
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 <ul>
-    @foreach (var message in messages)
+    @foreach (var message in _messages)
     {
         <li>@message</li>
     }
@@ -31,15 +31,15 @@
     private DotNetObjectReference<Counter>? _self;
     private IJSObjectReference? _mod, _handle;
     
-    private List<string> messages = new()
-    {
+    private readonly List<string> _messages =
+    [
         "Hello from Blazor!",
         "This is like *ngFor",
         "But in C#"
-    };
+    ];
     
     private readonly CancellationTokenSource _cts = new();
-    private string _userId;
+    private string _userId = string.Empty;
 
     protected override Task OnInitializedAsync()
     {
@@ -51,14 +51,14 @@
     {
         if (firstRender)
         {
-            messages.Add("Args is: " + (Id.HasValue ? Id.Value.ToString() : "Nothing!"));
+            _messages.Add("Args is: " + (Id.HasValue ? Id.Value.ToString() : "Nothing!"));
             
             _userId = await UserIdProvider.GetUserIdAsync();
             
             _navReg = Nav.RegisterLocationChangingHandler(ctx =>
             {
                 _cts.Cancel();
-                Console.WriteLine("LocationChanging: {Uri}", ctx.TargetLocation);
+                Console.WriteLine("LocationChanging: {0}", ctx.TargetLocation);
                 return ValueTask.CompletedTask;
             });
             
@@ -74,7 +74,7 @@
         for (var i = 0; i < 10; i++)
         {
             TestService.Count++;
-            messages.Add("Hello! " + i);
+            _messages.Add("Hello! " + i);
             await InvokeAsync(StateHasChanged);
             
             if (_cts.Token.IsCancellationRequested)

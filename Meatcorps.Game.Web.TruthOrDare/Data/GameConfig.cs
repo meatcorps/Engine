@@ -2,7 +2,7 @@ using System.Globalization;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Storage.Abstractions;
 
-namespace Meatcorps.Game.CyberPlayer.Data;
+namespace Meatcorps.Game.Web.TruthOrDare.Data;
 
 [Serializable]
 public class GameConfig<T> : BaseConfig<GameConfig<T>> where T : Enum

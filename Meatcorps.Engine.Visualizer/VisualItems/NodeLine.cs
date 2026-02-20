@@ -16,7 +16,7 @@ public class NodeLine: IVisualItem
     public Guid Id { get; set; }
     public bool Selected { get; set; }
     public int Order { get; set; }
-    private MainScene _scene = null!;
+    private MainScene? _scene;
     public Vector2 StartPoint = Vector2.Zero;
     public Vector2 EndPoint = Vector2.Zero;
     public bool StartArrow { get; set; }
@@ -111,7 +111,6 @@ public class NodeLine: IVisualItem
                 var length = line.Length;
                 var dash = length / strokeLength;
                 var start = line.Start;
-                var currentLength = 0f;
                 for (var i = 0; i < dash; i++)
                 {
                     var direction = line.DirectionStartNormalized * Math.Min(length, strokeLength / 2f);
@@ -155,16 +154,16 @@ public class NodeLine: IVisualItem
         {
             var offset1 = line.DirectionStartNormalized.Rotate(-MathHelper.ToRadians(ArrowDegrees));
             var offset2 = line.DirectionStartNormalized.Rotate(MathHelper.ToRadians(ArrowDegrees));
-            Raylib.DrawLineEx(StartPoint - offset1 * (Thickness / 2), StartPoint + offset1 * ArrowSize, Thickness, color);
-            Raylib.DrawLineEx(StartPoint - offset2 * (Thickness / 2), StartPoint + offset2 * ArrowSize, Thickness, color);
+            Raylib.DrawLineEx(StartPoint - offset1 * (Thickness / 2f), StartPoint + offset1 * ArrowSize, Thickness, color);
+            Raylib.DrawLineEx(StartPoint - offset2 * (Thickness / 2f), StartPoint + offset2 * ArrowSize, Thickness, color);
         }
         if (EndArrow)
         {
             
             var offset1 = line.DirectionEndNormalized.Rotate(-MathHelper.ToRadians(ArrowDegrees));
             var offset2 = line.DirectionEndNormalized.Rotate(MathHelper.ToRadians(ArrowDegrees));
-            Raylib.DrawLineEx(EndPoint - offset1 * (Thickness / 2), EndPoint + offset1 * ArrowSize, Thickness, color);
-            Raylib.DrawLineEx(EndPoint - offset2 * (Thickness / 2), EndPoint + offset2 * ArrowSize, Thickness, color);
+            Raylib.DrawLineEx(EndPoint - offset1 * (Thickness / 2f), EndPoint + offset1 * ArrowSize, Thickness, color);
+            Raylib.DrawLineEx(EndPoint - offset2 * (Thickness / 2f), EndPoint + offset2 * ArrowSize, Thickness, color);
         }
         
         if (Text.Length > 0)
@@ -254,6 +253,9 @@ public class NodeLine: IVisualItem
 
     public void Update(float deltaTime)
     {
+        if (_scene is null)
+            return;
+        
         _animationTimer.Update(deltaTime); 
         
         if (StartPoint.IsEqualsSafe(EndPoint) && _scene.VisualData.EditType == EditType.None)
@@ -271,6 +273,9 @@ public class NodeLine: IVisualItem
 
     public void OnDrag(Vector2 position, EditType type)
     {
+        if (_scene is null)
+            return;
+        
         if (type == EditType.Resize && _scene.VisualData.MultiSelect)
             return;
         

@@ -12,12 +12,12 @@ namespace Meatcorps.Game.Snake.GameObjects.Abstractions;
 
 public abstract class SnakeGameObject: BaseGameObject
 {
-    protected Texture2DItem<SnakeSprites> Sprites { get; private set; }
-    protected TextManager<DefaultFont> Fonts { get; private set; }
-    protected LevelData LevelData { get; private set; }
-    protected SoundFxManager<SnakeSounds> Sounds { get; private set; }
-    public MusicManager<SnakeMusic> Music { get; private set; }
-    public IArcadePointsMutator PointMutator { get; private set; }
+    protected Texture2DItem<SnakeSprites> Sprites { get; private set; } = null!;
+    protected TextManager<DefaultFont> Fonts { get; private set; } = null!;
+    protected LevelData LevelData { get; private set; } = null!;
+    protected SoundFxManager<SnakeSounds> Sounds { get; private set; } = null!;
+    public MusicManager<SnakeMusic> Music { get; private set; } = null!;
+    public IArcadePointsMutator PointMutator { get; private set; } = null!;
 
     protected override void OnInitialize()
     {

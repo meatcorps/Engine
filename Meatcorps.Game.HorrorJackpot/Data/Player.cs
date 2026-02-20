@@ -1,6 +1,5 @@
 using Meatcorps.Engine.Session.Data;
 using Meatcorps.Game.HorrorJackpot.GameEnums;
-using Meatcorps.Game.HorrorJackpot.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Game.HorrorJackpot.Data;
@@ -21,10 +20,6 @@ public class Player
     public float WorldSpeed { get; set; }
 
     public Color Color { get; init; }
-
-    public Player()
-    {
-    }
 
     public void Initialize()
     {

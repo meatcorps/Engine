@@ -22,7 +22,7 @@ public static class GridMovement
             testPosition.X = MathF.Round(testPosition.X / roundingRatio) * roundingRatio;
             testPosition.Y = MathF.Round(testPosition.Y / roundingRatio) * roundingRatio;
             testPosition += desiredVelocity * deltaTime;
-            foreach (var item in body.WorldService.QueryContacts(body, testPosition, collisionMask))
+            foreach (var _ in body.WorldService.QueryContacts(body, testPosition, collisionMask))
                 total++;
         }
 

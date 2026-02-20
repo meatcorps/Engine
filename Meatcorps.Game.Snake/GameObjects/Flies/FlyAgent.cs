@@ -15,14 +15,14 @@ public class FlyAgent : IBoidAgent, IGridItem
     public float Radius { get; init; } = 6f;
     public float Mass { get; init; } = 1f;
     public bool IsActive { get; set; } = true;
-    public int CurrentAnimationFrame { get; set; } = 0;
+    public int CurrentAnimationFrame { get; set; }
     private readonly FixedTimer _animationTimer;
 
     // IGridItem
     public RectF BoundingBox 
         => new(Position.X - Radius, Position.Y - Radius, Radius * 2, Radius * 2);
 
-    public object Owner { get; }
+    public object? Owner { get; }
 
     public FlyAgent(object parent, Vector2 startPosition)
     {

@@ -3,6 +3,7 @@ using Meatcorps.Engine.Core.Interfaces.Components;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Interfaces;
+// ReSharper disable SuspiciousTypeConversion.Global
 
 namespace Meatcorps.Engine.RayLib.Abstractions;
 
@@ -16,14 +17,14 @@ public abstract class BaseGameObject : IDisposable
     private bool _enabled = true;
     private bool _visible = true;
 
-    public BaseGameObject()
+    protected BaseGameObject()
     {
         Camera = CameraLayer.World;
     }
 
     public Vector2 Position { get; protected set; }
     public string Name { get; set; } = "GameObject";
-    public int Layer { get; set; } = 0;
+    public int Layer { get; set; }
 
     public CameraLayer Camera
     {
@@ -49,7 +50,7 @@ public abstract class BaseGameObject : IDisposable
 
     public IRenderTargetStrategy? RenderTarget { get; set; }
 
-    public BaseScene Scene { get; private set; }
+    public BaseScene Scene { get; private set; } = null!;
 
     public bool Enabled
     {

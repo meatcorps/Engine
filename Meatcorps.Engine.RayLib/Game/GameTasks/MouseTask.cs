@@ -9,7 +9,7 @@ namespace Meatcorps.Engine.RayLib.Game.GameTasks;
 
 public class MouseTask : IGameLoopTask
 {
-    private IUniversalConfig _config;
+    private IUniversalConfig _config = null!;
     private bool _disableMouseCursor;
 
     public MouseTask(int priority = 0)

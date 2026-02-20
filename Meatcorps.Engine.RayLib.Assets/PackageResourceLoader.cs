@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
 using Meatcorps.Engine.Assets.Manager;
 using Meatcorps.Engine.Core.ObjectManager;
@@ -13,7 +12,7 @@ public class PackageResourceLoader: IRaylibResource
 {
     private readonly AssetPackageManager _packageManager;
     private ResourceManager _resourceManager = null!;
-    private bool _isResourceManagerLoaded = false;
+    private bool _isResourceManagerLoaded;
     
     public PackageResourceLoader(AssetPackageManager packageManager)
     {

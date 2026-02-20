@@ -1,0 +1,163 @@
+#-------------------------------------------------------------------------------#
+#               Qodana analysis is configured by qodana.yaml file               #
+#             https://www.jetbrains.com/help/qodana/qodana-yaml.html            #
+#-------------------------------------------------------------------------------#
+#################################################################################
+#              WARNING: Do not store sensitive information in this file,        #
+#               as its contents will be included in the Qodana report.          #
+#################################################################################
+version: "1.0"
+#Specify IDE code to run analysis without container (Applied in CI/CD pipeline)
+ide: QDNET
+#Specify inspection profile for code analysis
+profile:
+  name: qodana.starter
+include:
+  - name: ConvertIfStatementToReturnStatement
+  - name: ConvertIfStatementToConditionalTernaryExpression
+  - name: ConvertIfStatementToNullCoalescingExpression
+  - name: ConvertIfStatementToNullCoalescingAssignment
+  - name: SeparateLocalFunctionsWithJumpStatement
+  - name: ArrangeStaticMemberQualifier
+  - name: ArrangeModifiersOrder
+  - name: AutoPropertyCanBeMadeGetOnly.Global
+  - name: AutoPropertyCanBeMadeGetOnly.Local
+  - name: HeapView.BoxingAllocation
+  - name: HeapView.PossibleBoxingAllocation
+  - name: CanSimplifySetAddingWithSingleCall
+  - name: HeapView.ClosureAllocation
+  - name: ConvertIfStatementToSwitchStatement
+  - name: ConvertConstructorToMemberInitializers
+  - name: ConvertToPrimaryConstructor
+  - name: ConvertToLambdaExpression
+  - name: ConvertClosureToMethodGroup
+  - name: ConvertToConstant.Local
+  - name: ConvertToAutoProperty
+  - name: ConvertToAutoPropertyWhenPossible
+  - name: ConvertToAutoPropertyWithPrivateSetter
+  - name: InvokeAsExtensionMember
+  - name: InvokeAsExtensionMemberFromSameClass
+  - name: HeapView.DelegateAllocation
+  - name: CanSimplifyDictionaryTryGetValueWithGetValueOrDefault
+  - name: CanSimplifyDictionaryLookupWithTryAdd
+  - name: CanSimplifyDictionaryLookupWithTryGetValue
+  - name: DuplicatedSequentialIfBodies
+  - name: ExtractCommonBranchingCode
+  - name: FieldCanBeMadeReadOnly.Global
+  - name: FieldCanBeMadeReadOnly.Local
+  - name: ForCanBeConvertedToForeach
+  - name: ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+  - name: CppInconsistentNaming
+  - name: InlineOutVariableDeclaration
+  - name: InlineTemporaryVariable
+  - name: InvertIf
+  - name: JoinNullCheckWithUsage
+  - name: TooWideLocalVariableScope
+  - name: LoopCanBeConvertedToQuery
+  - name: PublicConstructorInAbstractClass
+  - name: HtmlRequiredTitleElement
+  - name: NotAccessedField.Global
+  - name: HeapView.ObjectAllocation
+  - name: HeapView.ObjectAllocation.Evident
+  - name: HeapView.ObjectAllocation.Possible
+  - name: OutParameterValueIsAlwaysDiscarded.Global
+  - name: ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+  - name: CppExpressionWithoutSideEffects
+  - name: PreferConcreteValueOverDefault
+  - name: CssReplaceWithShorthandSafely
+  - name: PropertyCanBeMadeInitOnly.Global
+  - name: PropertyCanBeMadeInitOnly.Local
+  - name: MoveLocalFunctionAfterJumpStatement
+  - name: RedundantIfElseBlock
+  - name: RedundantToStringCallForValueType
+  - name: RedundantEmptyObjectCreationArgumentList
+  - name: CppRedundantEmptyDeclaration
+  - name: RedundantLambdaSignatureParentheses
+  - name: CppRedundantParentheses
+  - name: RedundantStringInterpolation
+  - name: RedundantTypeDeclarationBody
+  - name: ArrangeRedundantParentheses
+  - name: ConvertSwitchStatementToSwitchExpression
+  - name: ReplaceAutoPropertyWithComputedProperty
+  - name: BuiltInTypeReferenceStyle
+  - name: UseNullPropagation
+  - name: ConvertConditionalTernaryExpressionToSwitchExpression
+  - name: ReplaceWithPrimaryConstructorParameter
+  - name: CA1861
+  - name: CA1860
+  - name: CA1869
+  - name: CA1050
+  - name: CA1816
+  - name: CA1806
+  - name: CA1826
+  - name: CA2208
+  - name: CA1822
+  - name: CA2211
+  - name: CA2231
+  - name: CA1836
+  - name: CA1864
+  - name: CA1854
+  - name: CA2254
+  - name: CA1868
+  - name: SYSLIB1054
+  - name: CA1510
+  - name: CA1512
+  - name: CA1866
+  - name: CA1859
+  - name: CA1829
+  - name: CA2012
+  - name: SimplifyLinqExpressionUseAll
+  - name: SwitchStatementMissingSomeEnumCasesNoDefault
+  - name: SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+  - name: SpecifyStringComparison
+  - name: StructCanBeMadeReadOnly
+  - name: CSharpWarnings__CA2254
+  - name: MergeCastWithTypeCheck
+  - name: UnusedType.Global
+  - name: UnusedMemberInSuper.Global
+  - name: UnusedMember.Global
+  - name: TypeParameterCanBeVariant
+  - name: UnusedParameter.Global
+  - name: UseWithExpressionToCopyStruct
+  - name: UseCollectionExpression
+  - name: UseCollectionCountProperty
+  - name: ConvertToCompoundAssignment
+  - name: UseDeconstruction
+  - name: ArrangeTypeMemberModifiers
+  - name: ArrangeTypeModifiers
+  - name: UseIndexFromEndExpression
+  - name: UseObjectOrCollectionInitializer
+  - name: SuggestVarOrType_Elsewhere
+  - name: SuggestVarOrType_BuiltInTypes
+  - name: SuggestVarOrType_SimpleTypes
+  - name: ArrangeAccessorOwnerBody
+  - name: SuggestDiscardDeclarationVarStyle
+  - name: ArrangeTrailingCommaInMultilineLists
+  - name: ArrangeObjectCreationWhenTypeEvident
+  - name: ArrangeObjectCreationWhenTypeNotEvident
+  - name: VirtualMemberNeverOverridden.Global
+
+#Enable inspections
+#include:
+#  - name: <SomeEnabledInspectionId>
+#Disable inspections
+#exclude:
+#  - name: <SomeDisabledInspectionId>
+#    paths:
+#      - <path/where/not/run/inspection>
+#Execute shell command before Qodana execution (Applied in CI/CD pipeline)
+#bootstrap: sh ./prepare-qodana.sh
+#Install IDE plugins before Qodana execution (Applied in CI/CD pipeline)
+#plugins:
+#  - id: <plugin.id> #(plugin id can be found at https://plugins.jetbrains.com)
+# Quality gate. Will fail the CI/CD pipeline if any condition is not met
+# severityThresholds - configures maximum thresholds for different problem severities
+# testCoverageThresholds - configures minimum code coverage on a whole project and newly added code
+# Code Coverage is available in Ultimate and Ultimate Plus plans
+#failureConditions:
+#  severityThresholds:
+#    any: 15
+#    critical: 5
+#  testCoverageThresholds:
+#    fresh: 70
+#    total: 50

@@ -24,7 +24,7 @@ public class ArcadeQuestionService: IBackgroundService, IDisposable
     private TimerOn _timer = new TimerOn(1000);
     private readonly FixedTimer _pushTimer = new FixedTimer(1000);
     private readonly SignalValue<ArcadeResponse, MQTTGroup> _questionResponse;
-    private HashSet<string> _answeredQuestions = new();
+    private readonly HashSet<string> _answeredQuestions = new();
     
     public ArcadeQuestionService()
     {

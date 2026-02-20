@@ -21,8 +21,7 @@ public class SmoothValue
     private float _speed;
     private readonly bool _fixedTime;
     private float _startValue;
-    private bool _snapToReal;
-    private FixedTimer _timer;
+    private readonly FixedTimer _timer;
 
     /// <param name="initialValue">Optional starting value</param>
     /// <param name="speed">Speed in units per second</param>
@@ -45,7 +44,6 @@ public class SmoothValue
         if (DisplayValue.EqualsSafe(RealValue, 0.01f))
         {
             DisplayValue = RealValue; // snap if close
-            _snapToReal = false;
             _startValue = DisplayValue;
             return;
         }

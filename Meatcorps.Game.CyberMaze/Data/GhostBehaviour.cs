@@ -6,7 +6,7 @@ namespace Meatcorps.Game.CyberMaze.Data;
 public class GhostBehaviour
 {
     public Body Body { get; init; } = null!;
-    public AI.GhostLogic Logic { get; init; }
+    public AI.GhostLogic Logic { get; init; } = null!;
     public GhostType Type { get; init; }
 
     public bool Enabled { get; set; }

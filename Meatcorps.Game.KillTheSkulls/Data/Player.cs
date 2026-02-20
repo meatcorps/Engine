@@ -1,14 +1,11 @@
 using Meatcorps.Engine.Session.Data;
 using Meatcorps.Game.KillTheSkulls.GameEnums;
-using Meatcorps.Game.KillTheSkulls.Resources;
-using Raylib_cs;
 
 namespace Meatcorps.Game.KillTheSkulls.Data;
 
 public class Player
 {
     public required SessionDataBag<GamePlayerData> SessionDataBag { get; init; }
-    public bool IsDead { get; set; }
 
     public int Score
     {
@@ -34,29 +31,8 @@ public class Player
         set => SessionDataBag.Set(GamePlayerData.Streak, value);
     }
 
-    public int StartScore { get; private set; }
+    public int StartScore { get; set; }
     public int PlayerId { get; init; }
-    public float WorldSpeed { get; set; }
-
-    public Color Color { get; init; }
-
-    public Player()
-    {
-    }
-
-    public void Initialize()
-    {
-        StartScore = Score;
-    }
-
-    public void PreUpdate()
-    {
-        WorldSpeed = 1;
-    }
-
-    public void PostUpdate()
-    {
-    }
 
     public void AddValue(GamePlayerData item, int amount = 1)
     {

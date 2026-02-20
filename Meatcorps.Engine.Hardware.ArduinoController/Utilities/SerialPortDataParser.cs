@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Meatcorps.Engine.Hardware.ArduinoController.Utilities;
 

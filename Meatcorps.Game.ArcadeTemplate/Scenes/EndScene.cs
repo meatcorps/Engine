@@ -7,17 +7,15 @@ using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Audio;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.Session;
-using Meatcorps.Game.ArcadeTemplate.Data;
 using Meatcorps.Game.ArcadeTemplate.GameEnums;
 using Meatcorps.Game.ArcadeTemplate.GameObjects.UI;
-using Meatcorps.Game.ArcadeTemplate.Resources;
 
 namespace Meatcorps.Game.ArcadeTemplate.Scenes;
 
 public class EndScene : BaseScene
 {
-    private TimerOn _timer = new(30000);
-    private PlayerInputRouter<GameInput> _controller;
+    private readonly TimerOn _timer = new(30000);
+    private PlayerInputRouter<GameInput> _controller = null!;
 
     public int TimeLeft => (int)(_timer.TimeRemaining / 1000);
     

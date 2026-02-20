@@ -11,11 +11,11 @@ namespace Meatcorps.Engine.Hardware.Controllers.Mapper;
 public class ControllerInputMapper<T> : IBackgroundService, IInputMapper<T> where T : Enum
 {
     private readonly IControllerDeviceManager _manager;
-    private Dictionary<T, ControllerInputEnum> _mapping = new Dictionary<T, ControllerInputEnum>();
+    private readonly Dictionary<T, ControllerInputEnum> _mapping = new Dictionary<T, ControllerInputEnum>();
     private readonly GenericInput _nothingInput = new GenericInput(() => 0, "Unknown");
-    private bool _dPadIsAxis = false;
-    private bool _initialized = false;
-    private List<int> _profiles = new();
+    private bool _dPadIsAxis;
+    private bool _initialized;
+    private readonly List<int> _profiles = new();
     
     public ControllerInputMapper(IControllerDeviceManager manager)
     {

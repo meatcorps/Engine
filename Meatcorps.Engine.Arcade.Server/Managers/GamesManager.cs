@@ -10,8 +10,8 @@ namespace Meatcorps.Engine.Arcade.Server.Managers;
 public class GamesManager : BaseManager
 {
     private readonly SignalValue<ArcadeGame, MQTTGroup> _gameSignal;
-    private object _gameUpdateLock = new();
-    private IDisposable _gameCheckTimer;
+    private readonly object _gameUpdateLock = new();
+    private readonly IDisposable _gameCheckTimer;
     private readonly SignalValue<ArcadeCentralData, MQTTGroup> _webDataDump;
 
     public GamesManager()

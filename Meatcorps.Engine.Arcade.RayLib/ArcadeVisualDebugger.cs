@@ -15,13 +15,13 @@ namespace Meatcorps.Engine.Arcade.RayLib;
 
 public class ArcadeVisualDebugger : BaseGameObject, IBackgroundService
 {
-    private RenderService? _renderService = null;
-    private IArcadePointsMutator _pointsMutator;
-    private IPlayerCheckin _playerCheckin;
+    private RenderService? _renderService;
+    private IArcadePointsMutator _pointsMutator = null!;
+    private IPlayerCheckin _playerCheckin = null!;
     private FallbackArcadeSystem? _fallbackMutator;
     private bool _isInitilized;
-    private Dictionary<KeyboardKey, GenericInput> _inputMap = new();
-    private ArcadeGame _game;
+    private readonly Dictionary<KeyboardKey, GenericInput> _inputMap = new();
+    private ArcadeGame _game = null!;
 
     public ArcadeVisualDebugger()
     {
@@ -40,13 +40,14 @@ public class ArcadeVisualDebugger : BaseGameObject, IBackgroundService
 
     private void MapKey(KeyboardKey key)
     {
-        _inputMap.Add(key, new GenericInput(() => Raylib_cs.Raylib.IsKeyDown(key), key.ToString()));
+        _inputMap.Add(key, new GenericInput(() => Raylib.IsKeyDown(key), key.ToString()));
     }
     
     protected override void OnInitialize()
     {
         if (_isInitilized)
             return;
+        _isInitilized = true;
         SetScene(new EmptyScene());
         _game = GlobalObjectManager.ObjectManager.Get<ArcadeGame>()!;
         _renderService = GlobalObjectManager.ObjectManager.Get<GameHost>()!.RenderService;
@@ -96,17 +97,17 @@ public class ArcadeVisualDebugger : BaseGameObject, IBackgroundService
     protected override void OnDraw()
     {
         var currentY = 16;
-        Raylib_cs.Raylib.DrawTextEx(Raylib_cs.Raylib.GetFontDefault(),$"S: ({_game.State}): [F1] ADD PLAYER, [F2,F3] SIGNOUT [F5,F6] ADD 100 [F7,F8] SUB 100 [F4] SHOW/HIDE", new Vector2(16, currentY), 10f, 1, Color.White);
+        Raylib.DrawTextEx(Raylib.GetFontDefault(),$"S: ({_game.State}): [F1] ADD PLAYER, [F2,F3] SIGNOUT [F5,F6] ADD 100 [F7,F8] SUB 100 [F4] SHOW/HIDE", new Vector2(16, currentY), 10f, 1, Color.White);
         currentY += 11;
         for (var i = 1; i <= _playerCheckin.TotalPlayers; i++)
         {
             var str = $"{i}: '{_playerCheckin.GetPlayerName(i)}' P: {_pointsMutator.GetPoints(i)}";
-               Raylib_cs.Raylib.DrawTextEx(Raylib_cs.Raylib.GetFontDefault(), str, new Vector2(16, currentY), 10f, 1, Color.White);
+               Raylib.DrawTextEx(Raylib.GetFontDefault(), str, new Vector2(16, currentY), 10f, 1, Color.White);
                currentY += 11;
         }
         
         if (_playerCheckin.TotalPlayers == 0)
-            Raylib_cs.Raylib.DrawTextEx(Raylib_cs.Raylib.GetFontDefault(), "NOBODY CHECKED IN YET", new Vector2(16, currentY), 10f, 1, Color.White);
+            Raylib.DrawTextEx(Raylib.GetFontDefault(), "NOBODY CHECKED IN YET", new Vector2(16, currentY), 10f, 1, Color.White);
         
         base.OnDraw();
     }

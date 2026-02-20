@@ -4,8 +4,8 @@ namespace Meatcorps.Engine.RayLib.Utilities;
 
 public class ScreenResolutionIterator
 {
-    private List<ScreenResolutionMode> _modeList = new List<ScreenResolutionMode>();
-    private string[] _ratios = [];
+    private readonly List<ScreenResolutionMode> _modeList = new ();
+    private readonly string[] _ratios;
     
     public ScreenResolutionIterator(string[]? ratios = null)
     {
@@ -85,12 +85,12 @@ public class ScreenResolutionIterator
     }
 }
 
-public struct ScreenResolutionMode: IEqualityComparer<ScreenResolutionMode>
+public readonly struct ScreenResolutionMode: IEqualityComparer<ScreenResolutionMode>, IEquatable<ScreenResolutionMode>
 {
-    public int Width { get; init; }
-    public int Height { get; init; }
-    public string Ratio { get; init; }
-    public int TotalPixels { get; init; }
+    public int Width { get; init; } = 0;
+    public int Height { get; init; } = 0;
+    public string Ratio { get; init; } = string.Empty;
+    public int TotalPixels { get; init; } = 0; 
 
     public ScreenResolutionMode()
     {
@@ -119,17 +119,24 @@ public struct ScreenResolutionMode: IEqualityComparer<ScreenResolutionMode>
         return x.Width == y.Width && x.Height == y.Height;
     }
 
+    public override bool Equals(object? obj)
+    {
+        return obj is ScreenResolutionMode other && Equals(other);
+    }
+
+    public bool Equals(ScreenResolutionMode other)
+    {
+        return Equals((object)other);
+    }
+
+    public override int GetHashCode()
+    {
+        return GetHashCode(this);
+    }
+
     public int GetHashCode(ScreenResolutionMode obj)
     {
         return HashCode.Combine(obj.Width, obj.Height);
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj is ScreenResolutionMode resolution)
-            return resolution.Equals(this);
-            
-        return false;
     }
 
     public override string ToString()
@@ -141,35 +148,35 @@ public struct ScreenResolutionMode: IEqualityComparer<ScreenResolutionMode>
 #region MODEDATA
 public static class ScreenResolutionRawData
 {
-    public static string AllModes = "width,height,aspect_ratio,total_pixels\n" +
-                                    "640,480,4:3,307200\n" +
-                                    "800,600,4:3,480000\n" +
-                                    "854,480,16:9,409920\n" +
-                                    "1024,768,4:3,786432\n" +
-                                    "1280,720,16:9,921600\n" +
-                                    "1280,800,16:10,1024000\n" +
-                                    "1366,768,16:9,1049088\n" +
-                                    "1440,900,16:10,1296000\n" +
-                                    "1600,900,16:9,1440000\n" +
-                                    "1400,1050,4:3,1470000\n" +
-                                    "1680,1050,16:10,1764000\n" +
-                                    "1600,1200,4:3,1920000\n" +
-                                    "1920,1080,16:9,2073600\n" +
-                                    "1920,1200,16:10,2304000\n" +
-                                    "2560,1080,21:9,2764800\n" +
-                                    "2048,1536,4:3,3145728\n" +
-                                    "2560,1440,16:9,3686400\n" +
-                                    "3840,1080,32:9,4147200\n" +
-                                    "2560,1600,16:10,4096000\n" +
-                                    "3440,1440,21:9,4953600\n" +
-                                    "3200,1800,16:9,5760000\n" +
-                                    "3840,1600,21:9,6144000\n" +
-                                    "5120,1440,32:9,7372800\n" +
-                                    "3840,2160,16:9,8294400\n" +
-                                    "3840,2400,16:10,9216000\n" +
-                                    "5120,2160,21:9,11059200\n" +
-                                    "5120,2880,16:9,14745600\n" +
-                                    "7680,2160,32:9,16588800\n" +
-                                    "7680,4320,16:9,33177600\n";
+    public static readonly string AllModes = "width,height,aspect_ratio,total_pixels\n" +
+                                             "640,480,4:3,307200\n" +
+                                             "800,600,4:3,480000\n" +
+                                             "854,480,16:9,409920\n" +
+                                             "1024,768,4:3,786432\n" +
+                                             "1280,720,16:9,921600\n" +
+                                             "1280,800,16:10,1024000\n" +
+                                             "1366,768,16:9,1049088\n" +
+                                             "1440,900,16:10,1296000\n" +
+                                             "1600,900,16:9,1440000\n" +
+                                             "1400,1050,4:3,1470000\n" +
+                                             "1680,1050,16:10,1764000\n" +
+                                             "1600,1200,4:3,1920000\n" +
+                                             "1920,1080,16:9,2073600\n" +
+                                             "1920,1200,16:10,2304000\n" +
+                                             "2560,1080,21:9,2764800\n" +
+                                             "2048,1536,4:3,3145728\n" +
+                                             "2560,1440,16:9,3686400\n" +
+                                             "3840,1080,32:9,4147200\n" +
+                                             "2560,1600,16:10,4096000\n" +
+                                             "3440,1440,21:9,4953600\n" +
+                                             "3200,1800,16:9,5760000\n" +
+                                             "3840,1600,21:9,6144000\n" +
+                                             "5120,1440,32:9,7372800\n" +
+                                             "3840,2160,16:9,8294400\n" +
+                                             "3840,2400,16:10,9216000\n" +
+                                             "5120,2160,21:9,11059200\n" +
+                                             "5120,2880,16:9,14745600\n" +
+                                             "7680,2160,32:9,16588800\n" +
+                                             "7680,4320,16:9,33177600\n";
 }
 #endregion

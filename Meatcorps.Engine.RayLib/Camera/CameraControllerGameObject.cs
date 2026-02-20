@@ -9,7 +9,7 @@ namespace Meatcorps.Engine.RayLib.Camera;
 
 public class CameraControllerGameObject : BaseGameObject
 {
-    private readonly ICamera _camera;
+    private readonly ICamera? _camera;
 
     // --- Defaults & Bounds ---
     private readonly Vector2 _defaultPosition;
@@ -94,6 +94,9 @@ public class CameraControllerGameObject : BaseGameObject
 
     public void Reset()
     {
+        if (_camera == null) 
+            return;
+        
         _camera.Position = _defaultPosition;
         _camera.Zoom = _defaultZoom;
         Zoom = _defaultZoom;
@@ -115,6 +118,9 @@ public class CameraControllerGameObject : BaseGameObject
 
     protected override void OnUpdate(float deltaTime)
     {
+        if (_camera == null)
+            return;
+        
         Vector2? followTarget = null;
 
         if (_target != null)

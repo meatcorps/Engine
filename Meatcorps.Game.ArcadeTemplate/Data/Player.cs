@@ -1,6 +1,5 @@
 using Meatcorps.Engine.Session.Data;
 using Meatcorps.Game.ArcadeTemplate.GameEnums;
-using Meatcorps.Game.ArcadeTemplate.Resources;
 using Raylib_cs;
 
 namespace Meatcorps.Game.ArcadeTemplate.Data;
@@ -22,10 +21,6 @@ public class Player
     
     public Color Color { get; init; }
 
-    public Player()
-    {
-    }
-    
     public void Initialize()
     {
         StartScore = Score;

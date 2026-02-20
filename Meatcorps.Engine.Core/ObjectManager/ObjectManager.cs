@@ -1,5 +1,6 @@
 using System.Collections;
 using Meatcorps.Engine.Core.Settings;
+// ReSharper disable MemberHidesStaticFromOuterClass
 
 namespace Meatcorps.Engine.Core.ObjectManager;
 
@@ -145,12 +146,12 @@ public class ObjectManager : IDisposable
             {
                 disposable.Dispose();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 if (MeatcorpsEngineLibSettings.IsDebug)
                     Console.WriteLine(instance.GetType().FullName);
-                throw e;
-            /* optional: log; never throw during shutdown */
+                throw;
+                /* optional: log; never throw during shutdown */
             }
         }
         Console.WriteLine();

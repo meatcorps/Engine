@@ -1,22 +1,21 @@
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Text;
-using Meatcorps.Engine.Session;
-using Meatcorps.Engine.Arcade.Leaderboard.GameEnums;
 using Meatcorps.Engine.Arcade.Leaderboard.GameObjects;
-using Raylib_cs;
+using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.RayLib.Interfaces;
 
 namespace Meatcorps.Engine.Arcade.Leaderboard.Scenes;
 
 public class MainScene : BaseScene
 {
-    private Font _font;
-    private UIMessageEmitter _uiMessage;
-    private SessionService<GameSessionData, GamePlayerData> _sessionService;
+    private UIMessageEmitter _uiMessage = null!;
 
     protected override void OnInitialize()
     {
-        _uiMessage = new UIMessageEmitter(TextKitStyles.HudDefault(_font));
+        _uiMessage =
+            new UIMessageEmitter(
+                TextKitStyles.HudDefault(GlobalObjectManager.ObjectManager.Get<IDefaultFont>()!.GetFont()));
         AddGameObject(_uiMessage);
         AddGameObject(new MainGameObject());
     }

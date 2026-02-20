@@ -1,21 +1,16 @@
-﻿using System.Globalization;
-using System.Numerics;
+﻿using System.Numerics;
 using Meatcorps.Engine.Core.Data;
-using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.Extensions;
-using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.Raylib.Examples.Enums;
-using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Engine.RayLib.UI.GuiComponent;
-using Meatcorps.Engine.RayLib.UI.GuiComponent.Components;
 using Meatcorps.Engine.RayLib.UI.GuiComponent.Core;
 using Meatcorps.Engine.RayLib.UI.GuiComponent.GuiSettings;
 using Raylib_cs;
@@ -26,8 +21,8 @@ public class GuiTest : BaseGameObject
 {
     private GuiServiceComponent _gui = null!;
     private GuiService _guiService = null!;
-    private List<RectF> _rains = new();
-    private DefaultGuiSettings<GameInput, GameSounds> _uiSettings;
+    private readonly List<RectF> _rains = new();
+    private DefaultGuiSettings<GameInput, GameSounds> _uiSettings = null!;
     private OneTexture _bgTexture = null!;
 
     protected override void OnInitialize()

@@ -13,18 +13,18 @@ public class ArcadeDataService: IDisposable
     private readonly ArcadeCentralData _data = new ArcadeCentralData();
     private readonly object _gameSyncLock = new();
     private readonly object _playerSyncLock = new();
-    private SignalValue<ArcadeSystemMessage, MQTTGroup> _message;
-    private List<IDisposable> _disposables = new();
+    private readonly SignalValue<ArcadeSystemMessage, MQTTGroup> _message;
+    private readonly List<IDisposable> _disposables = new();
     private readonly Subject<ArcadePlayer> _playerUpdateSubject = new();
     public IObservable<ArcadePlayer> PlayerUpdate => _playerUpdateSubject.AsObservable();
     private readonly Subject<ArcadeGame> _gameUpdateSubject = new();
-    public IObservable<ArcadeGame> GameUpdate => _gameUpdateSubject.AsObservable();
+    private IObservable<ArcadeGame> GameUpdate => _gameUpdateSubject.AsObservable();
 
     public bool DataReady { get; private set; }
 
     public IObservable<Unit> DataChanged => Observable.Merge(
-        PlayerUpdate.Select(x => Unit.Default), 
-        GameUpdate.Select(x => Unit.Default)
+        PlayerUpdate.Select(_ => Unit.Default), 
+        GameUpdate.Select(_ => Unit.Default)
         ).Throttle(TimeSpan.FromMilliseconds(33)) // ~30fps UI
         .Publish()
         .RefCount();

@@ -3,6 +3,7 @@ using System.Text.Json;
 using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.ObjectManager;
+// ReSharper disable VirtualMemberCallInConstructor
 
 namespace Meatcorps.Engine.Core.Storage.Abstractions;
 
@@ -26,7 +27,7 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
         
         GlobalObjectManager.ObjectManager.Register<IUniversalConfig>(this);
         GlobalObjectManager.ObjectManager.RegisterList<IConfigChangeTracker>();
-        GlobalObjectManager.ObjectManager.Register<T>(Instance);
+        GlobalObjectManager.ObjectManager.Register(Instance);
         DoRegisterDefaultValues();
 
         Task.Run(async () =>
@@ -62,9 +63,9 @@ public abstract class BaseConfig<T>: IUniversalConfig, IDisposable where T : Bas
 
     public void Set(string group, string key, string value)
     {
-        if (!SystemSettings.ContainsKey(group))
+        if (!SystemSettings.TryGetValue(group, out var setting))
             throw new InvalidOperationException("Group does not exist " + group);
-        if (!SystemSettings[group].ContainsKey(key))
+        if (!setting.ContainsKey(key))
             throw new InvalidOperationException("Key does not exist " + group + ":" + key);
         
         if (value == SystemSettings[group][key]) 

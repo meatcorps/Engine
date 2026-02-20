@@ -2,7 +2,6 @@ using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Hardware.ArduinoController.ArduinoController;
 using Meatcorps.Game.KillTheSkulls.GameEnums;
-using Meatcorps.Game.KillTheSkulls.Resources;
 
 namespace Meatcorps.Game.KillTheSkulls.Input;
 

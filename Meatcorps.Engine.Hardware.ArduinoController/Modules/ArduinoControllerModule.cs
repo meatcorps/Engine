@@ -9,8 +9,8 @@ namespace Meatcorps.Engine.Hardware.ArduinoController.Modules;
 
 public class ArduinoControllerModule
 {
-    private List<ControllerInputEnum> _inputsEnabled = new();
-    private bool _player2Enabled = false;
+    private readonly List<ControllerInputEnum> _inputsEnabled = new();
+    private bool _player2Enabled;
     
     public static ArduinoControllerModule Setup()
     {

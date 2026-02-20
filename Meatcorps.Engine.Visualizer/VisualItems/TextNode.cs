@@ -26,7 +26,7 @@ public class TextNode: IVisualItem
     public Color Color2 { get; set; } = new Color(255, 255, 255);
     public Color BackgroundColor { get; set; } = new Color(255, 255, 255, 0);
     
-    private MainScene _scene = null!;
+    private MainScene? _scene;
 
     private Vector2 _offset = Vector2.Zero;
     
@@ -189,7 +189,6 @@ public class TextNode: IVisualItem
         {
             case EditType.Resize:
                 var size = position - Bounds.Position;
-                var test = new Vector2(100, 100);
                 size = size.Clamp(new Vector2(50, 50), new Vector2(10000, 10000));
                 Bounds = new Rectangle(Bounds.Position, size);
                 break;

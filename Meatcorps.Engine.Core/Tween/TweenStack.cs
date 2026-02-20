@@ -134,8 +134,8 @@ public class TweenStack
 
 public struct TweenStackEntry
 {
-    public float NormalOffset = 0;
-    public float NormalDuration = 1;
+    public readonly float NormalOffset = 0;
+    public readonly float NormalDuration = 1;
     public delegate float MutatorEvent(float normal, float from, float to);
     public MutatorEvent Mutator = Tween.Lerp;
 

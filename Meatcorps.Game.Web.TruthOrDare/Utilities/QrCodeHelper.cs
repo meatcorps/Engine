@@ -7,6 +7,6 @@ public class QrCodeHelper
         return new QRCoder.SvgQRCode(
                 new QRCoder.QRCodeGenerator()
                     .CreateQrCode(payload, QRCoder.QRCodeGenerator.ECCLevel.Q))
-            .GetGraphic(size, "#000000", "#FFFFFF", true);
+            .GetGraphic(size, "#000000", "#FFFFFF");
     }
 }

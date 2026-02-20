@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meatcorps.Engine.Arcade.Data;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Settings;
@@ -10,15 +9,15 @@ namespace Meatcorps.Engine.Arcade.Services;
 public class HighScoreService
 {
     private readonly int _maxScores;
-    private ArcadeScores _scores;
-    private PersistentDatabase _database;
+    private readonly ArcadeScores _scores;
+    private readonly PersistentDatabase _database;
     
-    public HighScoreService()
+    private HighScoreService()
     {
         _database = GlobalObjectManager.ObjectManager.Get<PersistentDatabase>()!;
 
-        if (_database.ContainsKey("highscores"))
-            _scores = JsonSerializer.Deserialize<ArcadeScores>((string)_database["highscores"]) ?? new ArcadeScores();
+        if (_database.TryGetValue("highscores", out var value))
+            _scores = JsonSerializer.Deserialize<ArcadeScores>((string)value) ?? new ArcadeScores();
         else 
             _scores = new ArcadeScores
             {
@@ -38,7 +37,7 @@ public class HighScoreService
 
     }
     
-    public IReadOnlyList<ArcadeScoreItem> GetScores() => _scores.Scores;
+    public IReadOnlyList<ArcadeScoreItem> GetScores() => _scores.Scores!;
 
     public HighScoreService(int maxScores): this()
     {
@@ -50,7 +49,7 @@ public class HighScoreService
     {
         var rank = 0;
         var previous = int.MinValue;
-        foreach (var scoreItem in _scores.Scores)
+        foreach (var scoreItem in _scores.Scores!)
         {
             if (previous != scoreItem.Score)
                 rank++;
@@ -68,7 +67,7 @@ public class HighScoreService
         var rank = 0;
         var previous = int.MinValue;
         var count = 0;
-        foreach (var scoreItem in _scores.Scores)
+        foreach (var scoreItem in _scores.Scores!)
         {
             if (previous != scoreItem.Score)
                 rank++;
@@ -88,8 +87,7 @@ public class HighScoreService
         if (score.Score == 0)
             return;
         
-        if (_scores.Scores == null)
-            _scores.Scores = new List<ArcadeScoreItem>();
+        _scores.Scores ??= new List<ArcadeScoreItem>();
         
         _scores.Scores.Add(score);
         _scores.Scores.Sort((a, b) => b.Score.CompareTo(a.Score));

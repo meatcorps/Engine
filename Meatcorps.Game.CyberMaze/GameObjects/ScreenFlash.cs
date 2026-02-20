@@ -12,9 +12,9 @@ namespace Meatcorps.Game.CyberMaze.GameObjects;
 
 public class ScreenFlash: ResourceGameObject
 {
-    private TimerOn _flashTimer;
-    private Color _targetColor;
-    private Color _startColor;
+    private readonly TimerOn _flashTimer;
+    private readonly Color _targetColor;
+    private readonly Color _startColor;
     private Color _renderColor;
     private readonly IRenderTargetStrategy _renderTarget;
 

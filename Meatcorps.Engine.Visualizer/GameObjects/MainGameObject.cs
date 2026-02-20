@@ -1,16 +1,11 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.ObjectManager;
-using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Camera;
-using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Interfaces;
-using Meatcorps.Engine.RayLib.RemixIcons;
-using Meatcorps.Engine.RayLib.Resources;
-using Meatcorps.Engine.Visualizer.Enums;
+using Meatcorps.Engine.RayLib.Renderer;
 using Meatcorps.Engine.Visualizer.Scenes;
-using Meatcorps.Engine.Visualizer.Services;
 using Meatcorps.Engine.Visualizer.VisualItems;
 using Raylib_cs;
 
@@ -22,9 +17,7 @@ public class MainGameObject : BaseGameObject
     private bool _validMove;
     private CameraControllerGameObject _cameraController = null!;
     private Toolbox _toolbox = null!;
-    private UIMessageEmitter _uiMessage = null!;
     private RectF _selectionRect = new(0, 0, 0, 0);
-    public bool ValidMove => _validMove;
 
     private MainScene _scene = null!;
 
@@ -37,8 +30,10 @@ public class MainGameObject : BaseGameObject
 
         _toolbox = Scene.GetGameObject<Toolbox>()!;
         _cameraController = Scene.GetGameObject<CameraControllerGameObject>()!;
-        _uiMessage = Scene.GetGameObject<UIMessageEmitter>()!;
 
+        if (RenderTarget is PixelPerfectRenderTarget pixelPerfectRenderTarget)
+            pixelPerfectRenderTarget.UsePixelOffset = true;
+        
         _scene = (Scene as MainScene)!;
     }
 
@@ -266,7 +261,7 @@ public class MainGameObject : BaseGameObject
             return;
         
         IVisualItem[] items = [];
-        var canStart = true;
+        bool canStart;
 
         if (!_scene.VisualData.MultiSelect)
         {
@@ -363,7 +358,7 @@ public class MainGameObject : BaseGameObject
                 item.Selected = false;
         }
     }
-
+    /*
     private void UpdateValidMove()
     {
         if (_scene.VisualData.SelectedItem is not null && _scene.VisualData.SelectedItem.Type == VisualType.Node)
@@ -379,7 +374,7 @@ public class MainGameObject : BaseGameObject
         }
 
         _validMove = true;
-    }
+    }*/
 
     protected override void OnDraw()
     {
@@ -407,7 +402,7 @@ public class MainGameObject : BaseGameObject
                 new Vector2(bottomRightCorner.X, (int)_scene.MousePositionGrid.Y), 2, new Color(255, 255, 255, 50));
             
             if (_scene.VisualData.SelectedItem is not null)
-                Raylib.DrawTextEx(_scene.Font, _scene.VisualData.SelectedItem.ToString() + " | " + _scene.MouseText, _scene.MousePositionGrid + new Vector2(16, 0),
+                Raylib.DrawTextEx(_scene.Font, _scene.VisualData.SelectedItem + " | " + _scene.MouseText, _scene.MousePositionGrid + new Vector2(16, 0),
                     8,
                     1, Color.Gray);
             else

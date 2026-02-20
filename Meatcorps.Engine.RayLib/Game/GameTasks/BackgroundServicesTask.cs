@@ -14,7 +14,7 @@ public class BackgroundServicesTask : IGameLoopTask
         Priority = priority;
     }
 
-    public int Priority { get; } = 2;
+    public int Priority { get; }
     public bool Enabled { get; set; } = true;
     public bool IsInitialized { get; private set; }
 

@@ -1,14 +1,13 @@
 using Meatcorps.Engine.Arcade.Data;
 using Meatcorps.Engine.Arcade.Enums;
 using Meatcorps.Engine.Core.Interfaces.Trackers;
-using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Abstractions;
 
 namespace Meatcorps.Engine.Arcade.RayLib.Services;
 
 public class ArcadeGameStateTracker: ISceneSwitchTracker
 {
-    private ArcadeGame _game;
+    private readonly ArcadeGame _game;
     private Type? _introScene;
     
     public ArcadeGameStateTracker(ArcadeGame game)
@@ -24,7 +23,7 @@ public class ArcadeGameStateTracker: ISceneSwitchTracker
     public void OnActiveSceneSwitch(object scene)
     {
         if (_introScene == null)
-            throw new ArgumentNullException("SetIntroScene", "Is not called");
+            throw new ArgumentNullException(nameof(scene), "Is not called");
         
         if (scene.GetType() == _introScene)
             _game.State = GameState.Idle;

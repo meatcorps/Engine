@@ -19,16 +19,15 @@ namespace Meatcorps.Game.CyberMaze.GameObjects;
 
 public class Ghost : ResourceGameObject, ICollisionEvents
 {
-    private GhostBehaviour _behaviour;
-    private GridDistanceCalculator _distanceCalculator;
-    private List<PointInt> _breadCrumb = new(3);
-    private BufferedDirection _bufferedDirection;
-    private GhostStateManager _ghostState;
-    private GhostMovement _ghostMovement;
-    private FixedTimer _animationTimer = new(200);
-    private FixedTimer _warningTimer = new(200);
+    private GhostBehaviour _behaviour = null!;
+    private GridDistanceCalculator _distanceCalculator = null!;
+    private readonly List<PointInt> _breadCrumb = new(3);
+    private GhostStateManager _ghostState = null!;
+    private GhostMovement _ghostMovement = null!;
+    private readonly FixedTimer _animationTimer = new(200);
+    private readonly FixedTimer _warningTimer = new(200);
 
-    private RandomEnum<GameSounds> _ghostEatenSounds = new RandomEnum<GameSounds>()
+    private readonly RandomEnum<GameSounds> _ghostEatenSounds = new RandomEnum<GameSounds>()
         .Add(GameSounds.Nlpycho2, 25)
         .Add(GameSounds.Nlpyscho, 25)
         .Add(GameSounds.Nlpyscho4, 25);
@@ -114,7 +113,7 @@ public class Ghost : ResourceGameObject, ICollisionEvents
         if (!pair.ContainsOwner(this))
             return;
         
-        if (pair.TryGetOwner<CyberPlayer>(out var pacMan))
+        if (pair.TryGetOwner<CyberPlayer>(out var _))
         {
             if (LevelData.GhostScared)
             {

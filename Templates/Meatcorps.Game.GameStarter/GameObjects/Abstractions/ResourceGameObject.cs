@@ -6,17 +6,18 @@ using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Game.GameStarter.GameEnums;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Meatcorps.Game.GameStarter.GameObjects.Abstractions;
 
 public abstract class ResourceGameObject : BaseGameObject
 {
-    protected Texture2DItem<GameSprites> Sprites { get; private set; }
-    protected TextManager<DefaultFont> Fonts { get; private set; }
-    protected SoundFxManager<GameSounds> Sounds { get; private set; }
-    protected MusicManager<GameMusic> Music { get; private set; }
-    protected CameraControllerGameObject CameraManager { get; private set; }
-    protected UIMessageEmitter MessageUI { get; private set; }
+    protected Texture2DItem<GameSprites> Sprites { get; private set; } = null!;
+    protected TextManager<DefaultFont> Fonts { get; private set; } = null!;
+    protected SoundFxManager<GameSounds> Sounds { get; private set; } = null!;
+    protected MusicManager<GameMusic> Music { get; private set; } = null!;
+    protected CameraControllerGameObject CameraManager { get; private set; } = null!;
+    protected UIMessageEmitter MessageUI { get; private set; } = null!;
     
     protected override void OnInitialize()
     {

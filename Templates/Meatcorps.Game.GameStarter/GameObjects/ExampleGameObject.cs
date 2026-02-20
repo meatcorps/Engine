@@ -1,5 +1,4 @@
 using System.Numerics;
-using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Game.GameStarter.GameObjects.Abstractions;
 using Raylib_cs;
 
@@ -9,6 +8,8 @@ public class ExampleGameObject: ResourceGameObject
 {
     protected override void OnInitialize()
     {
+        // do something!
+        Console.WriteLine("Hello world!");
         base.OnInitialize();
     }
 

@@ -5,7 +5,6 @@ using Meatcorps.Engine.Hardware.Controllers.Enums;
 using Meatcorps.Engine.Hardware.Controllers.Mapper;
 using Meatcorps.Engine.RayLib.Extensions;
 using Meatcorps.Engine.RayLib.Input;
-using Meatcorps.Game.GameStarter.GameEnums;
 using Raylib_cs;
 
 namespace Meatcorps.Game.GameStarter.Resources;

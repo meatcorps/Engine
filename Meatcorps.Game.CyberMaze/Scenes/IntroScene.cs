@@ -23,20 +23,20 @@ namespace Meatcorps.Game.CyberMaze.Scenes;
 public class IntroScene : BaseScene
 {
     private Font _font;
-    private UIMessageEmitter _uiMessage;
-    private PlayerInputRouter<GameInput> _controller;
+    private UIMessageEmitter _uiMessage = null!;
+    private PlayerInputRouter<GameInput> _controller = null!;
     private TimerOn _startTimer = new(2000);
-    private FixedTimer _sliderTimer = new(10000);
-    private int currentSlide = 0;
-    private MusicManager<GameMusic> _musicManager;
-    private SoundFxManager<GameSounds> _soundManager;
-    private TextManager<DefaultFont> _fontManager;
-    private SessionService<GameSessionData, GamePlayerData> _sessionService;
-    public int TotalPlayersReady { get; set; } = 0;
-    private bool _waitingForPlayers = false;
-    private GameConfig<GameSettings> _config;
+    private readonly FixedTimer _sliderTimer = new(10000);
+    private int currentSlide;
+    private MusicManager<GameMusic> _musicManager = null!;
+    private SoundFxManager<GameSounds> _soundManager = null!;
+    private TextManager<DefaultFont> _fontManager = null!;
+    private SessionService<GameSessionData, GamePlayerData> _sessionService = null!;
+    public int TotalPlayersReady { get; set; }
+    private bool _waitingForPlayers;
+    private GameConfig<GameSettings> _config = null!;
     public bool StandAloneMode { get; private set; }
-    private DefaultGuiSettings<GameInput, GameSounds>? _guiSettings = null;
+    private DefaultGuiSettings<GameInput, GameSounds>? _guiSettings;
 
     protected override void OnInitialize()
     {
@@ -87,11 +87,6 @@ public class IntroScene : BaseScene
                 menu.AddMenuAction("Start Game", () => TotalPlayersReady = 1);
             }
         }
-    }
-
-    protected override void OnPreUpdate(float deltaTime)
-    {
-        base.OnPreUpdate(deltaTime);
     }
 
     protected override void OnUpdate(float deltaTime)

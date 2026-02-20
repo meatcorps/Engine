@@ -17,14 +17,13 @@ public class InputAssignmentGameObject<T> : BaseGameObject where T : Enum
 {
     private readonly FixedTimer _animationTimer = new(1000);
     private readonly FixedTimer _animationTimerQuick = new(500);
-    private readonly int _countDownToStartInSeconds;
     private readonly TimerOn _countDownToStartTimer;
     private readonly Action _onReady;
     private readonly int _totalPlayers;
     private readonly bool _useSceneObjectManager;
-    private IDefaultFont _defaultFont;
-    private InputManager<T> _inputManager;
-    private IRenderTargetStrategy _renderTarget;
+    private IDefaultFont _defaultFont = null!;
+    private InputManager<T> _inputManager = null!;
+    private IRenderTargetStrategy _renderTarget = null!;
 
 
     public InputAssignmentGameObject(int totalPlayers, Action onReady, int countDownToStartInSeconds = 3,
@@ -34,7 +33,6 @@ public class InputAssignmentGameObject<T> : BaseGameObject where T : Enum
         Camera = CameraLayer.UI;
         _totalPlayers = totalPlayers;
         _onReady = onReady;
-        _countDownToStartInSeconds = countDownToStartInSeconds;
         _useSceneObjectManager = useSceneObjectManager;
         _countDownToStartTimer = new TimerOn(countDownToStartInSeconds * 1000);
     }
@@ -43,10 +41,9 @@ public class InputAssignmentGameObject<T> : BaseGameObject where T : Enum
 
     protected override void OnInitialize()
     {
-        if (_useSceneObjectManager)
-            _inputManager = Scene.SceneObjectManager.Get<InputManager<T>>()!;
-        else
-            _inputManager = GlobalObjectManager.ObjectManager.Get<InputManager<T>>()!;
+        _inputManager = _useSceneObjectManager 
+            ? Scene.SceneObjectManager.Get<InputManager<T>>()! 
+            : GlobalObjectManager.ObjectManager.Get<InputManager<T>>()!;
 
         _inputManager.AssignPlayers(_totalPlayers);
         _renderTarget = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>()!;
@@ -76,14 +73,13 @@ public class InputAssignmentGameObject<T> : BaseGameObject where T : Enum
         var titleSize = Raylib.MeasureTextEx(_defaultFont.GetFont(), Title, 16, 1);
         if (_animationTimerQuick.NormalizedElapsed > 0.5)
             Raylib.DrawTextEx(_defaultFont.GetFont(), Title,
-                new Vector2(_renderTarget.RenderWidth / 2 - titleSize.X / 2, 24), 16, 1, Color.White);
-        var wait = true;
+                new Vector2(_renderTarget.RenderWidth / 2f - titleSize.X / 2, 24), 16, 1, Color.White);
         var errors = false;
         var previousControllerType = PlayerInputType.KeyboardMouse;
 
         for (var i = 0; i < _totalPlayers; i++)
         {
-            wait = previousControllerType == PlayerInputType.Unknown;
+            var wait = previousControllerType == PlayerInputType.Unknown;
             var statusText = errors ? "Wait..." : "Press any\nbutton / key";
 
             var colorStatus = new Color(0f, 1f, 1f, normal);

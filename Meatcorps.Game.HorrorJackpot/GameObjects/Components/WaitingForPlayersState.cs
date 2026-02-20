@@ -12,7 +12,7 @@ public class WaitingForPlayersState: BaseStateMachine
     protected override GameInternalState TargetState => GameInternalState.WaitingForPlayers;
     protected override void UpdateState(float deltaTime)
     {
-        Text = "Next victim! " + GameInfo.PricePoints + " Life points!\n";;
+        Text = "Next victim! " + GameInfo.PricePoints + " Life points!\n";
         Target.SkullAnimation(deltaTime);
         GameInfo.State = GameState.Idle;
         DrumRenderer.BlinkSpeed = 2;

@@ -22,9 +22,8 @@ public class FlyFlockGameObject : SnakeGameObject
     private readonly BoidConfig _config;
     private readonly FlockController _flock;
     private readonly List<FlyAgent> _agents = new();
-    private const float _targetCatchRadius = 12f;
-    private OneSoundManager _buzzSound;
-    private bool _demoMode = false;
+    private OneSoundManager _buzzSound = null!;
+    private bool _demoMode;
     
     public FlyFlockGameObject(
         BoidConfig config,
@@ -51,13 +50,13 @@ public class FlyFlockGameObject : SnakeGameObject
             _demoMode = levelScene.DemoMode;
     }
 
-    public void AddFly(FlyAgent agent)
+    private void AddFly(FlyAgent agent)
     {
         _agents.Add(agent);
         _flock.AddAgent(agent, agent);
     }
     
-    public void SpawnRandom(int count, RectF area, object parentTag = null)
+    public void SpawnRandom(int count, RectF area, object? parentTag = null)
     {
         for (var i = 0; i < count; i++)
         {
@@ -84,7 +83,7 @@ public class FlyFlockGameObject : SnakeGameObject
     {
         var totalAgents = _agents.Count;
         _buzzSound.Repeat = totalAgents > 0;
-        var nowSeconds = (float)Raylib_cs.Raylib.GetTime();
+        var nowSeconds = (float)Raylib.GetTime();
         _flock.Update(deltaTime, nowSeconds);
         
         if (totalAgents == 0)

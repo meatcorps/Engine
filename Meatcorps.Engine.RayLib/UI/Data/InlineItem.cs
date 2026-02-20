@@ -11,16 +11,16 @@ public class InlineItem
     public HAlign HAlign { get; set; }
     public bool Enabled { get; set; } = true;
     public bool Visible { get; set; } = true;
-    public bool FillHeight { get; set; } = false;
-    public bool FillWidth { get; set; } = false;
+    public bool FillHeight { get; set; }
+    public bool FillWidth { get; set; }
     public bool CacheSize { get; set; } = true;
-    public bool NewLine { get; init; } = false;
+    public bool NewLine { get; init; }
     public object? Data { get; init; }
 
     public Insets Margin { get; set; } = Insets.Zero;
     public required Action<InlineRender, InlineItem> Initialize { get; init; }
     public required Func<InlineRender, InlineItem, PointInt> GetSize { get; init; }
-    public Action<InlineRender, InlineItem, float> Update { get; init; } = (i, item, delta) => { };
+    public Action<InlineRender, InlineItem, float> Update { get; init; } = (_, _, _) => { };
     public required Action<InlineRender, InlineItem, Rectangle> Draw { get; init; }
     public required Action<InlineRender, InlineItem> Destroy { get; init; }
 }
