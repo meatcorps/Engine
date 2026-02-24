@@ -6,14 +6,19 @@ using Meatcorps.Engine.Core.Utilities;
 
 namespace Meatcorps.Engine.Core.GridSystem;
 
+/// <summary>
+/// A thread-safe broad-phase spatial hash grid. Entities are bucketed by fixed-size cells so only nearby items need to be compared during collision or range queries. Uses ConcurrentDictionary and ThreadLocal query buffers for safe multi-threaded access.
+/// </summary>
 public class SpatialEntityGrid : ISpatialEntityGrid
 {
+    /// <summary>The world-space size of each grid cell. Larger cells reduce bucket count but increase items per query.</summary>
     public float CellSize { get; }
     private readonly ConcurrentDictionary<(int, int), ThreadSafeList<IGridItem>> _grid;
     private readonly ConcurrentDictionary<IGridItem, RectF> _previousPositions;
     private readonly ThreadLocal<List<(int, int)>> _overlappingCells = new(() => new List<(int, int)>());
     private readonly ThreadLocal<HashSet<IGridItem>> _queryColliders = new(() => new HashSet<IGridItem>());
-     
+
+    /// <param name="cellSize">The world-space size of each spatial hash cell.</param>
     public SpatialEntityGrid(float cellSize)
     {
         CellSize = cellSize;
@@ -21,6 +26,7 @@ public class SpatialEntityGrid : ISpatialEntityGrid
         _previousPositions = new ConcurrentDictionary<IGridItem, RectF>();
     }
 
+    /// <summary>Inserts an item into all cells overlapping its BoundingBox.</summary>
     public void Add(IGridItem collider)
     {
         _previousPositions.TryAdd(collider, collider.BoundingBox);
@@ -29,7 +35,7 @@ public class SpatialEntityGrid : ISpatialEntityGrid
         {
             if (!_grid.TryGetValue(cell, out var colliders))
             {
-                colliders = new ThreadSafeList<IGridItem>(); 
+                colliders = new ThreadSafeList<IGridItem>();
                 _grid[cell] = colliders;
             }
 
@@ -37,6 +43,7 @@ public class SpatialEntityGrid : ISpatialEntityGrid
         }
     }
 
+    /// <summary>Removes an item from all cells it currently occupies.</summary>
     public void Remove(IGridItem collider)
     {
         _previousPositions.TryRemove(collider, out _);
@@ -57,18 +64,20 @@ public class SpatialEntityGrid : ISpatialEntityGrid
         }
     }
 
+    /// <summary>Efficiently repositions an item after its BoundingBox has changed. More efficient than Remove+Add.</summary>
     public void Update(IGridItem collider)
     {
         var target = _previousPositions[collider];
         if (target == collider.BoundingBox)
             return;
-        
+
         GetOverlappingCells(_previousPositions[collider]);
         _previousPositions.TryRemove(collider, out _);
         DoRemove(collider);
         Add(collider);
     }
 
+    /// <summary>Returns all items whose BoundingBoxes overlap with the given AABB.</summary>
     public HashSet<IGridItem> Query(RectF queryAABB)
     {
         _queryColliders.Value!.Clear();
@@ -87,7 +96,8 @@ public class SpatialEntityGrid : ISpatialEntityGrid
         }
         return _queryColliders.Value!;
     }
-    
+
+    /// <summary>Returns all items in the cell containing the given world-space position.</summary>
     public HashSet<IGridItem> Query(Vector2 position)
     {
         var x = (int)Math.Floor(position.X / CellSize);
@@ -113,7 +123,7 @@ public class SpatialEntityGrid : ISpatialEntityGrid
         var maxX = (int)Math.Floor(aabb.Right / CellSize);
         var maxY = (int)Math.Floor(aabb.Bottom / CellSize);
         _overlappingCells.Value!.Clear();
-        
+
         for (var x = minX; x <= maxX; x++)
         {
             for (var y = minY; y <= maxY; y++)

@@ -8,6 +8,14 @@ namespace Meatcorps.Engine.Logging.Module;
 
 public static class LoggingModule
 {
+    /// <summary>
+    /// Initializes and configures the logging module for the application.
+    /// Sets up a global logger using Serilog with specified console and file output targets.
+    /// Configures logging levels, rolling intervals, file size limits, and other logging behaviors.
+    ///
+    /// Additionally, registers the logger factory with the global object manager for use throughout the application.
+    /// Which can be received by using 'GlobalObjectManager.Get&lt;ILoggerFactory&gt;()'
+    /// </summary>
     public static void Load()
     {
         Log.Logger = new LoggerConfiguration()

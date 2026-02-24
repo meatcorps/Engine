@@ -137,8 +137,6 @@ public class OneSoundManager : IDisposable
         {
             if (_volume <= 0.001f && IsPlaying)
                 Raylib.PauseSound(_sound);
-            else if (_volume > 0.001f && !IsPlaying && !Pause)
-                Play();
 
             if (Math.Abs(_targetVolume - _volume) > 0.001f)
                 Volume = Tween.Lerp(_volume, _targetVolume, Math.Clamp(deltaTime * 8f, 0f, 1f));

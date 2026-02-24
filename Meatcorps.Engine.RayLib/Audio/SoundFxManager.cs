@@ -40,7 +40,7 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, IC
 
     public void ConfigChanged(string group, string key, object value)
     {
-        if (group != "Audio" && key != "SoundFxVolume")
+        if (group != "Audio" || key != "SoundFxVolume")
             return;
 
         SetMasterVolume(Convert.ToSingle(value));

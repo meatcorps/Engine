@@ -51,7 +51,7 @@ public  class SignalValue<TValueType, TGroup> : IEqualityComparer<SignalValue<TV
         }
         
         if (!valueSet)
-            _value = initialValue ?? throw new NullReferenceException("Initial value cannot be null when the main value is not found by the tracker");
+            _value = initialValue ?? throw new ArgumentNullException(nameof(initialValue), "Initial value cannot be null when the main value is not found by the tracker");
     }
 
     public void Push()

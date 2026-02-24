@@ -5,6 +5,9 @@ using Meatcorps.Engine.Core.Interfaces.Services;
 
 namespace Meatcorps.Engine.Core.Input;
 
+/// <summary>
+/// An IInputMapper implementation backed by GenericInput lambdas. Manages a profile→player assignment system and optionally persists bindings via IGenericInputMapSaver. Also implements IBackgroundService to poll input state each PreUpdate.
+/// </summary>
 public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enum
 {
     private readonly Dictionary<int, Dictionary<T, GenericInput>> _inputMap = new();
@@ -17,7 +20,8 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
     {
         _loaderAndSaver = loaderAndSaver;
     }
-    
+
+    /// <summary>Returns all input bindings for the given profile. Throws if the profile is not registered.</summary>
     public IReadOnlyDictionary<T, GenericInput> GetInputs(int profileId)
     {
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
@@ -25,13 +29,15 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
         return playerInputs;
     }
 
+    /// <summary>Returns the IInput state for a profile directly, bypassing the player→profile mapping.</summary>
     public IInput GetStateByProfile(int profileId, T input)
     {
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
             return _defaultInput;
         return playerInputs.GetValueOrDefault(input, _defaultInput);
     }
-    
+
+    /// <summary>Registers or replaces a binding for the given profile and input. Loads from config if a saver is provided. Returns this for fluent chaining.</summary>
     public GenericMapper<T> AddInput(int profileId, T input, GenericInput inputState)
     {
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
@@ -40,27 +46,29 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
         return this;
     }
 
+    /// <summary>Sets a binding and persists it via the saver. Also clears any existing binding sharing the same label to prevent duplicate assignments.</summary>
     public void SetInput(int profileId, T input, GenericInput inputState)
     {
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
             _inputMap[profileId] = playerInputs = new Dictionary<T, GenericInput>();
-        CheckIfAlreadyAssigned(profileId, inputState); 
+        CheckIfAlreadyAssigned(profileId, inputState);
         playerInputs[input] = inputState;
         _loaderAndSaver?.SaveToConfig(profileId, input, inputState);
     }
-    
+
     public GenericMapper<T> AddInput(int profileId, T input, string label, Func<float> pressedFunc)
     {
         AddInput(profileId, input, new GenericInput(pressedFunc, label));
         return this;
     }
-    
+
     public GenericMapper<T> AddInput(int profileId, T input, string label, Func<bool> pressedFunc)
     {
         AddInput(profileId, input, new GenericInput(() => pressedFunc() ? 1 : 0, label));
         return this;
     }
-    
+
+    /// <summary>Registers a 4-direction axis for the given profile and axis index.</summary>
     public GenericMapper<T> AddAxis(int profileId, int axis, T left, T right, T up, T down)
     {
         if (!_inputAxisMap.TryGetValue(profileId, out var playerIndexSet))
@@ -69,6 +77,7 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
         return this;
     }
 
+    /// <summary>Resets a binding to its factory default via the saver. No-op if no saver is configured or no default exists.</summary>
     public void Reset(int profileId, T input)
     {
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
@@ -76,19 +85,19 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
 
         var mapping = _loaderAndSaver?.DefaultMap(profileId, input);
 
-        if (mapping is null) 
+        if (mapping is null)
             return;
-        
+
         playerInputs[input] = mapping;
     }
-    
+
     public IInput GetState(int player, T input)
     {
         if (!_indexProfile.TryGetValue(player, out var profileId))
         {
             return _defaultInput;
         }
-        
+
         if (!_inputMap.TryGetValue(profileId, out var playerInputs))
             return _defaultInput;
             //throw new InvalidOperationException($"No input map for profile {profileId}");
@@ -102,12 +111,12 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
         {
             return Vector2.Zero;
         }
-        
+
         if (!_inputAxisMap.TryGetValue(profileId, out var playerIndexSet))
             throw new InvalidOperationException($"No input map for player {player}");
         if (!playerIndexSet.TryGetValue(axis, out var inputState))
             throw new InvalidOperationException($"No input state for axis {axis} on player {player}");
-        
+
         return inputState.GetAxis(player);
     }
 
@@ -116,6 +125,7 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
         // No rumble support
     }
 
+    /// <summary>Assigns a profile to a player slot. If the profile is already assigned to another player, it is moved.</summary>
     public void AssignProfile(int profileId, int player)
     {
         var existingProfile = -1;
@@ -165,7 +175,7 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
                         }
                     }
                     return true;
-                }   
+                }
             }
         }
         profileId = -1;
@@ -175,9 +185,9 @@ public class GenericMapper<T>: IInputMapper<T>, IBackgroundService where T : Enu
 
     public PlayerInputType InputType(int _)
     {
-        return PlayerInputType.KeyboardMouse; 
-    } 
-    
+        return PlayerInputType.KeyboardMouse;
+    }
+
     public IReadOnlyList<int> GetAvailableProfiles()
     {
         return _inputMap.Keys.ToList();

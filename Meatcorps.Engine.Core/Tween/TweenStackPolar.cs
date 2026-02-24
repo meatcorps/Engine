@@ -4,32 +4,40 @@ using Meatcorps.Engine.Core.Extensions;
 
 namespace Meatcorps.Engine.Core.Tween;
 
+/// <summary>
+/// A multi-segment tween that interpolates position in polar coordinates (radius + angle in degrees) relative to a center point. Angle interpolation uses shortest-arc lerp.
+/// </summary>
 public sealed class TweenStackPolar
 {
     private readonly TweenStack _radius = new();
     private readonly TweenStack _angleDeg = new();
     private Vector2 _center;
 
+    /// <summary>Sets the origin point for polar coordinate conversion.</summary>
     public TweenStackPolar WithCenter(Vector2 center) { _center = center; return this; }
 
+    /// <summary>Sets the from/to radius values.</summary>
     public TweenStackPolar AssignRadius(float from, float to)
     {
         _radius.Assign(from, to);
         return this;
     }
 
+    /// <summary>Sets the from/to angle values in degrees.</summary>
     public TweenStackPolar AssignAngleDeg(float fromDeg, float toDeg)
     {
         _angleDeg.Assign(fromDeg, toDeg);
         return this;
     }
 
+    /// <summary>Adds a radius segment.</summary>
     public TweenStackPolar RegisterRadius(EaseType ease, float normalOffset, float normalDuration)
     {
         _radius.Register(ease, normalOffset, normalDuration);
         return this;
     }
 
+    /// <summary>Adds an angle segment using shortest-arc angle lerp.</summary>
     public TweenStackPolar RegisterAngle(EaseType ease, float normalOffset, float normalDuration)
     {
         _angleDeg.Register(new TweenStackEntry(
@@ -37,7 +45,7 @@ public sealed class TweenStackPolar
             normalOffset, normalDuration));
         return this;
     }
-    
+
     public TweenStackPolar FromKeyframes(params (float at, float radius, float angleDeg, EaseType ease)[] keys)
     {
         if (keys.Length < 2) throw new ArgumentException("Need at least two keyframes");
@@ -90,6 +98,7 @@ public sealed class TweenStackPolar
         return FromKeyframes(normalized);
     }
 
+    /// <summary>Evaluates the polar tween at the given normal and converts to a world-space Vector2.</summary>
     public Vector2 Lerp(float normal)
     {
         var r = _radius.Lerp(normal);

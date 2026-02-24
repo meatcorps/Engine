@@ -2,6 +2,9 @@ using Meatcorps.Engine.Core.Data;
 
 namespace Meatcorps.Engine.Core.GridSystem;
 
+/// <summary>
+/// A cursor-based analyzer for a rectangular 2D grid stored as List&lt;List&lt;T&gt;&gt; in [Y][X] order. Supports navigation, neighbor queries, flood-fill-style searches, and full iteration. The grid must be rectangular.
+/// </summary>
 public class GridAnalyzerYX<T>
 {
     private readonly List<List<T>> _grid;
@@ -11,7 +14,7 @@ public class GridAnalyzerYX<T>
     private readonly List<PointInt> _neighborsVisited = new();
     private readonly PointInt[] _neighborDirections = [new(0, -1), new(0, 1), new(-1, 0), new(1, 0)
     ];
-    
+
     public GridAnalyzerYX(List<List<T>> grid)
     {
         if (grid is null || grid.Count == 0 || grid[0].Count == 0)
@@ -25,30 +28,36 @@ public class GridAnalyzerYX<T>
                 throw new ArgumentException("Grid is not rectangular");
     }
 
+    /// <summary>Width (X) and height (Y) of the grid.</summary>
     public PointInt Size => _size;
 
     private bool InBounds(PointInt p) => p.X >= 0 && p.Y >= 0 && p.X < _size.X && p.Y < _size.Y;
 
+    /// <summary>Moves the internal cursor to the given cell. Throws if out of bounds.</summary>
     public void SetPosition(PointInt position)
     {
         if (!InBounds(position)) throw new ArgumentOutOfRangeException(nameof(position));
         _position = position;
     }
 
+    /// <summary>Returns the current cursor position.</summary>
     public PointInt GetPosition() => _position;
 
+    /// <summary>Returns the value at the given cell. Throws if out of bounds.</summary>
     public T Get(PointInt point)
     {
         if (!InBounds(point)) throw new ArgumentOutOfRangeException(nameof(point));
         return _grid[point.Y][point.X];
     }
 
+    /// <summary>Attempts to get the value at the given cell. Returns false if out of bounds.</summary>
     public bool TryGet(PointInt p, out T value)
     {
         if (!InBounds(p)) { value = default!; return false; }
         value = _grid[p.Y][p.X]; return true;
     }
 
+    /// <summary>Finds the first cell containing value. Returns false if not found.</summary>
     public bool Search(T value, out PointInt point)
     {
         for (var y = 0; y < _size.Y; y++)
@@ -58,6 +67,7 @@ public class GridAnalyzerYX<T>
         point = default; return false;
     }
 
+    /// <summary>Steps from the cursor in the given direction. Optionally advances the cursor. Returns false if the step would go out of bounds.</summary>
     public bool Neighbor(PointInt direction, out T value, bool changePosition = true)
     {
         var np = _position + direction;
@@ -67,6 +77,7 @@ public class GridAnalyzerYX<T>
         return true;
     }
 
+    /// <summary>Steps from an explicit position in the given direction without moving the cursor.</summary>
     public bool Neighbor(PointInt position, PointInt direction, out T value)
     {
         var np = position + direction;
@@ -74,7 +85,8 @@ public class GridAnalyzerYX<T>
         value = _grid[np.Y][np.X];
         return true;
     }
-    
+
+    /// <summary>Walks connected neighbors that equal value starting from position (or the current cursor). Yields each visited cell.</summary>
     public IEnumerable<PointInt> NeighborEqualSearch(T value, PointInt? position)
     {
         var totalJumps = 0;
@@ -85,7 +97,7 @@ public class GridAnalyzerYX<T>
         while (true)
         {
             totalJumps++;
-            if (totalJumps > maxJumps) 
+            if (totalJumps > maxJumps)
                 break;
             var neighborFound = false;
             foreach (var direction in _neighborDirections)
@@ -103,6 +115,7 @@ public class GridAnalyzerYX<T>
         }
     }
 
+    /// <summary>Yields all cells in the grid that contain value.</summary>
     public IEnumerable<PointInt> SearchAll(T value)
     {
         for (var y = 0; y < _size.Y; y++)
@@ -111,6 +124,7 @@ public class GridAnalyzerYX<T>
                 yield return new PointInt(x, y);
     }
 
+    /// <summary>Yields every cell in the grid as (PointInt, T) pairs, in Y-then-X order.</summary>
     public IEnumerable<(PointInt, T)> IterateAll()
     {
         for (var y = 0; y < _size.Y; y++)

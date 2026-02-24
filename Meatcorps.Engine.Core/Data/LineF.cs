@@ -3,6 +3,9 @@ using Meatcorps.Engine.Core.Extensions;
 
 namespace Meatcorps.Engine.Core.Data;
 
+/// <summary>
+/// A line segment defined by two Vector2 endpoints.
+/// </summary>
 public struct LineF: IEquatable<LineF>
 {
     public Vector2 Start { get; set; }
@@ -13,19 +16,19 @@ public struct LineF: IEquatable<LineF>
         Start = Vector2.Zero;
         End = Vector2.Zero;
     }
-    
+
     public LineF(Vector2 start, Vector2 end)
     {
         Start = start;
         End = end;
     }
-    
+
     public LineF(float x1, float y1, float x2, float y2)
     {
         Start = new Vector2(x1, y1);
         End = new Vector2(x2, y2);
     }
-    
+
     public bool Equals(LineF other)
     {
         return Start.Equals(other.Start) && End.Equals(other.End);
@@ -41,30 +44,39 @@ public struct LineF: IEquatable<LineF>
         return HashCode.Combine(Start, End);
     }
 
+    /// <summary>Length of the line segment.</summary>
     public float Length
         => Vector2.Distance(Start, End);
 
+    /// <summary>Squared length, cheaper to compute than Length.</summary>
     public float LengthSquared
         => Vector2.DistanceSquared(Start, End);
 
+    /// <summary>Unit vector pointing from Start toward End.</summary>
     public Vector2 DirectionStartNormalized
         => Vector2.Normalize(End - Start);
-    
+
+    /// <summary>Unit vector pointing from End toward Start.</summary>
     public Vector2 DirectionEndNormalized
         => Vector2.Normalize(Start - End);
-    
+
+    /// <summary>Non-normalized vector from Start to End.</summary>
     public Vector2 DirectionStart
         => End - Start;
-    
+
+    /// <summary>Non-normalized vector from End to Start.</summary>
     public Vector2 DirectionEnd
         => Start - End;
-    
+
+    /// <summary>Dot product of Start and End.</summary>
     public float Dot
         => Vector2.Dot(Start, End);
-    
+
+    /// <summary>Interpolates a position along the line at the given [0,1] normal.</summary>
     public Vector2 Lerp(float position)
         => Vector2.Lerp(Start, End, position);
 
+    /// <summary>Angle (radians) of the direction from Start toward End.</summary>
     public float RadiusStart
     {
         get
@@ -73,7 +85,8 @@ public struct LineF: IEquatable<LineF>
             return MathF.Atan2(v.Y, v.X);
         }
     }
-    
+
+    /// <summary>Angle (radians) of the direction from End toward Start.</summary>
     public float RadiusEnd
     {
         get
@@ -83,6 +96,7 @@ public struct LineF: IEquatable<LineF>
         }
     }
 
+    /// <summary>Returns the point on this line closest to the given point. When clamped is true, the result is constrained to the segment.</summary>
     public Vector2 ClosestPoint(Vector2 point, bool clamped)
     {
         var normalStartOther = point - Start;
@@ -92,33 +106,36 @@ public struct LineF: IEquatable<LineF>
         var product = Vector2.Dot(normalStartOther, normalEndStart);
         var distance = product / magnitude;
 
-        return clamped 
+        return clamped
             ? Lerp(Math.Clamp(distance, 0, 1))
             : Lerp(distance);
     }
 
+    /// <summary>Returns true if this line segment intersects another.</summary>
     public bool IsIntersecting(LineF other)
     {
-        var line1EndStart = End - Start; 
+        var line1EndStart = End - Start;
         var line2EndStart = other.End - other.Start;
         var line1StartLine2Start = other.Start - Start;
-        
+
         var lerpValue1 = line1StartLine2Start.Cross(line2EndStart) / line1EndStart.Cross(line2EndStart);
         var lerpValue2 = line1StartLine2Start.Cross(line1EndStart) / line1EndStart.Cross(line2EndStart);
         return lerpValue1.Between01() && lerpValue2.Between01();
     }
-    
+
+    /// <summary>Returns true if intersecting and outputs the intersection point on this line.</summary>
     public bool IsIntersecting(ref LineF other, out Vector2 intersection)
     {
         return IsIntersecting(ref other, true, out intersection, out var _, out var _, out var _);
     }
-    
+
+    /// <summary>Full intersection test returning both intersection points and lerp values. When clamp is true, lerp values are clamped to [0,1].</summary>
     public bool IsIntersecting(ref LineF other, bool clamp, out Vector2 intersection1, out Vector2 intersection2, out float lerpValue1, out float lerpValue2)
     {
-        var line1EndStart = End - Start; 
+        var line1EndStart = End - Start;
         var line2EndStart = other.End - other.Start;
         var line1StartLine2Start = other.Start - Start;
-        
+
         lerpValue1 = line1StartLine2Start.Cross(line2EndStart) / line1EndStart.Cross(line2EndStart);
         lerpValue2 = line1StartLine2Start.Cross(line1EndStart) / line1EndStart.Cross(line2EndStart);
         var isIntersecting = lerpValue1.Between01() && lerpValue2.Between01();
@@ -136,7 +153,7 @@ public struct LineF: IEquatable<LineF>
 
         intersection1 = Lerp(lerpValue1);
         intersection2 = other.Lerp(lerpValue2);
-        
+
         return isIntersecting;
     }
 

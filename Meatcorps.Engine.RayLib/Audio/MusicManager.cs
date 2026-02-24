@@ -155,6 +155,7 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
     public MusicManager<TTrack> Stop()
     {
         InternalStop();
+        _snapshotStack.Clear();
         _currentKey = null;
         _pendingKey = null;
         _pendingSeekSeconds = null;
@@ -165,7 +166,8 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
 
     private void InternalStop()
     {
-        if (_current != null) Raylib.StopMusicStream(_current.Value);
+        if (_current != null) 
+            Raylib.StopMusicStream(_current.Value);
 
         _current = null;
     }

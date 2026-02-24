@@ -5,13 +5,19 @@ using Meatcorps.Engine.RayLib.Game;
 
 namespace Meatcorps.Engine.RayLib.Abstractions;
 
+/// <summary>
+/// Abstract base class for all game scenes.
+/// Manages game objects, sub-scenes, and background services within a scoped <see cref="ObjectManager"/>.
+/// Game objects and sub-scenes are added and removed via deferred queues, which are processed at the
+/// start of each <see cref="PreUpdate"/> to avoid mutation during iteration.
+/// </summary>
 public abstract class BaseScene : IDisposable
 {
-    private readonly List<BaseGameObject> _gameObjectsToAdd = new();
+    private readonly Queue<BaseGameObject> _gameObjectsToAdd = new();
 
-    private readonly List<BaseGameObject> _gameObjectsToDispose = new();
-    private readonly List<BaseScene> _subScenesToAdd = new();
-    private readonly List<BaseScene> _subScenesToDispose = new();
+    private readonly Queue<BaseGameObject> _gameObjectsToDispose = new();
+    private readonly Queue<BaseScene> _subScenesToAdd = new();
+    private readonly Queue<BaseScene> _subScenesToDispose = new();
     private bool _enabled = true;
 
     public BaseScene()
@@ -22,11 +28,25 @@ public abstract class BaseScene : IDisposable
         SceneObjectManager.RegisterList<IBackgroundService>();
     }
 
+    /// <summary>The <see cref="GameHost"/> that owns this scene. Assigned before <see cref="Initialize"/> is called.</summary>
     public GameHost GameHost { get; private set; } = null!;
+
+    /// <summary>Draw and update ordering layer. Scenes with lower values are processed first.</summary>
     public int Layer { get; set; } = 0;
+
+    /// <summary>Scoped DI container for this scene's registered services and objects.</summary>
     public ObjectManager SceneObjectManager { get; } = new();
+
+    /// <summary>
+    /// When <c>true</c>, <see cref="PreUpdate"/>, <see cref="Update"/>, and <see cref="LateUpdate"/>
+    /// are skipped for this scene and all its children.
+    /// </summary>
     public bool Paused { get; set; }
 
+    /// <summary>
+    /// Controls whether this scene is active. Setting to <c>false</c> skips all updates and rendering
+    /// and triggers <see cref="OnDisabled"/>. Setting back to <c>true</c> triggers <see cref="OnEnabled"/>.
+    /// </summary>
     public bool Enabled
     {
         get => _enabled;
@@ -42,7 +62,10 @@ public abstract class BaseScene : IDisposable
         }
     }
 
+    /// <summary>When <c>false</c>, the scene and all its children are not drawn.</summary>
     public bool Visible { get; set; } = true;
+
+    /// <summary>Scales the delta time passed to this scene's update loop. Default is <c>1.0</c> (real time).</summary>
     public float UpdateTimeMultiplier { get; set; } = 1;
     protected bool IsDisposed { get; private set; }
 
@@ -59,50 +82,68 @@ public abstract class BaseScene : IDisposable
         GameHost = gameHost;
     }
 
+    /// <summary>
+    /// Enqueues a sub-scene for addition. It will be initialized and added at the start of the next <see cref="PreUpdate"/>.
+    /// </summary>
     public void AddScene<T>(T scene) where T : BaseScene
     {
-        _subScenesToAdd.Add(scene);
+        _subScenesToAdd.Enqueue(scene);
     }
 
+    /// <summary>
+    /// Enqueues a sub-scene for removal and disposal at the start of the next <see cref="PreUpdate"/>.
+    /// </summary>
     public void RemoveScene<T>(T scene) where T : BaseScene
     {
-        _subScenesToDispose.Add(scene);
+        _subScenesToDispose.Enqueue(scene);
     }
 
+    /// <summary>Returns the first registered sub-scene of type <typeparamref name="T"/>, or <c>null</c> if not found.</summary>
     public T? GetScene<T>() where T : BaseScene
     {
         return SceneObjectManager.GetSet<BaseScene>()!.FirstOrDefault(x => x is T) as T;
     }
 
+    /// <summary>
+    /// Enqueues a game object for addition. It will be initialized and added at the start of the next <see cref="PreUpdate"/>.
+    /// </summary>
+    /// <returns>The same game object, for fluent chaining.</returns>
     public T AddGameObject<T>(T gameObject) where T : BaseGameObject
     {
-        _gameObjectsToAdd.Add(gameObject);
+        _gameObjectsToAdd.Enqueue(gameObject);
         return gameObject;
     }
 
+    /// <summary>Returns the first game object of type <typeparamref name="T"/> in this scene, or <c>null</c> if not found.</summary>
     public T? GetGameObject<T>() where T : BaseGameObject
     {
         return SceneObjectManager.GetList<BaseGameObject>()!.FirstOrDefault(x => x is T) as T;
     }
 
+    /// <summary>Returns all game objects of type <typeparamref name="T"/> currently in this scene.</summary>
     public IEnumerable<T> GetGameObjects<T>() where T : BaseGameObject
     {
         return SceneObjectManager.GetList<BaseGameObject>()!.Where(x => x is T).Cast<T>();
     }
 
+    /// <summary>Returns the first game object whose <see cref="BaseGameObject.Name"/> matches, or <c>null</c> if not found.</summary>
     public BaseGameObject? GetGameObjectByName(string name)
     {
         return SceneObjectManager.GetList<BaseGameObject>()!.FirstOrDefault(x => x.Name.Equals(name));
     }
 
+    /// <summary>Returns all game objects whose <see cref="BaseGameObject.Name"/> matches the given name.</summary>
     public IEnumerable<BaseGameObject> GetGameObjectsByName(string name)
     {
         return SceneObjectManager.GetList<BaseGameObject>()!.Where(x => x.Name.Equals(name));
     }
 
+    /// <summary>
+    /// Enqueues a game object for removal and disposal at the start of the next <see cref="PreUpdate"/>.
+    /// </summary>
     public void RemoveGameObject<T>(T gameObject) where T : BaseGameObject
     {
-        _gameObjectsToDispose.Add(gameObject);
+        _gameObjectsToDispose.Enqueue(gameObject);
     }
 
     public void Initialize()
@@ -128,39 +169,31 @@ public abstract class BaseScene : IDisposable
         foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
             backgroundService.PreUpdate(deltaTime);
 
-        foreach (var scene in _subScenesToDispose)
+        while (_subScenesToAdd.TryDequeue(out var scene))
+        {
+            scene.SetGameHost(GameHost);
+            scene.Initialize();
+            SceneObjectManager.GetSet<BaseScene>()!.Add(scene);
+        }
+        
+        while (_subScenesToDispose.TryDequeue(out var scene))
         {
             scene.Dispose();
             SceneObjectManager.GetSet<BaseScene>()!.Remove(scene);
         }
-
-        _subScenesToDispose.Clear();
-
-        if (_subScenesToAdd.Count > 0)
-            foreach (var scene in _subScenesToAdd.ToArray())
-            {
-                scene.SetGameHost(GameHost);
-                scene.Initialize();
-                SceneObjectManager.GetSet<BaseScene>()!.Add(scene);
-                _subScenesToAdd.Remove(scene);
-            }
-
-        foreach (var gameObject in _gameObjectsToDispose)
+        
+        while (_gameObjectsToDispose.TryDequeue(out var gameObject))
         {
             gameObject.Dispose();
             SceneObjectManager.GetList<BaseGameObject>()!.Remove(gameObject);
         }
 
-        _gameObjectsToDispose.Clear();
-
-        if (_gameObjectsToAdd.Count > 0)
-            foreach (var gameObject in _gameObjectsToAdd.ToArray())
-            {
-                gameObject.SetScene(this);
-                gameObject.Initialize();
-                SceneObjectManager.Add(gameObject);
-                _gameObjectsToAdd.Remove(gameObject);
-            }
+        while (_gameObjectsToAdd.TryDequeue(out var gameObject))
+        {
+            gameObject.SetScene(this);
+            gameObject.Initialize();
+            SceneObjectManager.Add(gameObject);
+        }
 
         OnPreUpdate(deltaTime);
 
@@ -234,25 +267,32 @@ public abstract class BaseScene : IDisposable
         OnDraw();
     }
 
+    /// <summary>Override to initialize scene state, spawn initial objects, and register dependencies.</summary>
     protected abstract void OnInitialize();
 
+    /// <summary>Override for pre-update logic specific to this scene. Called after deferred adds/removes are processed.</summary>
     protected virtual void OnPreUpdate(float deltaTime)
     {
     }
 
+    /// <summary>Override for the main per-tick update logic of this scene.</summary>
     protected abstract void OnUpdate(float deltaTime);
 
+    /// <summary>Override for logic that must run every tick regardless of <see cref="Paused"/> or <see cref="Enabled"/> state.</summary>
     protected virtual void OnAlwaysUpdate(float deltaTime)
     {
     }
 
+    /// <summary>Override for logic that reacts to state changes made during <see cref="OnUpdate"/>.</summary>
     protected virtual void OnLateUpdate(float deltaTime)
     {
     }
 
+    /// <summary>Override to issue scene-level draw calls. Called after all game objects have drawn.</summary>
     protected virtual void OnDraw()
     {
     }
 
+    /// <summary>Override to release scene-specific resources. Called once during <see cref="Dispose"/>.</summary>
     protected abstract void OnDispose();
 }

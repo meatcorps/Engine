@@ -4,25 +4,29 @@ using Meatcorps.Engine.Core.Extensions;
 
 namespace Meatcorps.Engine.Core.Tween;
 
+/// <summary>
+/// A multi-segment Vector2 tween backed by two TweenStack instances (X and Y). API mirrors TweenStack but operates on Vector2 values.
+/// </summary>
 public class TweenStackVector2
 {
     private readonly TweenStack _stackX = new();
     private readonly TweenStack _stackY = new();
-    
+
     public TweenStackVector2 Register(EaseType easeType, float normalOffset, float normalDuration)
     {
         _stackX.Register(easeType, normalOffset, normalDuration);
         _stackY.Register(easeType, normalOffset, normalDuration);
-        return this;   
+        return this;
     }
-    
+
     public TweenStackVector2 Register(EaseType easeType, float duration, float totalDuration, float durationOffset)
     {
         _stackX.Register(easeType, duration, totalDuration, durationOffset);
         _stackY.Register(easeType, duration, totalDuration, durationOffset);
-        return this;   
+        return this;
     }
-    
+
+    /// <summary>Adds a segment with independent easing for X and Y axes.</summary>
     public TweenStackVector2 Register(
         EaseType easeX, EaseType easeY,
         float normalOffset, float normalDuration)
@@ -31,28 +35,28 @@ public class TweenStackVector2
         _stackY.Register(easeY, normalOffset, normalDuration);
         return this;
     }
-    
+
     public TweenStackVector2 Assign(Vector2 from, Vector2 to)
     {
         _stackX.Assign(from.X, to.X);
         _stackY.Assign(from.Y, to.Y);
-        return this;  
+        return this;
     }
-    
+
     public TweenStackVector2 AssignFromValue(Vector2 value)
     {
         _stackX.AssignFromValue(value.X);
         _stackY.AssignFromValue(value.Y);
-        return this;  
+        return this;
     }
-    
+
     public TweenStackVector2 AssignToValue(Vector2 value)
     {
         _stackX.AssignToValue(value.X);
         _stackY.AssignToValue(value.Y);
         return this;
     }
-    
+
     public TweenStackVector2 FromKeyframes(params (float at, Vector2 value, EaseType ease)[] keys)
     {
         if (keys.Length < 2) throw new ArgumentException("Need at least two keyframes");
@@ -106,8 +110,9 @@ public class TweenStackVector2
         return FromKeyframes(normalized);
     }
 
+    /// <summary>Evaluates both axes at the given global normal and returns the combined Vector2.</summary>
     public Vector2 Lerp(float normal)
     {
         return new Vector2(_stackX.Lerp(normal), _stackY.Lerp(normal));
-    } 
+    }
 }

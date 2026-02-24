@@ -4,6 +4,7 @@ using Meatcorps.Engine.Core.Settings;
 using Meatcorps.Engine.Logging.Module;
 using Meatcorps.Engine.RayLib.Assets.Modules;
 using Meatcorps.Engine.RayLib.Modules;
+using Meatcorps.Engine.RayLib.PostProcessing;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
 using Meatcorps.Engine.RayLib.Resources;
 using Meatcorps.Engine.RayLib.UI.GuiComponent.GuiSettings;

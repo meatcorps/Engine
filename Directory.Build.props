@@ -1,9 +1,9 @@
 <Project>
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <VersionPrefix>0.1</VersionPrefix>
+        <VersionPrefix>0.1.17</VersionPrefix>
         <BuildNumber Condition="'$(BuildNumber)' == ''">1</BuildNumber>
         <BuildNumber Condition="'$(GITHUB_RUN_NUMBER)' != ''">$(GITHUB_RUN_NUMBER)</BuildNumber>
-        <Version>$(VersionPrefix).$(BuildNumber)</Version>
+        <Version>$(VersionPrefix)-preview.$(BuildNumber)</Version>
     </PropertyGroup>
 </Project>

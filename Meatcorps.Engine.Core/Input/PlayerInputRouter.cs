@@ -7,21 +7,28 @@ namespace Meatcorps.Engine.Core.Input;
 using System.Numerics;
 using Meatcorps.Engine.Core.Interfaces.Input;
 
+/// <summary>
+/// Routes input state from multiple IInputMapper implementations to player slots. Supports both manual assignment (via AssignProfile) and AutoAssign mode where the first mapper to receive input is automatically used for player 1.
+/// </summary>
 public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T : Enum
 {
     private readonly Dictionary<int, IInputMapper<T>> _playerMappers = new();
     private readonly List<IInputMapper<T>> _inputMappers = new();
     private readonly List<int> _profileIds = new();
+
+    /// <summary>When true, automatically assigns the first mapper that receives any input to player 1. Useful for single-player games that support multiple input devices.</summary>
     public bool AutoAssign { get; set; }
     private int _useAutoMapper;
     private readonly GenericInput _defaultInput = new GenericInput(() => 0, "UNKNOWN");
-    
+
+    /// <summary>Directly assigns a mapper to a player slot and registers it as an available mapper.</summary>
     public void AssignMapper(int player, IInputMapper<T> mapper)
     {
         AddMapper(mapper);
         _playerMappers[player] = mapper;
     }
 
+    /// <summary>Registers a mapper as available for assignment. Only one mapper per type is allowed.</summary>
     public void AddMapper(IInputMapper<T> mapper)
     {
         foreach (var mapperToCheck in _inputMappers)
@@ -32,16 +39,19 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
         _inputMappers.Add(mapper);
     }
 
+    /// <summary>Returns true if a mapper is directly assigned to the given player slot.</summary>
     public bool HasMapper(int player)
     {
         return _playerMappers.ContainsKey(player);
     }
 
+    /// <summary>Attempts to retrieve the mapper assigned to the given player slot.</summary>
     public bool TryGetMapper(int player, out IInputMapper<T> mapper)
     {
         return _playerMappers.TryGetValue(player, out mapper!);
     }
 
+    /// <summary>Returns true if the mapper assigned to the given player is of type TMapper.</summary>
     public bool IsMapperType<TMapper>(int player) where TMapper : class, IInputMapper<T>
     {
         return _playerMappers.TryGetValue(player, out var mapper) && mapper is TMapper;
@@ -53,6 +63,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
                && mapper is IInputMapperWithManager<T, TManager>;
     }
 
+    /// <summary>Attempts to retrieve the hardware manager from the mapper assigned to the given player, if it implements IInputMapperWithManager.</summary>
     public bool TryGetManager<TManager>(int player, out TManager manager)
     {
         manager = default!;
@@ -71,7 +82,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     {
         if (AutoAssign)
             return player == 1 ? _inputMappers[_useAutoMapper].GetState(1, input) : _defaultInput;
-        
+
         if (_playerMappers.TryGetValue(player, out var mapper))
             return mapper.GetState(player, input);
 
@@ -82,7 +93,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     {
         if (AutoAssign)
             return player == 1 ? _inputMappers[_useAutoMapper].GetAxis(1, axis) : Vector2.Zero;
-        
+
         if (_playerMappers.TryGetValue(player, out var mapper))
             return mapper.GetAxis(player, axis);
 
@@ -96,7 +107,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     {
         if (AutoAssign)
             _inputMappers[_useAutoMapper].Rumble(1, left, right, duration);
-        
+
         if (_playerMappers.TryGetValue(player, out var mapper))
             mapper.Rumble(player, left, right, duration);
     }
@@ -105,7 +116,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     {
         var internalId = (int)MathF.Floor(profileId / 1000f);
         var profile = profileId % 1000;
-        
+
         _playerMappers[player] = _inputMappers[internalId];
         _inputMappers[internalId].AssignProfile(profile, player);
         if (_playerMappers.TryGetValue(player, out var mapper))
@@ -134,7 +145,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     {
         if (_playerMappers.TryGetValue(player, out var mapper))
             return mapper.IsConnected(player);
-        
+
         return false;
     }
 
@@ -159,15 +170,15 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     {
         if (AutoAssign)
             return _inputMappers[_useAutoMapper].InputType(1);
-        
+
         if (_playerMappers.TryGetValue(player, out var mapper))
         {
             return mapper.InputType(player);
         }
-        
+
         return PlayerInputType.Unknown;
     }
-    
+
     public IReadOnlyList<int> GetAvailableProfiles()
     {
         _profileIds.Clear();
@@ -190,7 +201,7 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
 
         if (_inputMappers.Count == 1)
             return;
-        
+
         var counter = 0;
         foreach (var mapper in _inputMappers)
         {
@@ -211,6 +222,6 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
 
     public void LateUpdate(float deltaTime)
     {
-        
+
     }
 }

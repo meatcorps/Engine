@@ -26,8 +26,8 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
     private List<IGameLoopTask> _gameLoopTasksForward = new();
     private bool _isBorderless;
     private int _targetFps;
-    public FrameTimer RenderLoopTime = null!;
-    public FrameTimer UpdateLoopTime = null!;
+    public FrameTimer RenderLoopTime { get; private set; } = null!;
+    public FrameTimer UpdateLoopTime { get; private set; } = null!;
 
     public GameHost(int width, int height, string title, int targetFps = 60, ICamera? camera = null)
     {
