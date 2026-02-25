@@ -21,14 +21,15 @@ public class AesResourceSink: IEncryptDecryptSink
     {
         var salt = RandomNumberGenerator.GetBytes(16);
 
-        using var keyDerivation = new Rfc2898DeriveBytes(
-            _password,
-            salt,
-            100_000,
-            HashAlgorithmName.SHA256);
+        var keyMaterial = Rfc2898DeriveBytes.Pbkdf2(
+            password: _password,
+            salt: salt,
+            iterations: 100_000,
+            hashAlgorithm: HashAlgorithmName.SHA256,
+            outputLength: 32 + 16);
 
-        var key = keyDerivation.GetBytes(32);
-        var iv = keyDerivation.GetBytes(16);
+        var key = keyMaterial.AsSpan(0, 32).ToArray();
+        var iv  = keyMaterial.AsSpan(32, 16).ToArray();
         
         using var aes = Aes.Create();
         aes.Key = key;

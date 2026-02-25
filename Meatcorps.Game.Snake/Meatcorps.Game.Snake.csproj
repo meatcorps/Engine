@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
         <OutputType>Exe</OutputType>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -16,6 +17,7 @@
       <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
       <ProjectReference Include="..\Meatcorps.Engine.Session\Meatcorps.Engine.Session.csproj" />
         <ProjectReference Include="..\Meatcorps.Engine.RayLib.Assets\Meatcorps.Engine.RayLib.Assets.csproj" />
+        <ProjectReference Include="..\Meatcorps.Engine.Assets.Packager\Meatcorps.Engine.Assets.Packager.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -34,7 +36,7 @@
     </PropertyGroup>
 
     <UsingTask TaskName="AssetPackageTask"
-               AssemblyFile="$(ProjectDir)\bin\$(Configuration)\net8.0\Meatcorps.Engine.Assets.Packager.dll" />
+               AssemblyFile="$(ProjectDir)\bin\$(Configuration)\net10.0\Meatcorps.Engine.Assets.Packager.dll" />
 
     <Target Name="AssetPackageTask"
             AfterTargets="Build"
