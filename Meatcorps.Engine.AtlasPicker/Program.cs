@@ -8,13 +8,28 @@ namespace Meatcorps.Engine.AtlasPicker;
 
 public static class Program
 {
+    static int increaseCounter = 0;
+    
     static void Main(string[] args)
     {
         var imagePath = args.Length > 0 ? args[0] : "Assets/GameSprites.png";
         var gridSize = ParseIntArg(args, "grid", 16);
         var scale = ParseIntArg(args, "scale", 2);
         var enumName = ParseStrArg(args, "enum", "GameSprites");
+        List<Rectangle> rects = new();
 
+        if (File.Exists("data.txt"))
+        {
+            var lines = File.ReadAllLines("data.txt");
+            foreach (var line in lines)
+            {
+                var parts = line.Split(',');
+                if (parts.Length != 4) 
+                    continue;
+                rects.Add(new Rectangle(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3])));
+            }
+        }
+        
         Raylib.SetConfigFlags(ConfigFlags.ResizableWindow);
         Raylib.InitWindow(1280, 800, "Sprite Atlas Picker");
         Raylib.SetTargetFPS(120);
@@ -50,17 +65,26 @@ public static class Program
         {
             lastOutput = line;
             Console.WriteLine(line);
+            File.AppendAllText("output.txt", line + Environment.NewLine);
             Raylib.SetClipboardText(line);
         }
 
         while (!Raylib.WindowShouldClose())
         {
             // UI toggles
-            if (Raylib.IsKeyPressed(KeyboardKey.Equal)) scale = Math.Clamp(scale + 1, 1, 32);
-            if (Raylib.IsKeyPressed(KeyboardKey.Minus)) scale = Math.Clamp(scale - 1, 1, 32);
-            if (Raylib.IsKeyPressed(KeyboardKey.G)) showGrid = !showGrid;
-            if (Raylib.IsKeyPressed(KeyboardKey.C) && !string.IsNullOrEmpty(lastOutput))
-                Raylib.SetClipboardText(lastOutput);
+            if (Raylib.IsKeyPressed(KeyboardKey.Equal) && !Raylib.IsKeyDown(KeyboardKey.LeftShift) && !Raylib.IsKeyDown(KeyboardKey.RightShift)) scale = Math.Clamp(scale + 1, 1, 32);
+            if (Raylib.IsKeyPressed(KeyboardKey.Minus) && !Raylib.IsKeyDown(KeyboardKey.LeftShift) && !Raylib.IsKeyDown(KeyboardKey.RightShift)) scale = Math.Clamp(scale - 1, 1, 32);
+            //if (Raylib.IsKeyPressed(KeyboardKey.G)) showGrid = !showGrid;
+            //if (Raylib.IsKeyPressed(KeyboardKey.C) && !string.IsNullOrEmpty(lastOutput))
+            //    Raylib.SetClipboardText(lastOutput);
+            if (Raylib.IsKeyPressed(KeyboardKey.Up))
+                increaseCounter++;
+            if (Raylib.IsKeyPressed(KeyboardKey.Down) && increaseCounter > 0)
+                increaseCounter--;
+            if (Raylib.IsKeyPressed(KeyboardKey.Down) &&
+                (Raylib.IsKeyDown(KeyboardKey.LeftShift) || Raylib.IsKeyDown(KeyboardKey.RightShift)))
+                increaseCounter = 0;
+            
             if (Raylib.IsKeyPressed(KeyboardKey.Home))
             {
                 panX = 10;
@@ -97,11 +121,22 @@ public static class Program
             bool ctrl = Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl);
             int step = ctrl ? fineStep : gridStep;
 
-            if (Raylib.IsKeyPressed(KeyboardKey.Right)) panX -= step; // move image left relative to the window
+            /*if (Raylib.IsKeyPressed(KeyboardKey.Right)) panX -= step; // move image left relative to the window
             if (Raylib.IsKeyPressed(KeyboardKey.Left)) panX += step; // move image right
             if (Raylib.IsKeyPressed(KeyboardKey.Down)) panY -= step; // move image up
-            if (Raylib.IsKeyPressed(KeyboardKey.Up)) panY += step; // move image down
+            if (Raylib.IsKeyPressed(KeyboardKey.Up)) panY += step; // move image down*/
 
+            if (Raylib.IsKeyPressed(KeyboardKey.PageUp))
+            {
+                gridSize *= 2;
+                Emit($".WithGridSize(new PointInt({gridSize}, {gridSize}))");
+            }
+            if (Raylib.IsKeyPressed(KeyboardKey.PageDown)  && gridSize > 2)
+            {
+                gridSize /= 2;
+                Emit($".WithGridSize(new PointInt({gridSize}, {gridSize}))");
+            }
+            
             // Mouse -> grid cell conversion (texture space)
             if (mouseOnImage)
             {
@@ -131,22 +166,45 @@ public static class Program
                     draggingMouse = false;
                     var rect = CellsToRect(startCell, endCell);
                     EmitRectOrPoint(enumName, typedName, rect);
+                    var rectDirect = new Rectangle(rect.X * gridSize, rect.Y * gridSize, rect.W * gridSize,
+                        rect.H * gridSize);
+                    rects.Add(rectDirect);
+                    File.AppendAllText("data.txt", $"{(int)rectDirect.X},{(int)rectDirect.Y},{(int)rectDirect.Width},{(int)rectDirect.Height}" +Environment.NewLine);
                 }
             }
 
             // Emit a single cell (RMB or Enter)
-            if ((mouseOnImage && Raylib.IsMouseButtonPressed(MouseButton.Right)) ||
-                Raylib.IsKeyPressed(KeyboardKey.Enter))
+            if (mouseOnImage && Raylib.IsMouseButtonPressed(MouseButton.Right))
             {
                 if (draggingMouse)
                 {
                     var rect = CellsToRect(startCell, endCell);
                     EmitRectOrPoint(enumName, typedName, rect);
+                    var rectDirect = new Rectangle(rect.X * gridSize, rect.Y * gridSize, rect.W * gridSize,
+                        rect.H * gridSize);
+                    rects.Add(rectDirect);
+                    File.AppendAllText("data.txt", $"{(int)rectDirect.X},{(int)rectDirect.Y},{(int)rectDirect.Width},{(int)rectDirect.Height}" +Environment.NewLine);
                 }
                 else
                 {
-                    EmitPoint(enumName, typedName, (int)hovered.X, (int)hovered.Y);
+                    EmitPoint(enumName, typedName, (int)hovered.X, (int)hovered.Y, gridSize);
                 }
+            }
+            
+            
+            if (Raylib.IsKeyDown(KeyboardKey.LeftControl) && Raylib.IsKeyPressed(KeyboardKey.V))
+            {
+                typedName = Raylib.GetClipboardText_();
+            }
+            
+            if (Raylib.IsKeyDown(KeyboardKey.LeftControl) && Raylib.IsKeyPressed(KeyboardKey.Backspace))
+            {
+                typedName = "";
+            }
+            
+            if (Raylib.IsKeyPressed(KeyboardKey.Enter))
+            {
+                Emit("//" + typedName);
             }
 
             // ---- Render to canvas (unscaled) ----
@@ -164,6 +222,11 @@ public static class Program
             );
             DrawRectOutline(hoverPx, 2, Color.Yellow);
 
+            foreach (var alreadydone in rects)
+            {
+                Raylib.DrawRectangleLinesEx(new Rectangle(alreadydone.X, alreadydone.Y, alreadydone.Width, alreadydone.Height), 2, Color.Gray);
+            }
+            
             // Selection rect if dragging
             if (draggingMouse)
             {
@@ -191,13 +254,13 @@ public static class Program
 
             Raylib.DrawRectangle(0, 0, Raylib.GetScreenWidth(), 32, Color.Black);
             DrawHudLabel(2, 2,
-                $"Image: {Path.GetFileName(imagePath)} | Grid: {gridSize}   Scale: {scale}x | Cell: {(int)hovered.X}, {(int)hovered.Y} | Name: {typedName}");
+                $"Image: {Path.GetFileName(imagePath)} | Grid: {gridSize}   Scale: {scale}x | Cell: {(int)hovered.X}, {(int)hovered.Y} | Name(_={increaseCounter + 1}): {typedName}");
             if (!string.IsNullOrEmpty(lastOutput))
                 DrawHudLabel(2, 16, $"Last: {lastOutput}");
 
             var hint =
-                "[Arrows]=Pan  [Ctrl+Arrows]=Fine Pan  [MMB drag]=Pan  [LMB drag]=Rect  [RMB]=Point  [Enter]=Emit  [+/-]=Scale  [G]=Grid  [Home]=Reset Pan";
-            Raylib.DrawText(hint, 2, Raylib.GetScreenHeight() - 24, 18, new Color(200, 200, 200, 255));
+                "[Arrows]=Pan  [Ctrl+Arrows]=Fine Pan  [MMB drag]=Pan  [LMB drag]=Rect  [RMB]=Point  [PgUp/PgDn]=GridSize [Enter]=Comment [H+Shift]=PixelMode  [+/-]=Scale  [G]=Grid  [Home]=Reset Pan";
+            Raylib.DrawText(hint, 2, Raylib.GetScreenHeight() - 24, 8, new Color(200, 200, 200, 255));
 
             Raylib.EndDrawing();
         }
@@ -237,23 +300,46 @@ public static class Program
         void EmitRectOrPoint(string enumType, string name, (int X, int Y, int W, int H) rect)
         {
             if (rect.W == 1 && rect.H == 1)
-                EmitPoint(enumType, name, rect.X, rect.Y);
+                EmitPoint(enumType, name, rect.X, rect.Y, gridSize);
             else
-                EmitRect(enumType, name, rect.X, rect.Y, rect.W, rect.H);
+                EmitRect(enumType, name, rect.X, rect.Y, rect.W, rect.H, gridSize);
         }
 
 // Emit a single cell (PointInt)
-        void EmitPoint(string enumType, string name, int gx, int gy)
+        void EmitPoint(string enumType, string name, int gx, int gy, int gridSize)
         {
+            handleName(ref name);
+            
             var label = string.IsNullOrWhiteSpace(name) ? "XXX" : name;
-            Emit($".WithSpriteFromGrid({enumType}.{label}, new PointInt({gx}, {gy}))");
+            if (Raylib.IsKeyDown(KeyboardKey.LeftShift) || Raylib.IsKeyDown(KeyboardKey.RightShift))
+                Emit($".WithSprite({enumType}.{label}, new Rect({gx * gridSize}, {gy * gridSize}, {gridSize}, {gridSize}))");
+            else 
+                Emit($".WithSpriteFromGrid({enumType}.{label}, new PointInt({gx}, {gy}))");
         }
 
 // Emit a rectangle of cells (Rect)
-        void EmitRect(string enumType, string name, int gx, int gy, int gw, int gh)
+        void EmitRect(string enumType, string name, int gx, int gy, int gw, int gh, int gridSize)
         {
+            handleName(ref name);
+            
             var label = string.IsNullOrWhiteSpace(name) ? "XXX" : name;
-            Emit($".WithSpriteFromGrid({enumType}.{label}, new Rect({gx}, {gy}, {gw}, {gh}))");
+            if (Raylib.IsKeyDown(KeyboardKey.LeftShift) || Raylib.IsKeyDown(KeyboardKey.RightShift))
+                Emit($".WithSprite({enumType}.{label}, new Rect({gx * gridSize}, {gy * gridSize}, {gw * gridSize}, {gh * gridSize}))");
+            else 
+                Emit($".WithSpriteFromGrid({enumType}.{label}, new Rect({gx}, {gy}, {gw}, {gh}))");
+        }
+
+        void handleName(ref string name)
+        {
+            if (name.Contains("_"))
+            {
+                increaseCounter++;
+                name = name.Replace("_", $"{increaseCounter}");
+            }
+            else
+            {
+                increaseCounter = 0;
+            }
         }
     }
 

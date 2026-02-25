@@ -13,7 +13,7 @@ public sealed class Texture2DItem<T> : IResourceLoadOnInit, IDisposable where T 
     private readonly Dictionary<T, List<Rectangle>> _spriteAnimations = new();
     private readonly Dictionary<T, Rectangle> _sprites = new();
     private TextureFilter _filter = TextureFilter.Point;
-    private Point _gridSize = new(1, 1);
+    private PointInt _gridSize = new(1, 1);
     private bool _isDisposed;
     private bool _isLoaded;
 
@@ -64,7 +64,7 @@ public sealed class Texture2DItem<T> : IResourceLoadOnInit, IDisposable where T 
         return this;
     }
 
-    public Texture2DItem<T> WithGridSize(Point gridSize)
+    public Texture2DItem<T> WithGridSize(PointInt gridSize)
     {
         _gridSize = gridSize;
         return this;
@@ -73,6 +73,12 @@ public sealed class Texture2DItem<T> : IResourceLoadOnInit, IDisposable where T 
     public Texture2DItem<T> WithSprite(T key, Rectangle rect)
     {
         _sprites.Add(key, rect);
+        return this;
+    }
+
+    public Texture2DItem<T> WithSprite(T key, Rect rect)
+    {
+        _sprites.Add(key, new Rectangle(rect.X, rect.Y, rect.Width, rect.Height));
         return this;
     }
 
@@ -107,6 +113,11 @@ public sealed class Texture2DItem<T> : IResourceLoadOnInit, IDisposable where T 
     public IEnumerable<Rectangle> GetAnimation(T key)
     {
         return _spriteAnimations[key];
+    }
+
+    public bool HasAnimation(T key)
+    {
+        return _spriteAnimations.ContainsKey(key);
     }
 
     public Rectangle GetAnimation(T key, int index)

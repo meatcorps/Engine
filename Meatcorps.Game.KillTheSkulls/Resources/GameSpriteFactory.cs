@@ -11,7 +11,7 @@ public static class GameSpriteFactory
     {
         return new Texture2DItem<GameSprites>("Assets/GameSprites2.png")
             .WithFilter(TextureFilter.Point)
-            .WithGridSize(new System.Drawing.Point(16, 16))
+            .WithGridSize(new PointInt(16, 16))
             .WithSpriteFromGrid(GameSprites.Explosion1, new Rect(0, 4, 2, 2))
             .WithSpriteFromGrid(GameSprites.Explosion2, new Rect(2, 4, 2, 2))
             .WithSpriteFromGrid(GameSprites.Explosion3, new Rect(4, 4, 2, 2))

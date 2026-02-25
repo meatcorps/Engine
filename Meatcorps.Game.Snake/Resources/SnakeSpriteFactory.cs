@@ -10,7 +10,7 @@ public static class SnakeSpriteFactory
     {
         return new Texture2DItem<SnakeSprites>("Assets/SnakeSprites.png")
             .WithFilter(TextureFilter.Point)
-            .WithGridSize(new System.Drawing.Point(16, 16))
+            .WithGridSize(new PointInt(16, 16))
 
             // Row 0
             .WithSpriteFromGrid(SnakeSprites.SnakeBodyLeftRight, new PointInt(0, 0))
