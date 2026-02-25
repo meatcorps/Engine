@@ -16,6 +16,7 @@
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageReadmeFile>Meatcorps.Engine.Collision.md</PackageReadmeFile>
         <IsPackable>true</IsPackable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
     <ItemGroup>
         <None Include="LICENSE" Pack="true" PackagePath=""/>
