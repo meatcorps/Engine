@@ -27,7 +27,7 @@ public class SessionDataBag<TType> where TType : Enum
 
     public SessionDataBag<TType> RegisterItem(ISessionDataItem<TType> item)
     {
-        if (!_serializers.ContainsKey(item.Type))
+        if (item is not ISessionDataTypeSerializer && !_serializers.ContainsKey(item.Type))
             throw new Exception($"Serializer for this type not registered {item.Type.Name} - use RegisterSerializer");
 
         if (_items.ContainsKey(item.Key))
@@ -107,6 +107,11 @@ public class SessionDataBag<TType> where TType : Enum
         var result = new Dictionary<string, string>();
         foreach (var item in _items.Values)
         {
+            if (item is ISessionDataTypeSerializer internalSerializer)
+            {
+                result[GetKeyName(item)] = internalSerializer.Serialize(item);
+                continue;
+            }
             if (!_serializers.TryGetValue(item.Type, out var serializer))
                 throw new Exception($"Type not registered {item.Type.Name}");
 
@@ -117,6 +122,13 @@ public class SessionDataBag<TType> where TType : Enum
             if (!_serializers.TryGetValue(item.Type, out var serializer))
                 throw new Exception($"Type not registered {item.Type.Name}");
 
+            
+            if (item is ISessionDataTypeSerializer internalSerializer)
+            {
+                result[GetKeyName(item)] = internalSerializer.Serialize(item);
+                continue;
+            }
+            
             result[GetKeyName(item)] = serializer.Serialize(item);
         }
         return result;
@@ -129,6 +141,13 @@ public class SessionDataBag<TType> where TType : Enum
             var key = GetKeyName(item);
             if (!data.TryGetValue(key, out var raw))
                 continue;
+
+            if (item is ISessionDataTypeSerializer internalSerializer)
+            {
+                internalSerializer.Deserialize(raw, item);
+                continue;
+            }
+
             if (!_serializers.TryGetValue(item.Type, out var serializer))
                 throw new Exception($"Type not registered {item.Type.Name}");
             serializer.Deserialize(raw, item);
@@ -138,6 +157,13 @@ public class SessionDataBag<TType> where TType : Enum
             var key = GetKeyName(item);
             if (!data.TryGetValue(key, out var raw))
                 continue;
+
+            if (item is ISessionDataTypeSerializer internalSerializer)
+            {
+                internalSerializer.Deserialize(raw, item);
+                continue;
+            }
+            
             if (!_serializers.TryGetValue(item.Type, out var serializer))
                 throw new Exception($"Type not registered {item.Type.Name}");
             serializer.Deserialize(raw, item);

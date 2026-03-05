@@ -20,6 +20,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <ProjectReference Include="..\Meatcorps.Engine.Core\Meatcorps.Engine.Core.csproj" />
         <PackageReference Include="Meatcorps.Engine.Core" Version="[0.1.0,)" />
     </ItemGroup>

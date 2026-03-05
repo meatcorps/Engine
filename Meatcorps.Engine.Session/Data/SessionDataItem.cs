@@ -1,5 +1,6 @@
 using System.Globalization;
 using Meatcorps.Engine.Session.ValueTypes;
+using Newtonsoft.Json;
 
 namespace Meatcorps.Engine.Session.Data;
 
@@ -44,6 +45,30 @@ public class SessionDataItemUniversal<TValue>: ISessionDataValue<TValue>
     public virtual void Reset()
     {
         Value = DefaultValue;
+    }
+}
+
+public class SessionDataItemComplex<TEnum, TValue> : SessionDataItem<TEnum, TValue>, ISessionDataTypeSerializer where TEnum : Enum where TValue : class
+{
+    private readonly JsonSerializerSettings _serializerSettings;
+
+    public SessionDataItemComplex(TEnum type, string name, TValue defaultValue, JsonSerializerSettings serializerSettings) : base(type, name, defaultValue)
+    {
+        _serializerSettings = serializerSettings;
+    }
+
+    public string Serialize(ISessionDataItem _)
+    {
+        return JsonConvert.SerializeObject(Value, _serializerSettings);
+    }
+
+    public void Deserialize(string value, ISessionDataItem _)
+    {
+        var objectValue = JsonConvert.DeserializeObject<TValue>(value, _serializerSettings);
+        if (objectValue == null)
+            throw new Exception("Failed to deserialize value");
+        
+        Value = objectValue;
     }
 }
 
