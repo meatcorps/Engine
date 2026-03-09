@@ -3,6 +3,8 @@ using Meatcorps.Engine.Core.Interfaces.Components;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Interfaces;
+using Meatcorps.Engine.RayLib.Renderer;
+
 // ReSharper disable SuspiciousTypeConversion.Global
 
 namespace Meatcorps.Engine.RayLib.Abstractions;
@@ -12,7 +14,7 @@ namespace Meatcorps.Engine.RayLib.Abstractions;
 /// Supports the component pattern via <see cref="AddComponent{T}"/>.
 /// Components are added and removed via deferred queues processed during <see cref="PreUpdate"/>.
 /// </summary>
-public abstract class BaseGameObject : IDisposable
+public abstract class BaseGameObject : IRenderer, IDisposable
 {
     private readonly List<IGameComponent> _components = new();
     private readonly Queue<IGameComponent> _toComponentAdd = new();
@@ -35,6 +37,8 @@ public abstract class BaseGameObject : IDisposable
 
     /// <summary>Draw ordering layer within the scene. Higher values are drawn on top.</summary>
     public int Layer { get; set; }
+
+    public int SceneLayer => Scene.Layer;
 
     /// <summary>
     /// Determines which camera layer this object renders on.
