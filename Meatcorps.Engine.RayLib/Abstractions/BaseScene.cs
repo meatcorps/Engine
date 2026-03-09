@@ -245,7 +245,7 @@ public abstract class BaseScene : IDisposable
         OnLateUpdate(deltaTime);
     }
 
-    public void RegisterForRender()
+    public virtual void RegisterForRender()
     {
         if (Visible && Enabled)
         {
