@@ -161,14 +161,31 @@ public abstract class BaseGameObject : IRenderer, IDisposable
     /// <returns><c>true</c> if a matching component was found.</returns>
     public bool TryGetComponent<T>(out T? component) where T : IGameComponent
     {
-        component = (T?)_components.FirstOrDefault(x => x is T);
-        return component != null;
+        foreach (var t in _components)
+        {
+            if (t is not T match) 
+                continue;
+            
+            component = match;
+            return true;
+        }
+        component = default;
+        return false;
     }
 
-    /// <summary>Returns all components of type <typeparamref name="T"/> attached to this object.</summary>
-    public IEnumerable<T> GetComponents<T>() where T : IGameComponent
+    /// <summary>
+    /// Executes the specified action on each component of the specified type within the object.
+    /// </summary>
+    /// <typeparam name="T">The type of components to retrieve.</typeparam>
+    /// <typeparam name="TAction">The type of the action to be executed on the components.</typeparam>
+    /// <param name="action">The action instance with the logic to be executed for each matching component.</param>
+    public void GetComponents<T, TAction>(ref TAction action)
+        where T : IGameComponent
+        where TAction : struct, IComponentAction<T>
     {
-        return _components.Where(x => x is T).Cast<T>();
+        foreach (var t in _components)
+            if (t is T match)
+                action.Execute(match);
     }
 
     /// <summary>Enqueues a component for removal. It will be removed during the next <see cref="PreUpdate"/>.</summary>
