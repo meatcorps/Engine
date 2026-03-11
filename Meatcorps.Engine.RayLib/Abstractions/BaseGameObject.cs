@@ -205,10 +205,27 @@ public abstract class BaseGameObject : IRenderer, IDisposable
         {
             _components.Add(component);
             component.Initialize();
+            
+            foreach (var other in _components)
+            {
+                if (other == component)
+                    continue;
+                
+                if (other is IGameComponentAddedRemoved addedRemoved)
+                    addedRemoved.OnAdded(component);
+            }
         }
 
         while (_toComponentRemove.TryDequeue(out var component))
+        {
             _components.Remove(component);
+            
+            foreach (var other in _components)
+            {
+                if (other is IGameComponentAddedRemoved addedRemoved)
+                    addedRemoved.OnRemoved(component);
+            }
+        }
 
         foreach (var component in _components)
             component.PreUpdate(deltaTime);
