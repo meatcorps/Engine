@@ -25,6 +25,7 @@ public class RayLibModule
     private int _initialHeight = 720;
     private int _initialWidth = 1280;
     private string _title = "Meatcorps Engine";
+    private List<(string, IRenderTargetStrategy)> _debugRenderTargets = new List<(string, IRenderTargetStrategy)>();
 
     public RayLibModule()
     {
@@ -192,10 +193,19 @@ public class RayLibModule
                 mainRenderer.PostProcessors.Add(postProcessor);
 
         RegisterRenderTargetStrategy(finalRenderer, "FINAL");
+
+        foreach (var debugRenderTargets in _debugRenderTargets)
+            RegisterRenderTargetStrategy(debugRenderTargets.Item2, debugRenderTargets.Item1);
     }
 
-    public RayLibModule RegisterRenderTargetStrategy(IRenderTargetStrategy renderTargetStrategy, string tag = "default")
+    public RayLibModule RegisterRenderTargetStrategy(IRenderTargetStrategy renderTargetStrategy, string tag = "default", bool isDebug = false)
     {
+        if (isDebug)
+        {
+            _debugRenderTargets.Add((tag, renderTargetStrategy));
+            return this;
+        }
+
         GlobalObjectManager.ObjectManager.Register(renderTargetStrategy, tag);
         GlobalObjectManager.ObjectManager.Add(renderTargetStrategy);
         return this;

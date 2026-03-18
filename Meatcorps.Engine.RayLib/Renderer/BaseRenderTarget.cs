@@ -1,6 +1,7 @@
 ﻿using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
+using Color = Raylib_cs.Color;
 
 namespace Meatcorps.Engine.RayLib.Renderer;
 
@@ -17,20 +18,22 @@ public abstract class BaseRenderTarget : IRenderTargetStrategy
     public abstract int RenderWidth { get; }
     public abstract int RenderHeight { get; }
 
+    public PointInt? ScreenSizeOverride { get; set; }
+
     protected PointInt GetScreenSize()
     {
-        var screenWidth = Raylib.GetScreenWidth();
-        var screenHeight = Raylib.GetScreenHeight();
+        var screenWidth = ScreenSizeOverride?.X ?? Raylib.GetScreenWidth();
+        var screenHeight = ScreenSizeOverride?.Y ?? Raylib.GetScreenHeight();
         return new PointInt(screenWidth, screenHeight);
     }
 
-    protected RectF GetScreenRect()
+    public RectF GetScreenRect()
     {
         if (!UsePercentage)
             return Bounds;
 
         var size = GetScreenSize();
-        var rect = new RectF(0, 0, size.X, size.Y);
+        var rect = new RectF(size.X, size.Y, size.X, size.Y);
 
         rect.X *= Bounds.X;
         rect.Y *= Bounds.Y;

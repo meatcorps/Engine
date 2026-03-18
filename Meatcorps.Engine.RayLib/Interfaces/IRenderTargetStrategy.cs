@@ -9,9 +9,10 @@ public interface IRenderTargetStrategy
     List<IPostProcessor> PostProcessors { get; set; }
     RectF Bounds { get; set; }
     bool UsePercentage { get; set; }
-
+    internal PointInt? ScreenSizeOverride { get; set; }
     int RenderWidth { get; }
     int RenderHeight { get; }
+    RectF GetScreenRect();
     void BeginRender(Color clearColor);
 
     void EndRender(RenderTexture2D? targetTexture = null);

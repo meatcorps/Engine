@@ -17,7 +17,7 @@ public class RenderService
     private readonly int _gameObjectLayers;
 
     private readonly Dictionary<IRenderTargetStrategy, List<List<List<IRenderer>>>> _gameObjects = new();
-    private readonly IRenderTargetStrategy _lastRenderTargetStrategy;
+    private readonly IRenderTargetStrategy _presentationRenderTargetStrategy;
     private readonly List<IRenderTargetStrategy> _renderTargetStrategies;
     private readonly int _sceneLayers;
 
@@ -43,7 +43,7 @@ public class RenderService
 
         _renderTargetStrategies = new List<IRenderTargetStrategy>();
 
-        _lastRenderTargetStrategy = objectManager.Get<IRenderTargetStrategy>("FINAL") ??
+        _presentationRenderTargetStrategy = objectManager.Get<IRenderTargetStrategy>("FINAL") ??
                                     new BasicScreenRenderTarget().SetFullScreen();
 
         SetRenderTargets(objectManager.GetList<IRenderTargetStrategy>()!);
@@ -67,8 +67,9 @@ public class RenderService
         renderTargetStrategies ??= GlobalObjectManager.ObjectManager.GetList<IRenderTargetStrategy>()!;
 
         _renderTargetStrategies.Clear();
-        _renderTargetStrategies.AddRange(renderTargetStrategies.Where(x => x != _lastRenderTargetStrategy));
-        _renderTargetStrategies.Add(_lastRenderTargetStrategy);
+        _renderTargetStrategies.AddRange(renderTargetStrategies);
+        //_renderTargetStrategies.AddRange(renderTargetStrategies.Where(x => x != _lastRenderTargetStrategy));
+        //_renderTargetStrategies.Add(_lastRenderTargetStrategy);
         _gameObjects.Clear();
 
         foreach (var renderTargetStrategy in _renderTargetStrategies)
@@ -124,6 +125,24 @@ public class RenderService
             renderer.Camera?.Update(deltaTime, renderer);
     }
 
+    public void SetPresentationViewportPixels(RectF viewport)
+    {
+        _presentationRenderTargetStrategy.Bounds = viewport;
+        _presentationRenderTargetStrategy.UsePercentage = false;
+    } 
+    
+    public void SetPresentationViewportPercent(RectF viewport)
+    {
+        _presentationRenderTargetStrategy.Bounds = viewport;
+        _presentationRenderTargetStrategy.UsePercentage = true;
+    } 
+    
+    public void ResetPresentationViewport()
+    {
+        _presentationRenderTargetStrategy.Bounds = new RectF(0, 0, 1, 1);
+        _presentationRenderTargetStrategy.UsePercentage = true;
+    }
+
     /// <summary>
     /// Executes the rendering pipeline for all configured render targets.
     /// Intermediate targets are rendered first, and the final render target composites the generated texture to the screen.
@@ -131,13 +150,15 @@ public class RenderService
     public void Render()
     {
         SetupRenderTexture();
-
+        var _presentationRenderDone = false;
         foreach (var renderTargetStrategy in _renderTargetStrategies)
         {
-            var lastRenderer = renderTargetStrategy == _lastRenderTargetStrategy;
-
-            if (lastRenderer)
+            var presentationRenderer = renderTargetStrategy == _presentationRenderTargetStrategy;
+            
+            if (presentationRenderer)
             {
+                renderTargetStrategy.ScreenSizeOverride = new PointInt(_renderTexture.Value.Texture.Width,
+                    _renderTexture.Value.Texture.Height);
                 renderTargetStrategy.BeginRender(BackgroundColor);
                 Raylib.BeginBlendMode(BlendMode.AlphaPremultiply);
                 Raylib.DrawTexturePro(
@@ -147,11 +168,16 @@ public class RenderService
                     Vector2.Zero, 0f, Color.White
                 );
                 Raylib.EndBlendMode();
-
+                _presentationRenderDone = true;
+                renderTargetStrategy.ScreenSizeOverride = null;
                 renderTargetStrategy.EndRender();
-                break;
+                continue;
             }
 
+            if (!_presentationRenderDone)
+                renderTargetStrategy.ScreenSizeOverride =
+                    new PointInt(_renderTexture!.Value.Texture.Width, _renderTexture!.Value.Texture.Height);
+            
             renderTargetStrategy.BeginRender(new Color(0, 0, 0, 0));
 
             foreach (var layer in _gameObjects[renderTargetStrategy])
@@ -162,13 +188,13 @@ public class RenderService
                 gameObjects.Clear();
             }
 
-            renderTargetStrategy.EndRender(_renderTexture);
+            renderTargetStrategy.EndRender(_presentationRenderDone ? null : _renderTexture);
         }
     }
 
     private void SetupRenderTexture()
     {
-        var screenSize = new PointInt(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
+        var screenSize = new PointInt(_presentationRenderTargetStrategy.RenderWidth, _presentationRenderTargetStrategy.RenderHeight);
 
         if (_renderTexture == null || _renderTexture.Value.Texture.Width != screenSize.X ||
             _renderTexture.Value.Texture.Height != screenSize.Y)

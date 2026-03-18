@@ -97,7 +97,6 @@ public class TextNode: IVisualItem
         color = Raylib.ColorLerp(new Color(0, 0, 0, 0), color, timerNormalized);
         color2 = Raylib.ColorLerp(new Color(0, 0, 0, 0), color2, timerNormalized);
         var backgroundColor = Raylib.ColorLerp(new Color(0, 0, 0, 0), BackgroundColor, timerNormalized); 
-        Console.WriteLine(timerNormalized);
         
         if (BackgroundColor.A > 0)
             Raylib.DrawRectangleRec(Bounds, backgroundColor);

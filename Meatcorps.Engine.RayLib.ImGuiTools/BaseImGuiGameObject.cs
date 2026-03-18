@@ -12,7 +12,6 @@ public abstract class BaseImGuiGameObject : BaseGameObject
 {
     protected readonly bool DarkMode;
     private float _previousDeltaTime;
-    private IRenderTargetStrategy? _renderer;
 
     public BaseImGuiGameObject(bool darkMode = true)
     {
@@ -24,7 +23,6 @@ public abstract class BaseImGuiGameObject : BaseGameObject
         rlImGui.Setup(DarkMode);
         Camera = CameraLayer.UI;
         OnGuiInitialize();
-        _renderer = GlobalObjectManager.ObjectManager.Get<IRenderTargetStrategy>();
     }
 
     protected abstract void OnGuiInitialize();
@@ -43,9 +41,6 @@ public abstract class BaseImGuiGameObject : BaseGameObject
 
     private Vector2 GetMouseCursorPosition()
     {
-        if (_renderer == null)
-            throw new InvalidOperationException("Renderer is null");
-
         var mouse = Raylib.GetMousePosition();
         var scaleX = Scene.GameHost.Width / RenderTarget!.RenderWidth;
         var scaleY = Scene.GameHost.Height / RenderTarget!.RenderHeight;
@@ -57,9 +52,6 @@ public abstract class BaseImGuiGameObject : BaseGameObject
 
     private Vector2 GetScreenSize()
     {
-        if (_renderer == null)
-            throw new InvalidOperationException("Renderer is null");
-
         return new Vector2(RenderTarget!.RenderWidth, RenderTarget!.RenderHeight);
     }
 

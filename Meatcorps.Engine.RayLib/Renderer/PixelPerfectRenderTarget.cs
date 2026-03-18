@@ -125,8 +125,7 @@ public sealed class PixelPerfectRenderTarget : BaseRenderTarget, IDisposable
         );
         Raylib.EndBlendMode();
         Raylib.EndTextureMode();
-
-
+        
         var destinationRect = GetScreenRect();
 
         if (targetTexture is not null)

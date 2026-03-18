@@ -72,8 +72,11 @@ public class SceneTask : IGameLoopTask
         if (type == GameLoopType.AfterUpdate) 
             activeScene.RegisterForRender();
 
-        if (type == GameLoopType.PreRender) 
+        if (type == GameLoopType.PreRender)
+        {
             Raylib.BeginDrawing();
+            Raylib.ClearBackground(new Color(0, 0, 0, 0));
+        }
 
         if (type == GameLoopType.Render)
         {

@@ -10,14 +10,18 @@ public class BasicScreenRenderTarget : BaseRenderTarget, IDisposable
     private readonly PostProcessingRenderer _postProcessingRenderer = new();
     private readonly bool _useRenderTexture = true;
     private RenderTexture2D? _renderTexture;
-    public Guid Id { get; } = Guid.NewGuid();
+
+    public BasicScreenRenderTarget(bool useRenderTexture = true)
+    {
+        _useRenderTexture = useRenderTexture;
+    }
     
     public override int RenderWidth
     {
         get
         {
-            var screenSize = GetScreenSize();
-            return screenSize.X;
+            var screenSize = GetScreenRect();
+            return (int)screenSize.Width;
         }
     }
 
@@ -25,8 +29,8 @@ public class BasicScreenRenderTarget : BaseRenderTarget, IDisposable
     {
         get
         {
-            var screenSize = GetScreenSize();
-            return screenSize.Y;
+            var screenSize = GetScreenRect();
+            return (int)screenSize.Height;
         }
     }
 
