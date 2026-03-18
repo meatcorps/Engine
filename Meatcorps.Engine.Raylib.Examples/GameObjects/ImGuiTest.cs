@@ -1,5 +1,8 @@
 using ImGuiNET;
+using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.ImGuiTools;
+using Meatcorps.Engine.RayLib.ImGuiTools.Controllers;
+using Meatcorps.Engine.RayLib.Resources;
 
 namespace Meatcorps.Engine.Raylib.Examples.GameObjects;
 
@@ -16,6 +19,7 @@ public class ImGuiTest : BaseImGuiGameObject
     {
         //ImGui.ShowDemoWindow();
         ImGui.Begin("Simple Window");
+        rlImGui.Image(GlobalObjectManager.ObjectManager.Get<OneTexture>("BGPIC")!.Texture);
         ImGui.Text("Hello, world!");
         ImGui.End();
     }

@@ -5,7 +5,7 @@ using Color = Raylib_cs.Color;
 
 namespace Meatcorps.Engine.RayLib.Renderer;
 
-public abstract class BaseRenderTarget : IRenderTargetStrategy
+public abstract class BaseRenderTarget : IRenderTargetStrategyRenderer
 {
     public ICamera? Camera { get; set; }
     public List<IPostProcessor> PostProcessors { get; set; } = new();

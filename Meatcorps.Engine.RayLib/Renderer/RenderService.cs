@@ -16,9 +16,9 @@ public class RenderService
 {
     private readonly int _gameObjectLayers;
 
-    private readonly Dictionary<IRenderTargetStrategy, List<List<List<IRenderer>>>> _gameObjects = new();
+    private readonly Dictionary<IRenderTargetStrategyRenderer, List<List<List<IRenderer>>>> _gameObjects = new();
     private readonly IRenderTargetStrategy _presentationRenderTargetStrategy;
-    private readonly List<IRenderTargetStrategy> _renderTargetStrategies;
+    private readonly List<IRenderTargetStrategyRenderer> _renderTargetStrategies;
     private readonly int _sceneLayers;
 
     private RenderTexture2D? _renderTexture;
@@ -41,12 +41,12 @@ public class RenderService
         _sceneLayers = sceneLayers;
         _gameObjectLayers = gameObjectLayers;
 
-        _renderTargetStrategies = new List<IRenderTargetStrategy>();
+        _renderTargetStrategies = new List<IRenderTargetStrategyRenderer>();
 
         _presentationRenderTargetStrategy = objectManager.Get<IRenderTargetStrategy>("FINAL") ??
                                     new BasicScreenRenderTarget().SetFullScreen();
 
-        SetRenderTargets(objectManager.GetList<IRenderTargetStrategy>()!);
+        SetRenderTargets(objectManager.GetList<IRenderTargetStrategyRenderer>()!);
     }
 
     /// <summary>
@@ -62,9 +62,9 @@ public class RenderService
     /// <param name="renderTargetStrategies">
     /// The render target strategies to register, or <c>null</c> to use the globally registered strategies.
     /// </param>
-    public void SetRenderTargets(IEnumerable<IRenderTargetStrategy>? renderTargetStrategies = null)
+    public void SetRenderTargets(IEnumerable<IRenderTargetStrategyRenderer>? renderTargetStrategies = null)
     {
-        renderTargetStrategies ??= GlobalObjectManager.ObjectManager.GetList<IRenderTargetStrategy>()!;
+        renderTargetStrategies ??= GlobalObjectManager.ObjectManager.GetList<IRenderTargetStrategyRenderer>()!;
 
         _renderTargetStrategies.Clear();
         _renderTargetStrategies.AddRange(renderTargetStrategies);
@@ -105,14 +105,14 @@ public class RenderService
         if (gameObject.RenderTarget == null)
             gameObject.RenderTarget = _renderTargetStrategies.First();
 
-        if (!_gameObjects.ContainsKey(gameObject.RenderTarget))
+        if (!_gameObjects.ContainsKey((IRenderTargetStrategyRenderer)gameObject.RenderTarget))
         {
             Console.WriteLine(
                 $"Render target is not registered. Render target: {gameObject.RenderTarget}, GameObject: {gameObject.GetType().FullName}");
             return;
         }
 
-        _gameObjects[gameObject.RenderTarget][gameObject.SceneLayer][gameObject.Layer].Add(gameObject);
+        _gameObjects[(IRenderTargetStrategyRenderer)gameObject.RenderTarget][gameObject.SceneLayer][gameObject.Layer].Add(gameObject);
     }
 
     /// <summary>

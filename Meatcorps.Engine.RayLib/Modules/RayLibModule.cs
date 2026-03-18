@@ -25,7 +25,7 @@ public class RayLibModule
     private int _initialHeight = 720;
     private int _initialWidth = 1280;
     private string _title = "Meatcorps Engine";
-    private List<(string, IRenderTargetStrategy)> _debugRenderTargets = new List<(string, IRenderTargetStrategy)>();
+    private List<(string, IRenderTargetStrategyRenderer)> _debugRenderTargets = new List<(string, IRenderTargetStrategyRenderer)>();
 
     public RayLibModule()
     {
@@ -37,7 +37,7 @@ public class RayLibModule
         GlobalObjectManager.ObjectManager.RegisterList<IResourceLoadOnInit>();
         GlobalObjectManager.ObjectManager.RegisterList<IPostProcessor>();
         GlobalObjectManager.ObjectManager.RegisterList<IGameLoopTask>();
-        GlobalObjectManager.ObjectManager.RegisterList<IRenderTargetStrategy>();
+        GlobalObjectManager.ObjectManager.RegisterList<IRenderTargetStrategyRenderer>();
         var raylibResource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>();
 
         if (raylibResource is null || MeatcorpsEngineLibSettings.IsDebug)
@@ -167,7 +167,7 @@ public class RayLibModule
         if (_camera is null)
             _camera = new FallBackCamera();
         
-        if (!GlobalObjectManager.ObjectManager.GetList<IRenderTargetStrategy>()!.Any())
+        if (!GlobalObjectManager.ObjectManager.GetList<IRenderTargetStrategyRenderer>()!.Any())
         {
             RegisterRenderTargetStrategy(new BasicScreenRenderTarget().SetFullScreen());
             RegisterRenderTargetStrategy(new BasicScreenRenderTarget().SetFullScreen(), "UI");
@@ -198,7 +198,7 @@ public class RayLibModule
             RegisterRenderTargetStrategy(debugRenderTargets.Item2, debugRenderTargets.Item1);
     }
 
-    public RayLibModule RegisterRenderTargetStrategy(IRenderTargetStrategy renderTargetStrategy, string tag = "default", bool isDebug = false)
+    public RayLibModule RegisterRenderTargetStrategy(IRenderTargetStrategyRenderer renderTargetStrategy, string tag = "default", bool isDebug = false)
     {
         if (isDebug)
         {
@@ -206,7 +206,7 @@ public class RayLibModule
             return this;
         }
 
-        GlobalObjectManager.ObjectManager.Register(renderTargetStrategy, tag);
+        GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(renderTargetStrategy, tag);
         GlobalObjectManager.ObjectManager.Add(renderTargetStrategy);
         return this;
     }

@@ -9,9 +9,15 @@ public interface IRenderTargetStrategy
     List<IPostProcessor> PostProcessors { get; set; }
     RectF Bounds { get; set; }
     bool UsePercentage { get; set; }
-    internal PointInt? ScreenSizeOverride { get; set; }
+    
     int RenderWidth { get; }
     int RenderHeight { get; }
+}
+
+public interface IRenderTargetStrategyRenderer: IRenderTargetStrategy
+{
+    PointInt? ScreenSizeOverride { get; set; }
+    
     RectF GetScreenRect();
     void BeginRender(Color clearColor);
 

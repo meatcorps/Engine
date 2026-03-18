@@ -2,6 +2,7 @@ using System.Numerics;
 using ImGuiNET;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.ImGuiTools;
+using Meatcorps.Engine.RayLib.ImGuiTools.Controllers;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.Visualizer.Scenes;
 using Raylib_cs;
@@ -47,7 +48,7 @@ public class Editor: BaseImGuiGameObject
 
         if (Raylib.IsKeyPressed(KeyboardKey.F4) && !BlockTheEditor)
             EditName();
-
+        
         if (_openFile)
         {
             ImGui.Begin("Editor", ImGuiWindowFlags.AlwaysAutoResize);
