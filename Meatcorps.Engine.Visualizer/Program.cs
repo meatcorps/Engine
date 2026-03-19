@@ -3,6 +3,7 @@ using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.Logging.Module;
+using Meatcorps.Engine.RayLib.ImGuiTools.Modules;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
@@ -17,6 +18,9 @@ CoreModule.Load();
 var settings = new BasicConfig();
 
 GlobalObjectManager.ObjectManager.Register<IUniversalConfig>(settings);
+
+ImGuiModule.Setup();
+
 using var _ = RayLibModule.Setup()
     .SetTitle("Visualizer")
     .SetInitialSize(1920, 1080)

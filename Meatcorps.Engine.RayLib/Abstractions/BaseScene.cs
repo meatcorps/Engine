@@ -26,6 +26,7 @@ public abstract class BaseScene : IDisposable
         SceneObjectManager.RegisterSet<BaseScene>();
         SceneObjectManager.RegisterList<BaseGameObject>();
         SceneObjectManager.RegisterList<IBackgroundService>();
+        SceneObjectManager.RegisterList<IDisposable>();
     }
 
     /// <summary>The <see cref="GameHost"/> that owns this scene. Assigned before <see cref="Initialize"/> is called.</summary>

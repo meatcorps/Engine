@@ -3,9 +3,12 @@ using Meatcorps.Engine.Core.Modules;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Storage.Data;
 using Meatcorps.Engine.Logging.Module;
+using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.Raylib.Examples.Enums;
 using Meatcorps.Engine.Raylib.Examples.Resources;
 using Meatcorps.Engine.Raylib.Examples.Scenes;
+using Meatcorps.Engine.RayLib.ImGuiTools;
+using Meatcorps.Engine.RayLib.ImGuiTools.Modules;
 using Meatcorps.Engine.RayLib.Modules;
 using Meatcorps.Engine.RayLib.PostProcessing;
 using Meatcorps.Engine.RayLib.PostProcessing.Extensions;
@@ -19,6 +22,10 @@ var settings = new BasicConfig();
 GameFallbackInput.Load();
 
 GlobalObjectManager.ObjectManager.Register<IUniversalConfig>(settings);
+
+ImGuiModule.Setup()
+    .RegisterFont(DefaultFont.Default, 16);
+
 using var _ = RayLibModule.Setup()
     .SetTitle("Controller Test")
     .SetFps(120)
@@ -32,6 +39,7 @@ using var _ = RayLibModule.Setup()
     ))
     .SetResource(new OneTexture("Assets/test2.png"), "BGPIC")
     .SetResource(TextManager.OnlyOneFont("PressStart2P-Regular.ttf"))
+    .SetResource(new ImGuiTextManager<DefaultFont>())
     //.SetResource(TextManager.OnlyOneFont("Assets/gnf.regular.ttf", 16))
     .SetResource(AudioEnumBinder.BindAllSounds(
         SoundFxResource<GameSounds>

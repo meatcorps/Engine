@@ -74,6 +74,11 @@ public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultF
     {
         return _fonts[font];
     }
+    
+    public IEnumerable<(T, string)> GetFontRegistrations() 
+    {
+        return _fontPaths.Select(x => (x.Item2, x.Item1));
+    }
 }
 
 public static class TextManager

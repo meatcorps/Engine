@@ -9,9 +9,9 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.Visualizer.GameObjects;
 
-public class Editor: BaseImGuiGameObject
+public class Editor: BaseImGuiTool
 {
-    public bool BlockTheEditor => _editName || _openFile || _scene.VisualData.EditItem != null;
+    public bool BlockTheEditor => _editName || _openFile || _scene?.VisualData.EditItem != null;
 
     private bool _editName;
     private bool _openFile;
@@ -19,9 +19,9 @@ public class Editor: BaseImGuiGameObject
     private string[] _fileItems = [];
     private int _currentFileIndex;
     private ICameraFixedWidthAndHeight _camera = null!;
-    private MainScene _scene = null!;
-    
-    protected override void OnGuiInitialize()
+    private MainScene? _scene = null;
+
+    public override void Initialize()
     {
         _scene = (Scene as MainScene)!;
         
@@ -31,7 +31,7 @@ public class Editor: BaseImGuiGameObject
 
     public void OpenFile()
     {
-        _fileItems = _scene.DataLoaderService.GetFiles().ToArray();
+        _fileItems = _scene?.DataLoaderService.GetFiles().ToArray() ?? [];
         _openFile = true;
         _currentFileIndex = 0;
     }
@@ -41,7 +41,7 @@ public class Editor: BaseImGuiGameObject
         _editName = true;
     }
 
-    protected override void OnGuiUpdate(float deltaTime)
+    protected override void DoDraw(float deltaTime)
     {
         if (Raylib.IsKeyDown(KeyboardKey.LeftShift) && Raylib.IsKeyPressed(KeyboardKey.F4) && !BlockTheEditor)
             OpenFile();
@@ -52,12 +52,12 @@ public class Editor: BaseImGuiGameObject
         if (_openFile)
         {
             ImGui.Begin("Editor", ImGuiWindowFlags.AlwaysAutoResize);
-            var name = _scene.VisualData.Name;
+            var name = _scene?.VisualData.Name;
 
             ImGui.Selectable("Select file");
             
             name = name.Replace("/", "").Replace("\\", "");
-            _scene.VisualData.Name = name;
+            _scene!.VisualData.Name = name;
 
             if (ImGui.Combo("Select item", ref _currentFileIndex, _fileItems, _fileItems.Length))
             {
@@ -113,14 +113,12 @@ public class Editor: BaseImGuiGameObject
         }
     }
 
-    protected override void OnDraw()
+    protected override void OnNonImGuiDraw()
     {
-        base.OnDraw();
-        
         if (BlockTheEditor)
         {
             var mousePosition = Raylib.GetMousePosition() /
-                             ((float) Scene.GameHost.Width / _camera.TargetWidth);
+                                ((float) Scene.GameHost.Width / _camera.TargetWidth);
 
             Raylib.DrawTriangleLines(mousePosition, mousePosition + new Vector2(5, 30),
                 mousePosition + new Vector2(30, 15), Color.White);
@@ -128,5 +126,6 @@ public class Editor: BaseImGuiGameObject
                 mousePosition + new Vector2(31, 16), Color.White);
 
         }
+        base.OnNonImGuiDraw();
     }
 }

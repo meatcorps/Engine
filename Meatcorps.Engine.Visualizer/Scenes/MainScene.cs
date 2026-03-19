@@ -3,6 +3,7 @@ using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Camera;
 using Meatcorps.Engine.RayLib.GameObjects.UI;
+using Meatcorps.Engine.RayLib.ImGuiTools;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.RemixIcons;
 using Meatcorps.Engine.RayLib.Resources;
@@ -55,7 +56,7 @@ public class MainScene: BaseScene
         _uiMessage = AddGameObject(new UIMessageEmitter(
             TextKitStyles.HudDefault(GlobalObjectManager.ObjectManager.Get<IDefaultFont>()!.GetFont())));
         _toolbox = AddGameObject(new Toolbox());
-        _editor = AddGameObject(new Editor());
+        _editor = this.AddImGuiUniqueTool(new Editor());
         _font = GlobalObjectManager.ObjectManager.Get<TextManager<FontEnum>>()!;
         AddGameObject(new MainGameObject());
         SetupToolBox();
