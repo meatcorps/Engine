@@ -15,9 +15,10 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     private readonly Dictionary<int, IInputMapper<T>> _playerMappers = new();
     private readonly List<IInputMapper<T>> _inputMappers = new();
     private readonly List<int> _profileIds = new();
-
+    
     /// <summary>When true, automatically assigns the first mapper that receives any input to player 1. Useful for single-player games that support multiple input devices.</summary>
     public bool AutoAssign { get; set; }
+    public bool Enabled { get; set; } = true;
     private int _useAutoMapper;
     private readonly GenericInput _defaultInput = new GenericInput(() => 0, "UNKNOWN");
 
@@ -80,6 +81,9 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
 
     public IInput GetState(int player, T input)
     {
+        if (!Enabled)
+            return _defaultInput;
+        
         if (AutoAssign)
             return player == 1 ? _inputMappers[_useAutoMapper].GetState(1, input) : _defaultInput;
 
@@ -91,6 +95,9 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
 
     public Vector2 GetAxis(int player, int axis = 1)
     {
+        if (!Enabled)
+            return Vector2.Zero;
+        
         if (AutoAssign)
             return player == 1 ? _inputMappers[_useAutoMapper].GetAxis(1, axis) : Vector2.Zero;
 
@@ -104,7 +111,10 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
     }
 
     public void Rumble(int player, float left, float right, float duration)
-    {
+    { 
+        if (!Enabled)
+            return;
+
         if (AutoAssign)
             _inputMappers[_useAutoMapper].Rumble(1, left, right, duration);
 
@@ -151,6 +161,13 @@ public class PlayerInputRouter<T> : IBackgroundService, IInputMapper<T> where T 
 
     public bool AnyInputPressed(out int profileId, out int player)
     {
+        if (!Enabled)
+        {
+            profileId = -1;
+            player = -1;
+            return false;
+        }
+
         var counter = 0;
         foreach (var inputMapper in _inputMappers)
         {
