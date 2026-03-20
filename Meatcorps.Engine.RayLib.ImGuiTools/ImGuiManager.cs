@@ -18,7 +18,8 @@ public class ImGuiManager: IBackgroundService, IRenderer, IDisposable
     public int SceneLayer { get; }
     public bool Enabled { get; set; } = true;
     public bool UseHighDpi { get; set; } = false;
-
+    public IImGuiDrawModule? DrawModule { get; set; } = null;
+    
     public IRenderTargetStrategy? RenderTarget { get; set; }
     private List<BaseImGuiTool> _imGuiDrawTargets = new List<BaseImGuiTool>();
     private bool _initialized;
@@ -130,8 +131,10 @@ public class ImGuiManager: IBackgroundService, IRenderer, IDisposable
             return;
         }
         rlImGui.Begin(_deltaTime);
+        DrawModule?.BeginDraw();
             foreach (var drawTarget in _imGuiDrawTargets)
                 drawTarget.Draw(_deltaTime);
+        DrawModule?.EndDraw();
         rlImGui.End();
         
         foreach (var drawTarget in _imGuiDrawTargets)

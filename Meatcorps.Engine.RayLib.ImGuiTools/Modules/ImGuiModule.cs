@@ -9,6 +9,7 @@ namespace Meatcorps.Engine.RayLib.ImGuiTools.Modules;
 public class ImGuiModule
 {
     private static bool _setupCalled;
+    private static bool _defaultFontRegistered;
     public static ImGuiModule Setup(string targetRenderTarget = "UI", 
         bool darkMode = true, 
         int sceneLayer = 1, 
@@ -32,6 +33,15 @@ public class ImGuiModule
     private ImGuiModule()
     {
         // Do nothing
+    }
+
+    public ImGuiModule RegisterDefaultFont()
+    {
+        if (_defaultFontRegistered)
+            throw new InvalidOperationException("Default font already registered");
+        _defaultFontRegistered = true;
+        RegisterInitModule(new ImGuiGenericInitialize(io => io.Fonts.AddFontDefault()));
+        return this;
     }
     
     public ImGuiModule RegisterFont<T>(T font, int size = 16) where T : Enum

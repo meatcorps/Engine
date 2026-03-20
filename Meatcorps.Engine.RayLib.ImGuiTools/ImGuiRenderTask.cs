@@ -23,7 +23,7 @@ public class ImGuiRenderTask: IGameLoopTask
 
     public void Task(GameLoopType type, float deltaTime)
     {
-        if (type == GameLoopType.AfterUpdate)
+        if (type == GameLoopType.AfterUpdate && _manager.Enabled)
             _renderService.RegisterRender(_manager);
     }
 }
