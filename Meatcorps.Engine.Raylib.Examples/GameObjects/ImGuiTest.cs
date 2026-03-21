@@ -1,5 +1,6 @@
 using ImGuiNET;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Profiler;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.ImGuiTools;
 using Meatcorps.Engine.RayLib.ImGuiTools.Controllers;
@@ -11,6 +12,10 @@ namespace Meatcorps.Engine.Raylib.Examples.GameObjects;
 
 public class ImGuiTest : BaseImGuiTool
 {
+    public ImGuiTest()
+    {
+        Profiler.EnableProfiler();
+    }
 
     protected override void DoDraw(float deltaTime)
     {
@@ -21,6 +26,16 @@ public class ImGuiTest : BaseImGuiTool
             ImGui.Text("Hello, world!");
             ImGui.End();
         }
+
+        ImGui.Begin("TestProfileOutput");
+
+        foreach (var result in Profiler.Instance.GetTimers())
+        {
+            ImGui.Text(result.Item1);
+            ImGui.Text(result.Item2.ToCompactStringWithAlloc());
+            ImGui.Separator();
+        }
+        ImGui.End();
         base.DoDraw(deltaTime);
     }
     

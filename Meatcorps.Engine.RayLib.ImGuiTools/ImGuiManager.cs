@@ -2,6 +2,7 @@ using System.Numerics;
 using ImGuiNET;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Profiler;
 using Meatcorps.Engine.RayLib.Game;
 using Meatcorps.Engine.RayLib.ImGuiTools.Controllers;
 using Meatcorps.Engine.RayLib.ImGuiTools.Interfaces;
@@ -123,6 +124,8 @@ public class ImGuiManager: IBackgroundService, IRenderer, IDisposable
         );
     }
     
+    private const string START = "Start";
+    private const string END = "End";
     public void Draw()
     {
         if (_deltaTime == 0)
@@ -130,13 +133,28 @@ public class ImGuiManager: IBackgroundService, IRenderer, IDisposable
             Console.WriteLine("Delta time is 0. This is bad.");
             return;
         }
-        rlImGui.Begin(_deltaTime);
-        DrawModule?.BeginDraw();
+
+        using (Profiler.Instance.StartProfile(GetType(), nameof(Draw)))
+        {
+            using (Profiler.Instance.StartProfile(GetType(), START))
+            {
+                rlImGui.Begin(_deltaTime);
+            }
+
             foreach (var drawTarget in _imGuiDrawTargets)
-                drawTarget.Draw(_deltaTime);
-        DrawModule?.EndDraw();
-        rlImGui.End();
-        
+            {
+                using (Profiler.Instance.StartProfile(GetType(), nameof(Draw), drawTarget.GetType()))
+                {
+                    drawTarget.Draw(_deltaTime);
+                }
+            }
+
+            using (Profiler.Instance.StartProfile(GetType(), END))
+            {
+                rlImGui.End();
+            }
+        }
+
         foreach (var drawTarget in _imGuiDrawTargets)
             drawTarget.NonImGuiDraw();
     }

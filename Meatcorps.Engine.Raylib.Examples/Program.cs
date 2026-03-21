@@ -24,6 +24,7 @@ GameFallbackInput.Load();
 GlobalObjectManager.ObjectManager.Register<IUniversalConfig>(settings);
 
 ImGuiModule.Setup()
+    .RegisterDefaultFont()
     .RegisterFont(DefaultFont.Default, 16);
 
 using var _ = RayLibModule.Setup()

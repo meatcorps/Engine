@@ -5,6 +5,7 @@ namespace Meatcorps.Engine.RayLib.Interfaces;
 
 public interface IRenderTargetStrategy
 {
+    public string Name { get; set; }
     ICamera? Camera { get; set; }
     List<IPostProcessor> PostProcessors { get; set; }
     RectF Bounds { get; set; }

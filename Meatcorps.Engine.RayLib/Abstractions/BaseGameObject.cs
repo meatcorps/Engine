@@ -1,6 +1,7 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Interfaces.Components;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Profiler;
 using Meatcorps.Engine.RayLib.Enums;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Meatcorps.Engine.RayLib.Renderer;
@@ -16,17 +17,27 @@ namespace Meatcorps.Engine.RayLib.Abstractions;
 /// </summary>
 public abstract class BaseGameObject : IRenderer, IDisposable
 {
+    private static int _idCounter = 0;
     private readonly List<IGameComponent> _components = new();
     private readonly Queue<IGameComponent> _toComponentAdd = new();
     private readonly Queue<IGameComponent> _toComponentRemove = new();
-
+    private string _id;
     private CameraLayer _cameraLayer = CameraLayer.Other;
     private bool _enabled = true;
     private bool _visible = true;
+    private readonly Type _type;
 
     protected BaseGameObject()
     {
         Camera = CameraLayer.World;
+        _type = GetType();
+        _id = _idCounter.ToString();
+        _idCounter++;
+        GAMEOBJECT_INITIALIZE += $"[{_id}]";
+        GAMEOBJECT_PREUPDATE += $"[{_id}]";
+        GAMEOBJECT_UPDATE += $"[{_id}]";
+        GAMEOBJECT_LATEUPDATE += $"[{_id}]";
+        GAMEOBJECT_DRAW += $"[{_id}]";
     }
 
     /// <summary>World-space position of this object.</summary>
@@ -135,10 +146,14 @@ public abstract class BaseGameObject : IRenderer, IDisposable
     {
         Scene = scene;
     }
-
+    
+    private string GAMEOBJECT_INITIALIZE = "GameObject.Initialize";
     public void Initialize()
     {
-        OnInitialize();
+        using (Profiler.Instance.StartProfile(_type, GAMEOBJECT_INITIALIZE))
+        {
+            OnInitialize();
+        }
     }
 
     /// <summary>
@@ -194,18 +209,26 @@ public abstract class BaseGameObject : IRenderer, IDisposable
         _toComponentRemove.Enqueue(component);
     }
 
+    
+    private string GAMEOBJECT_PREUPDATE = "GameObject.PreUpdate";
     public void PreUpdate(float deltaTime)
     {
         if (!Enabled)
             return;
 
-        OnPreUpdate(deltaTime);
+        using (Profiler.Instance.StartProfile(_type, GAMEOBJECT_PREUPDATE))
+        {
+            OnPreUpdate(deltaTime);
+        }
 
         while (_toComponentAdd.TryDequeue(out var component))
         {
             _components.Add(component);
-            component.Initialize();
-            
+            using (Profiler.Instance.StartProfile(_type, GAMEOBJECT_INITIALIZE, component.GetType()))
+            {
+                component.Initialize();
+            }
+
             foreach (var other in _components)
             {
                 if (other == component)
@@ -228,39 +251,70 @@ public abstract class BaseGameObject : IRenderer, IDisposable
         }
 
         foreach (var component in _components)
-            component.PreUpdate(deltaTime);
+        {
+            using (Profiler.Instance.StartProfile(_type, GAMEOBJECT_INITIALIZE, component.GetType()))
+            {
+                component.PreUpdate(deltaTime);
+            }
+        }
     }
 
+    private string GAMEOBJECT_UPDATE = "GameObject.Update";
     public void Update(float deltaTime)
     {
         if (!Enabled)
             return;
-
-        OnUpdate(deltaTime);
+        
+        using (Profiler.Instance.StartProfile(_type, GAMEOBJECT_UPDATE))
+        {
+            OnUpdate(deltaTime);
+        }
 
         foreach (var component in _components)
-            component.Update(deltaTime);
+        {
+            using (Profiler.Instance.StartProfile(_type, GAMEOBJECT_UPDATE, component.GetType()))
+            {
+                component.Update(deltaTime);
+            }
+        }
     }
 
+    private string GAMEOBJECT_ALWAYSUPDATE = "GameObject.AlwaysUpdate";
     public void AlwaysUpdate(float deltaTime)
     {
-        OnAlwaysUpdate(deltaTime);
+        using (Profiler.Instance.StartProfile(_type, GAMEOBJECT_ALWAYSUPDATE))
+        {
+            OnAlwaysUpdate(deltaTime);
+        }
     }
 
+    private string GAMEOBJECT_LATEUPDATE = "GameObject.LateUpdate";
     public void LateUpdate(float deltaTime)
     {
         if (!Enabled)
             return;
-        
-        OnLateUpdate(deltaTime);
+
+        using (Profiler.Instance.StartProfile(_type, GAMEOBJECT_LATEUPDATE))
+        {
+            OnLateUpdate(deltaTime);
+        }
 
         foreach (var component in _components)
-            component.LateUpdate(deltaTime);
+        {
+            using (Profiler.Instance.StartProfile(_type, GAMEOBJECT_LATEUPDATE, component.GetType()))
+            {
+                component.LateUpdate(deltaTime);
+            }
+        }
     }
 
+    private string GAMEOBJECT_DRAW = "GameObject.Draw";
     public void Draw()
     {
-        OnDraw();
+        using (Profiler.Instance.StartProfile(_type, GAMEOBJECT_DRAW))
+        {
+            OnDraw();
+        }
     }
 
     /// <summary>Override to initialize this object's state and resolve dependencies from <see cref="Scene"/>.</summary>

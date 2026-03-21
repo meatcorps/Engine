@@ -1,5 +1,6 @@
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Profiler;
 using Meatcorps.Engine.RayLib.Game;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
@@ -19,7 +20,8 @@ public abstract class BaseScene : IDisposable
     private readonly Queue<BaseScene> _subScenesToAdd = new();
     private readonly Queue<BaseScene> _subScenesToDispose = new();
     private bool _enabled = true;
-
+    private Type _type;
+    
     public BaseScene()
     {
         SceneObjectManager.Register(this);
@@ -27,6 +29,7 @@ public abstract class BaseScene : IDisposable
         SceneObjectManager.RegisterList<BaseGameObject>();
         SceneObjectManager.RegisterList<IBackgroundService>();
         SceneObjectManager.RegisterList<IDisposable>();
+        _type = GetType();
     }
 
     /// <summary>The <see cref="GameHost"/> that owns this scene. Assigned before <see cref="Initialize"/> is called.</summary>
@@ -147,9 +150,13 @@ public abstract class BaseScene : IDisposable
         _gameObjectsToDispose.Enqueue(gameObject);
     }
 
+    private const string SCENE_INITIALIZE = "Scene.Initialize";
     public void Initialize()
     {
-        OnInitialize();
+        using (Profiler.Instance.StartProfile(_type, SCENE_INITIALIZE))
+        {
+            OnInitialize();
+        }
     }
 
     protected virtual void OnEnabled()
@@ -160,6 +167,9 @@ public abstract class BaseScene : IDisposable
     {
     }
 
+
+    private const string SCENE_PREUPDATE = "Scene.PreUpdate";
+    private const string SCENE_BACKGROUND_PREUPDATE = "Scene.BackgroundService.PreUpdate";
     public void PreUpdate(float deltaTime)
     {
         if (Paused || !Enabled)
@@ -168,7 +178,12 @@ public abstract class BaseScene : IDisposable
         GameHost.SetMultiplier(UpdateTimeMultiplier);
 
         foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
-            backgroundService.PreUpdate(deltaTime);
+        {
+            using (Profiler.Instance.StartProfile(backgroundService.GetType(), SCENE_BACKGROUND_PREUPDATE))
+            {
+                backgroundService.PreUpdate(deltaTime);
+            }
+        }
 
         while (_subScenesToAdd.TryDequeue(out var scene))
         {
@@ -196,7 +211,10 @@ public abstract class BaseScene : IDisposable
             SceneObjectManager.Add(gameObject);
         }
 
-        OnPreUpdate(deltaTime);
+        using (Profiler.Instance.StartProfile(_type, SCENE_PREUPDATE))
+        {
+            OnPreUpdate(deltaTime);
+        }
 
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
             subScene.PreUpdate(deltaTime);
@@ -204,22 +222,34 @@ public abstract class BaseScene : IDisposable
             gameObject.PreUpdate(deltaTime);
     }
 
+    
+    private const string SCENE_UPDATE = "Scene.Update";
+    private const string SCENE_BACKGROUND_UPDATE = "Scene.BackgroundService.Update";
     public void Update(float deltaTime)
     {
         if (Paused || !Enabled)
             return;
 
         foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
-            backgroundService.Update(deltaTime);
+        {
+            using (Profiler.Instance.StartProfile(backgroundService.GetType(), SCENE_BACKGROUND_UPDATE))
+            {
+                backgroundService.Update(deltaTime);
+            }
+        }
 
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
             subScene.Update(deltaTime);
         foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
             gameObject.Update(deltaTime);
 
-        OnUpdate(deltaTime);
+        using (Profiler.Instance.StartProfile(_type, SCENE_UPDATE))
+        {
+            OnUpdate(deltaTime);
+        }
     }
 
+    private const string SCENE_ALWAYSUPDATE = "Scene.AlwaysUpdate";
     public void AlwaysUpdate(float deltaTime)
     {
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
@@ -227,33 +257,50 @@ public abstract class BaseScene : IDisposable
         foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
             gameObject.AlwaysUpdate(deltaTime);
 
-        OnAlwaysUpdate(deltaTime);
+        using (Profiler.Instance.StartProfile(_type, SCENE_ALWAYSUPDATE))
+        {
+            OnAlwaysUpdate(deltaTime);
+        }
     }
 
+    private const string SCENE_LATEUPDATE = "Scene.LateUpdate";
+    private const string SCENE_BACKGROUND_LATEUPDATE = "Scene.BackgroundService.LateUpdate";
     public void LateUpdate(float deltaTime)
     {
         if (Paused || !Enabled)
             return;
 
         foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
-            backgroundService.LateUpdate(deltaTime);
+        {
+            using (Profiler.Instance.StartProfile(backgroundService.GetType(), SCENE_BACKGROUND_LATEUPDATE))
+            {
+                backgroundService.LateUpdate(deltaTime);
+            }
+        }
 
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
             subScene.LateUpdate(deltaTime);
         foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
             gameObject.LateUpdate(deltaTime);
 
-        OnLateUpdate(deltaTime);
+        using (Profiler.Instance.StartProfile(_type, SCENE_LATEUPDATE))
+        {
+            OnLateUpdate(deltaTime);
+        }
     }
 
+    private const string SCENE_REGISTER_RENDER = "Scene.RegisterForRender";
     public virtual void RegisterForRender()
     {
         if (Visible && Enabled)
         {
             foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
                 subScene.RegisterForRender();
-            foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
-                gameObject.RegisterForRender();
+            using (Profiler.Instance.StartProfile(_type, SCENE_REGISTER_RENDER))
+            {
+                foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
+                    gameObject.RegisterForRender();
+            }
         }
     }
 

@@ -7,6 +7,7 @@ namespace Meatcorps.Engine.RayLib.Renderer;
 
 public abstract class BaseRenderTarget : IRenderTargetStrategyRenderer
 {
+    public string Name { get; set; } = "Default";
     public ICamera? Camera { get; set; }
     public List<IPostProcessor> PostProcessors { get; set; } = new();
     public RectF Bounds { get; set; }

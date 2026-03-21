@@ -206,6 +206,7 @@ public class RayLibModule
             return this;
         }
 
+        renderTargetStrategy.Name = tag;
         GlobalObjectManager.ObjectManager.Register<IRenderTargetStrategy>(renderTargetStrategy, tag);
         GlobalObjectManager.ObjectManager.Add(renderTargetStrategy);
         return this;

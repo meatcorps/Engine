@@ -1,6 +1,7 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Profiler;
 using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
@@ -142,7 +143,7 @@ public class RenderService
         _presentationRenderTargetStrategy.Bounds = new RectF(0, 0, 1, 1);
         _presentationRenderTargetStrategy.UsePercentage = true;
     }
-
+    
     /// <summary>
     /// Executes the rendering pipeline for all configured render targets.
     /// Intermediate targets are rendered first, and the final render target composites the generated texture to the screen.
@@ -170,7 +171,13 @@ public class RenderService
                 Raylib.EndBlendMode();
                 _presentationRenderDone = true;
                 renderTargetStrategy.ScreenSizeOverride = null;
-                renderTargetStrategy.EndRender();
+
+                using (Profiler.Instance.StartProfile(GetType(), renderTargetStrategy.Name,
+                           renderTargetStrategy.GetType()))
+                {
+                    renderTargetStrategy.EndRender();
+                }
+
                 continue;
             }
 
@@ -188,7 +195,9 @@ public class RenderService
                 gameObjects.Clear();
             }
 
-            renderTargetStrategy.EndRender(_presentationRenderDone ? null : _renderTexture);
+            using (Profiler.Instance.StartProfile(GetType(), renderTargetStrategy.Name, renderTargetStrategy.GetType())) {
+                renderTargetStrategy.EndRender(_presentationRenderDone ? null : _renderTexture);
+            }
         }
     }
 
