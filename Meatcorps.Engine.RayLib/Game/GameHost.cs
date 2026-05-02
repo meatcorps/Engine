@@ -35,7 +35,7 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
         Height = height;
         _title = title;
         _targetFps = targetFps;
-
+        _timeService.TargetFps = targetFps;
         GlobalObjectManager.ObjectManager.Register<ITimeService>(_timeService);
         GlobalObjectManager.ObjectManager.Register(this);
 
@@ -80,7 +80,10 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
     public void SetFps(int? fps)
     {
         if (fps is not null)
+        {
             _targetFps = fps.Value;
+            _timeService.TargetFps = fps.Value;
+        }
 
         Raylib.SetTargetFPS(_targetFps);
     }
