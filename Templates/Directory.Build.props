@@ -1,0 +1,6 @@
+<Project>
+    <!-- Override parent Directory.Build.props to prevent multi-targeting in templates -->
+    <PropertyGroup>
+        <TargetFrameworks></TargetFrameworks>
+    </PropertyGroup>
+</Project>

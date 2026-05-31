@@ -29,7 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="..\Templates\**\*" Exclude="..\Templates\**\bin\**;..\Templates\**\obj\**" Pack="true" PackagePath="content" />
+        <None Include="..\Templates\**\*" Pack="true" PackagePath="content" />
     </ItemGroup>
 
 </Project>
