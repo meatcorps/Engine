@@ -185,7 +185,7 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
         else if (_currentGroup == "Input")
             HandleInput();
         else
-            HandleCategoryMenu();
+            HandleCategoryMenu(true);
 
         _guiMenu.Stop();
     }
@@ -202,6 +202,8 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
                     _guiMenu.Reset();
                 }
             }
+
+            HandleCategoryMenu(false);
         }
         else
         {
@@ -259,7 +261,7 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
         }
     }
     
-    private void HandleCategoryMenu()
+    private void HandleCategoryMenu(bool addBack)
     {
         if (_currentGroup == "Graphics")
             HandleCustomGraphicsSettings();
@@ -293,7 +295,7 @@ public class GameSettingsGameObject<TInput>: BaseGameObject where TInput : Enum
                     throw new ArgumentOutOfRangeException();
             }
         }
-        if (_guiMenu.MenuItem("Back") || _guiSettings.IsBackPressed)
+        if (addBack && _guiMenu.MenuItem("Back") || _guiSettings.IsBackPressed)
         {
             if (_currentGroup == "Graphics")
                 LoadCurrentConfigurationData();

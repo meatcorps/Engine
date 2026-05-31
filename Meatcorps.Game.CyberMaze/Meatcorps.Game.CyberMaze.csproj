@@ -41,8 +41,8 @@
         <ConsoleLoggerParameters>verbosity=detailed</ConsoleLoggerParameters>
     </PropertyGroup>
     
-    <UsingTask TaskName="AssetPackageTask"
-               AssemblyFile="$(ProjectDir)\bin\$(Configuration)\net8.0\Meatcorps.Engine.Assets.Packager.dll" />
+    <!--<UsingTask TaskName="AssetPackageTask"
+               AssemblyFile="$(ProjectDir)\bin\$(Configuration)\net10.0\Meatcorps.Engine.Assets.Packager.dll" />
 
     <Target Name="AssetPackageTask"
             AfterTargets="Build"
@@ -52,5 +52,5 @@
                 GameAssemblyPath="$(TargetPath)"
                 ProjectDirectory="$(ProjectDir)"
                 OutputPath="$(OutputPath)" />
-    </Target>
+    </Target>-->
 </Project>

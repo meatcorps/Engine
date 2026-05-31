@@ -1,14 +1,17 @@
 using System.Numerics;
 using Meatcorps.Engine.Core.Enums;
 using Meatcorps.Engine.Core.Input;
+using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Input;
 using Meatcorps.Engine.Core.Interfaces.Services;
+using Meatcorps.Engine.Core.ObjectManager;
+using Meatcorps.Engine.Core.Storage.Services;
 using Meatcorps.Engine.Hardware.Controllers.Enums;
 using Meatcorps.Engine.Hardware.Controllers.Interfaces;
 
 namespace Meatcorps.Engine.Hardware.Controllers.Mapper;
 
-public class ControllerInputMapper<T> : IBackgroundService, IInputMapper<T> where T : Enum
+public class ControllerInputMapper<T> : IBackgroundService, IConfigChangeTracker, IInputMapper<T> where T : Enum
 {
     private readonly IControllerDeviceManager _manager;
     private readonly Dictionary<T, ControllerInputEnum> _mapping = new Dictionary<T, ControllerInputEnum>();
@@ -16,11 +19,16 @@ public class ControllerInputMapper<T> : IBackgroundService, IInputMapper<T> wher
     private bool _dPadIsAxis;
     private bool _initialized;
     private readonly List<int> _profiles = new();
-    
+    private bool _enableRumble = true;
+    private readonly IUniversalConfig _config;
+
     public ControllerInputMapper(IControllerDeviceManager manager)
     {
         _manager = manager;
         _manager.Initialize();
+        _config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new FallbackConfig();
+        _enableRumble = _config.GetOrDefault("Input", "Rumble", true);
+        GlobalObjectManager.ObjectManager.Add<IConfigChangeTracker>(this);
     }
 
     public ControllerInputMapper<T> SetDPadIsAxis(bool isAxis)
@@ -86,7 +94,7 @@ public class ControllerInputMapper<T> : IBackgroundService, IInputMapper<T> wher
 
     public void Rumble(int player, float left, float right, float duration)
     {
-        if (!_manager.IsDeviceAssigned(player))
+        if (!_manager.IsDeviceAssigned(player) || !_enableRumble)
             return;
 
         var device = _manager.GetDevice(player);
@@ -186,5 +194,11 @@ public class ControllerInputMapper<T> : IBackgroundService, IInputMapper<T> wher
 
     public void LateUpdate(float deltaTime)
     {
+    }
+
+    public void ConfigChanged(string group, string key, object value)
+    {
+        if (group == "Input" && key == "Rumble")
+            _enableRumble = _config.GetOrDefault("Input", "Rumble", true);
     }
 }

@@ -23,7 +23,7 @@ public class VersionUI: ResourceGameObject
 
     protected override void OnDraw()
     {
-        var text = "ALPHA VERSION 0.0.1 Bugs, requests?\nReddit: r/meatcorps, info@meatcorps\nYT: @MeatcorpsOfficial Thnx!";
+        var text = "ALPHA VERSION 0.0.2 Bugs, requests?\nReddit: r/meatcorps, info@meatcorps\nYT: @MeatcorpsOfficial Thnx!";
         var size = Fonts.MeasureText(DefaultFont.Default, text, 8, 1);
         var rectCanvas = new RectF(16, 16, RenderTarget!.RenderWidth - 32, RenderTarget!.RenderHeight - 32);
         var rectText = new RectF(0, 0, size.X, size.Y);

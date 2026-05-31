@@ -20,7 +20,7 @@ public class RayLibControllerDevice : IControllerDevice
     public RayLibControllerDevice(int id)
     {
         var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new FallbackConfig();
-        _deadZone = config.GetOrDefault("Input", "ControllerAxisDeadZone", 0.1f);
+        _deadZone = config.GetOrDefault("Input", "ControllerAxisDeadZone", 0.2f);
         Id = id;
         _inputs.Add(
             ControllerInputEnum.DPadDown,

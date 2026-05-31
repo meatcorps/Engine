@@ -121,7 +121,7 @@ public class SDLControllerDevice : IControllerDevice
     public SDLControllerDevice()
     {
         var config = GlobalObjectManager.ObjectManager.Get<IUniversalConfig>() ?? new FallbackConfig();
-        _deadZone = config.GetOrDefault("Input", "ControllerAxisDeadZone", 0.1f);
+        _deadZone = config.GetOrDefault("Input", "ControllerAxisDeadZone", 0.2f);
     }
 
     private float GetAxisWithDeadZone(float axis)
