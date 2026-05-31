@@ -172,7 +172,7 @@ public abstract class BaseScene : IDisposable
     private const string SCENE_BACKGROUND_PREUPDATE = "Scene.BackgroundService.PreUpdate";
     public void PreUpdate(float deltaTime)
     {
-        if (Paused || !Enabled)
+        if (Paused || !Enabled || IsDisposed)
             return;
 
         GameHost.SetMultiplier(UpdateTimeMultiplier);
@@ -227,7 +227,7 @@ public abstract class BaseScene : IDisposable
     private const string SCENE_BACKGROUND_UPDATE = "Scene.BackgroundService.Update";
     public void Update(float deltaTime)
     {
-        if (Paused || !Enabled)
+        if (Paused || !Enabled || IsDisposed)
             return;
 
         foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
@@ -252,6 +252,9 @@ public abstract class BaseScene : IDisposable
     private const string SCENE_ALWAYSUPDATE = "Scene.AlwaysUpdate";
     public void AlwaysUpdate(float deltaTime)
     {
+        if (IsDisposed)
+            return;
+        
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
             subScene.AlwaysUpdate(deltaTime);
         foreach (var gameObject in SceneObjectManager.GetList<BaseGameObject>()!)
@@ -267,7 +270,7 @@ public abstract class BaseScene : IDisposable
     private const string SCENE_BACKGROUND_LATEUPDATE = "Scene.BackgroundService.LateUpdate";
     public void LateUpdate(float deltaTime)
     {
-        if (Paused || !Enabled)
+        if (Paused || !Enabled || IsDisposed)
             return;
 
         foreach (var backgroundService in SceneObjectManager.GetList<IBackgroundService>()!)
@@ -292,7 +295,7 @@ public abstract class BaseScene : IDisposable
     private const string SCENE_REGISTER_RENDER = "Scene.RegisterForRender";
     public virtual void RegisterForRender()
     {
-        if (Visible && Enabled)
+        if (Visible && Enabled && !IsDisposed)
         {
             foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
                 subScene.RegisterForRender();
@@ -306,7 +309,7 @@ public abstract class BaseScene : IDisposable
 
     public void Draw()
     {
-        if (!Visible || !Enabled)
+        if (!Visible || !Enabled || IsDisposed)
             return;
 
         foreach (var subScene in SceneObjectManager.GetSet<BaseScene>()!)
