@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
+        <TargetFrameworks></TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Meatcorps.Engine.ProjectTemplates</RootNamespace><Product>Meatcorps Engine ProjectTemplates</Product>
