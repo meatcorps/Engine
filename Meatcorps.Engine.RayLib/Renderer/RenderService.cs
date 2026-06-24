@@ -2,7 +2,6 @@ using System.Numerics;
 using Meatcorps.Engine.Core.Data;
 using Meatcorps.Engine.Core.ObjectManager;
 using Meatcorps.Engine.Core.Profiler;
-using Meatcorps.Engine.RayLib.Abstractions;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
 
@@ -20,10 +19,11 @@ public class RenderService
     private readonly Dictionary<IRenderTargetStrategyRenderer, List<List<List<IRenderer>>>> _gameObjects = new();
     private readonly IRenderTargetStrategy _presentationRenderTargetStrategy;
     private readonly List<IRenderTargetStrategyRenderer> _renderTargetStrategies;
+    private readonly List<IBeforeDraw> _beforeDraws = new();
     private readonly int _sceneLayers;
 
     private RenderTexture2D? _renderTexture;
-
+    
     /// <summary>
     /// Initializes a new instance of the <see cref="RenderService"/> class.
     /// </summary>
@@ -46,7 +46,7 @@ public class RenderService
 
         _presentationRenderTargetStrategy = objectManager.Get<IRenderTargetStrategy>("FINAL") ??
                                     new BasicScreenRenderTarget().SetFullScreen();
-
+        
         SetRenderTargets(objectManager.GetList<IRenderTargetStrategyRenderer>()!);
     }
 
@@ -84,6 +84,17 @@ public class RenderService
                     _gameObjects[renderTargetStrategy][i].Add(new List<IRenderer>());
             }
         }
+    }
+    
+    /// <summary>
+    /// Registers a pre-draw hook that will be executed before the render pass.
+    /// </summary>
+    /// <param name="preDraw"></param>
+    public void RegisterPreDraw(IBeforeDraw preDraw)
+    {
+        if (_beforeDraws.Contains(preDraw)) 
+            return;
+        _beforeDraws.Add(preDraw);
     }
 
     /// <summary>
@@ -126,18 +137,29 @@ public class RenderService
             renderer.Camera?.Update(deltaTime, renderer);
     }
 
+    /// <summary>
+    /// Sets the presentation viewport to a fixed size in pixels.
+    /// </summary>
+    /// <param name="viewport"></param>
     public void SetPresentationViewportPixels(RectF viewport)
     {
         _presentationRenderTargetStrategy.Bounds = viewport;
         _presentationRenderTargetStrategy.UsePercentage = false;
     } 
     
+    /// <summary>
+    /// Sets the presentation viewport to a percentage of the screen size.
+    /// </summary>
+    /// <param name="viewport"></param>
     public void SetPresentationViewportPercent(RectF viewport)
     {
         _presentationRenderTargetStrategy.Bounds = viewport;
         _presentationRenderTargetStrategy.UsePercentage = true;
     } 
     
+    /// <summary>
+    /// Resets the presentation viewport to its default state.
+    /// </summary>
     public void ResetPresentationViewport()
     {
         _presentationRenderTargetStrategy.Bounds = new RectF(0, 0, 1, 1);
@@ -150,15 +172,18 @@ public class RenderService
     /// </summary>
     public void Render()
     {
+        foreach (var beforeDraw in _beforeDraws)
+            beforeDraw.PreDraw();
+        
         SetupRenderTexture();
-        var _presentationRenderDone = false;
+        var presentationRenderDone = false;
         foreach (var renderTargetStrategy in _renderTargetStrategies)
         {
             var presentationRenderer = renderTargetStrategy == _presentationRenderTargetStrategy;
             
             if (presentationRenderer)
             {
-                renderTargetStrategy.ScreenSizeOverride = new PointInt(_renderTexture.Value.Texture.Width,
+                renderTargetStrategy.ScreenSizeOverride = new PointInt(_renderTexture!.Value.Texture.Width,
                     _renderTexture.Value.Texture.Height);
                 renderTargetStrategy.BeginRender(BackgroundColor);
                 Raylib.BeginBlendMode(BlendMode.AlphaPremultiply);
@@ -169,7 +194,7 @@ public class RenderService
                     Vector2.Zero, 0f, Color.White
                 );
                 Raylib.EndBlendMode();
-                _presentationRenderDone = true;
+                presentationRenderDone = true;
                 renderTargetStrategy.ScreenSizeOverride = null;
 
                 using (Profiler.Instance.StartProfile(GetType(), renderTargetStrategy.Name,
@@ -181,7 +206,7 @@ public class RenderService
                 continue;
             }
 
-            if (!_presentationRenderDone)
+            if (!presentationRenderDone)
                 renderTargetStrategy.ScreenSizeOverride =
                     new PointInt(_renderTexture!.Value.Texture.Width, _renderTexture!.Value.Texture.Height);
             
@@ -196,7 +221,7 @@ public class RenderService
             }
 
             using (Profiler.Instance.StartProfile(GetType(), renderTargetStrategy.Name, renderTargetStrategy.GetType())) {
-                renderTargetStrategy.EndRender(_presentationRenderDone ? null : _renderTexture);
+                renderTargetStrategy.EndRender(presentationRenderDone ? null : _renderTexture);
             }
         }
     }
