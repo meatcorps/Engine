@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,6 +10,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Meatcorps.Engine.Assets.Packager" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.RayLib" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.RayLib.Assets" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.SDL" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.Session" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.Hardware.ArduinoController" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.AsciiScript" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.Arcade" Version="0.1.*" />
+    <PackageReference Include="Meatcorps.Engine.Arcade.RayLib" Version="0.1.*" />
     <ProjectReference Include="..\Meatcorps.Engine.Arcade.RayLib\Meatcorps.Engine.Arcade.RayLib.csproj" />
     <ProjectReference Include="..\Meatcorps.Engine.Arcade\Meatcorps.Engine.Arcade.csproj" />
     <ProjectReference Include="..\Meatcorps.Engine.AsciiScript\Meatcorps.Engine.AsciiScript.csproj" />
