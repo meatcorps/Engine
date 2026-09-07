@@ -297,7 +297,7 @@ public struct MusicHandle : IDisposable
         CurrentTime = startFrom;
         _initalized = true;
         Pitch = 1f;
-        Pan = 1f;
+        Pan = 0f;
     }
 
     public void SetVolumeDirect(float volume)
