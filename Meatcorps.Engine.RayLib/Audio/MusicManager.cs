@@ -15,7 +15,7 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
 {
     public string Name => "Music";
     public float MasterVolume { get; private set; }
-    public bool CrossFade { get; private set; } = false;
+    public bool CrossFade { get; set; } = true;
     
     public bool IsPlaying => _current.Valid && _current.State == MusicState.Play;
     
@@ -79,6 +79,7 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
             
             if ((!_current.Valid || _current.DoneFading))
             {
+                _current.Dispose();
                 _current = _next;
                 _current.Volume = MasterVolume;
                 _next = new MusicHandle();
@@ -99,7 +100,7 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
 
     public void ConfigChanged(string group, string key, object value)
     {
-        if (group != "Audio" && key != "MusicVolume")
+        if (group != "Audio" || key != "MusicVolume")
             return;
 
         SetMasterVolume(Convert.ToSingle(value));
@@ -134,19 +135,20 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
         if (key.Equals(_nextTrack) && _next.Valid)
         {
             _nextState = MusicState.Play;
+            if (CrossFade)
+                _next.State = MusicState.Play;
             return this;
         }
         _next = new MusicHandle(_tracks[key], fadeSpeed, startAtSeconds);
         _next.SetVolumeDirect(0);
-
-        if (CrossFade)
-            _next.Volume = MasterVolume;
         
         if (_current.Valid)
             _current.Volume = 0;
+        
         _next.Volume = MasterVolume;
         _nextState = MusicState.Play;
-        _next.State = MusicState.Stop;
+        
+        _next.State = CrossFade ? MusicState.Play : MusicState.Stop;
         _nextTrack = key;
         return this;
     }
@@ -154,7 +156,12 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
     public MusicManager<TTrack> Stop()
     {
         if (_next.Valid)
+        {
+            if (CrossFade)
+                _next.State = MusicState.Stop;
+            
             _nextState = MusicState.Stop;
+        }
         else
             _current.State = MusicState.Stop;
         
@@ -164,8 +171,12 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
     public MusicManager<TTrack> Pause()
     {
         if (_next.Valid)
+        {
+            if (CrossFade)
+                _next.State = MusicState.Paused;
             _nextState = MusicState.Paused;
-        else
+        }
+        else 
             _current.State = MusicState.Paused;
 
         return this;
@@ -174,7 +185,11 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
     public MusicManager<TTrack> Resume()
     {
         if (_next.Valid)
+        {
+            if (CrossFade)
+                _next.State = MusicState.Resume;
             _nextState = MusicState.Resume;
+        }
         else 
             _current.State = MusicState.Resume;
         return this;
@@ -298,7 +313,9 @@ public struct MusicHandle : IDisposable
         
         Raylib.UpdateMusicStream(Handle);
         
-        _volume.Update(deltaTime);
+        if (State is MusicState.Play or MusicState.Resume)
+            _volume.Update(deltaTime);
+        
         _volume.RealValue = Math.Clamp(Volume, 0f, 1f);
 
         if (!_currentVolume.EqualsSafe(_volume.DisplayValue))
