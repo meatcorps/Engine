@@ -1,9 +1,11 @@
+using Meatcorps.Engine.Core.Extensions;
 using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
-using Meatcorps.Engine.Core.Tween;
+using Meatcorps.Engine.Core.Utilities;
 using Meatcorps.Engine.RayLib.Interfaces;
 using Raylib_cs;
+
 // ReSharper disable NotAccessedField.Local
 
 namespace Meatcorps.Engine.RayLib.Audio;
@@ -11,22 +13,52 @@ namespace Meatcorps.Engine.RayLib.Audio;
 public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IConfigChangeTracker, IDisposable
     where TTrack : struct, Enum
 {
-    private readonly Stack<Snapshot> _snapshotStack = new();
+    public string Name => "Music";
+    public float MasterVolume { get; private set; }
+    public bool CrossFade { get; private set; } = false;
+    
+    public bool IsPlaying => _current.Valid && _current.State == MusicState.Play;
+    
+    private MusicState _nextState;
+    private bool _stateChanged;
+
+    public void SetMasterVolume(float volume)
+    {
+        MasterVolume = Math.Clamp(volume, 0f, 1f);
+        
+        if (_next.Valid)
+            _next.SetVolumeDirect(MasterVolume);
+        else if (_current.Valid)
+            _current.SetVolumeDirect(MasterVolume);
+    }
 
     private readonly Dictionary<TTrack, Music> _tracks = new();
-    private Music? _current;
-    private TTrack? _currentKey;
-    private float _fadeSpeed = 1f;
-    private bool _isDisposed;
-    private bool _isFadingOut;
-    private TTrack? _pendingKey;
-    private float? _pendingSeekSeconds; // seek after swap if provided
-
+    private MusicHandle _current;
+    private MusicHandle _next;
+    private TTrack? _currentTrack = null;
+    private TTrack? _nextTrack = null;
+    
     private float _volume = 1f;
+
+    private bool _isDisposed;
 
     public MusicManager()
     {
         GlobalObjectManager.ObjectManager.Add<IConfigChangeTracker>(this);
+    }
+
+    public MusicHandle GetHandle()
+    {
+        if (_next.Valid)
+            return _next;
+        return _current;
+    }
+
+    public MusicHandle CreateMusicHandle(TTrack key, float fadeTime = 1f, float startAtSeconds = 0f)
+    {
+        var handle = new MusicHandle(_tracks[key], fadeTime, startAtSeconds);
+        handle.SetVolumeDirect(MasterVolume);
+        return handle;
     }
 
     public void PreUpdate(float deltaTime)
@@ -35,52 +67,29 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
 
     public void Update(float deltaTime)
     {
-        if (_current == null || _isDisposed) return;
-
-        Raylib.UpdateMusicStream(_current.Value);
-
-        if (_isFadingOut)
-        {
-            _volume -= _fadeSpeed * deltaTime;
-
-            if (_volume <= 0f)
-            {
-                // swap to pending
-                InternalStop();
-                _isFadingOut = false;
-
-                if (_pendingKey.HasValue && _tracks.TryGetValue(_pendingKey.Value, out var next))
-                {
-                    _current = next;
-                    _currentKey = _pendingKey.Value;
-                    _pendingKey = null;
-                    _volume = 0f;
-
-                    Raylib.PlayMusicStream(_current.Value);
-
-                    if (_pendingSeekSeconds.HasValue)
-                    {
-                        Raylib.SeekMusicStream(_current.Value, _pendingSeekSeconds.Value);
-                        _pendingSeekSeconds = null;
-                    }
-
-                    InternalSetVolume(_volume);
-                }
-
-                return;
-            }
-
-            InternalSetVolume(_volume);
+        if (_isDisposed) 
             return;
-        }
 
-        if (_volume < 1f)
+        if (_current.Valid)
+            _current.Update(deltaTime);
+        
+        if (_next.Valid)
         {
-            _volume += _fadeSpeed * deltaTime;
-
-            if (_volume > 1f) _volume = 1f;
-
-            InternalSetVolume(_volume);
+            _next.Update(deltaTime);
+            
+            if ((!_current.Valid || _current.DoneFading))
+            {
+                _current = _next;
+                _current.Volume = MasterVolume;
+                _next = new MusicHandle();
+                _current.State = _nextState;
+                _currentTrack = _nextTrack;
+                Console.WriteLine($"Switching to next song: {_nextState} {_currentTrack}");
+                if (!Raylib.IsMusicValid(_current.Handle))
+                    Console.WriteLine($"WARNING SONG NOT VALID: {_currentTrack}");
+                    
+                _nextTrack = null;
+            }
         }
     }
 
@@ -94,39 +103,6 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
             return;
 
         SetMasterVolume(Convert.ToSingle(value));
-    }
-
-    public void Dispose()
-    {
-        if (_isDisposed) return;
-
-        // Stop fades/overrides to avoid late updates tickling unloaded resources
-        _isFadingOut = false;
-        _pendingKey = null;
-        _pendingSeekSeconds = null;
-        _snapshotStack.Clear();
-
-        if (_current != null)
-        {
-            Raylib.StopMusicStream(_current.Value);
-            _current = null;
-            _currentKey = null;
-        }
-
-        foreach (var kv in _tracks) Raylib.UnloadMusicStream(kv.Value);
-
-        _tracks.Clear();
-        _isDisposed = true;
-    }
-
-    public string Name => "Music";
-    public float MasterVolume { get; private set; }
-
-    public void SetMasterVolume(float volume)
-    {
-        MasterVolume = Math.Clamp(volume, 0f, 1f);
-
-        InternalSetVolume();
     }
 
     // -----------------------
@@ -144,45 +120,63 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
 
     public MusicManager<TTrack> Play(TTrack key, float fadeSpeed = 1f)
     {
-        return PlayInternal(key, fadeSpeed, null);
+        PlayAt(key, 0f, fadeSpeed);
+        return this;
     }
 
     public MusicManager<TTrack> PlayAt(TTrack key, float startAtSeconds, float fadeSpeed = 1f)
     {
-        return PlayInternal(key, fadeSpeed, startAtSeconds);
+        if (key.Equals(_currentTrack) && _current.Valid)
+        {
+            _current.State = MusicState.Play;
+            return this;
+        }
+        if (key.Equals(_nextTrack) && _next.Valid)
+        {
+            _nextState = MusicState.Play;
+            return this;
+        }
+        _next = new MusicHandle(_tracks[key], fadeSpeed, startAtSeconds);
+        _next.SetVolumeDirect(0);
+
+        if (CrossFade)
+            _next.Volume = MasterVolume;
+        
+        if (_current.Valid)
+            _current.Volume = 0;
+        _next.Volume = MasterVolume;
+        _nextState = MusicState.Play;
+        _next.State = MusicState.Stop;
+        _nextTrack = key;
+        return this;
     }
 
     public MusicManager<TTrack> Stop()
     {
-        InternalStop();
-        _snapshotStack.Clear();
-        _currentKey = null;
-        _pendingKey = null;
-        _pendingSeekSeconds = null;
-        _isFadingOut = false;
-        _volume = 0f;
+        if (_next.Valid)
+            _nextState = MusicState.Stop;
+        else
+            _current.State = MusicState.Stop;
+        
         return this;
-    }
-
-    private void InternalStop()
-    {
-        if (_current != null) 
-            Raylib.StopMusicStream(_current.Value);
-
-        _current = null;
     }
 
     public MusicManager<TTrack> Pause()
     {
-        if (_current != null) Raylib.PauseMusicStream(_current.Value);
+        if (_next.Valid)
+            _nextState = MusicState.Paused;
+        else
+            _current.State = MusicState.Paused;
 
         return this;
     }
 
     public MusicManager<TTrack> Resume()
     {
-        if (_current != null) Raylib.ResumeMusicStream(_current.Value);
-
+        if (_next.Valid)
+            _nextState = MusicState.Resume;
+        else 
+            _current.State = MusicState.Resume;
         return this;
     }
 
@@ -198,107 +192,174 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
         return _tracks.ContainsKey(key);
     }
 
-    // -----------------------
-    // Scoped override feature
-    // -----------------------
-
-    public IDisposable Override(TTrack tempKey, float fadeSpeed = 1f)
+    public void Dispose()
     {
-        // snapshot current (if any)
-        if (_current != null && _currentKey.HasValue)
-        {
-            var position = Raylib.GetMusicTimePlayed(_current.Value); // seconds
-            var snap = new Snapshot
-            {
-                Key = _currentKey.Value,
-                PositionSeconds = position,
-                Volume = _volume
-            };
-            _snapshotStack.Push(snap);
-        }
+        if (_isDisposed) return;
 
-        PlayInternal(tempKey, fadeSpeed, null);
-        return new RevertHandle(this, fadeSpeed);
+        if (_current.Valid)
+            _current.Dispose();
+
+        foreach (var kv in _tracks) 
+            Raylib.UnloadMusicStream(kv.Value);
+
+        _tracks.Clear();
+        _isDisposed = true;
+    }
+}
+
+public struct MusicHandle : IDisposable
+{
+    public Music Handle;
+    public MusicState State;
+    private bool _isDisposed;
+    private bool _initalized;
+ 
+    public float TotalTime { get; private set; }
+
+    public float CurrentTime
+    {
+        get => Raylib.GetMusicTimePlayed(Handle);
+        private set => Raylib.SeekMusicStream(Handle, Math.Clamp(value, 0f, TotalTime));
     }
 
-    private void InternalSetVolume(float? volume = null)
+    public float Volume
     {
-        if (_current != null) Raylib.SetMusicVolume(_current.Value, Tween.Lerp(0, MasterVolume, volume ?? _volume));
+        get => _volume.RealValue;
+        set => _volume.RealValue = value;
+    }
+    
+    public bool DoneFading => _volume.IsAtRealValue;
+    
+    public float CurrentVolume => _volume.DisplayValue;
+    
+    public float CurrentTimeNormalized
+    {
+        get => Raylib.GetMusicTimePlayed(Handle) / TotalTime;
+        private set => Raylib.SeekMusicStream(Handle, Math.Clamp(value * TotalTime, 0f, TotalTime));
     }
 
-    private void RestoreTop(float fadeSpeed)
+    private float _pan;
+    public float Pan
     {
-        if (_snapshotStack.Count == 0) return;
-
-        var snap = _snapshotStack.Pop();
-
-        // Play previous and seek to an exact moment we paused
-        PlayInternal(snap.Key, fadeSpeed, snap.PositionSeconds);
-
-        // Optionally, restore the previous volume curve’s target;
-        // the current fade routine will ease us back toward 1.0 anyway.
-    }
-
-    // -----------------------
-    // Internals
-    // -----------------------
-
-    private MusicManager<TTrack> PlayInternal(TTrack key, float fadeSpeed, float? startAtSeconds)
-    {
-        _fadeSpeed = MathF.Max(0.0001f, fadeSpeed);
-
-        if (!_tracks.TryGetValue(key, out var next)) return this;
-
-        if (_current == null)
+        get => _pan;
+        set
         {
-            _current = next;
-            _currentKey = key;
-            _volume = 0f;
-            Raylib.PlayMusicStream(_current.Value);
-            if (startAtSeconds.HasValue) Raylib.SeekMusicStream(_current.Value, startAtSeconds.Value);
-
-            InternalSetVolume(_volume);
-            return this;
-        }
-
-        if (_currentKey.HasValue && EqualityComparer<TTrack>.Default.Equals(_currentKey.Value, key))
-        {
-            // If the caller asks to start at a specific time on the same track, seek immediately.
-            if (startAtSeconds.HasValue) Raylib.SeekMusicStream(_current.Value, startAtSeconds.Value);
-
-            return this;
-        }
-
-        _pendingKey = key;
-        _pendingSeekSeconds = startAtSeconds;
-        _isFadingOut = true;
-        return this;
-    }
-
-    private struct Snapshot
-    {
-        public TTrack Key;
-        public float PositionSeconds;
-        public float Volume;
-    }
-
-    private sealed class RevertHandle : IDisposable
-    {
-        private readonly float _fadeSpeed;
-        private MusicManager<TTrack>? _owner;
-
-        public RevertHandle(MusicManager<TTrack> owner, float fadeSpeed)
-        {
-            _owner = owner;
-            _fadeSpeed = fadeSpeed;
-        }
-
-        public void Dispose()
-        {
-            if (_owner == null) return;
-
-            _owner.RestoreTop(_fadeSpeed);
-            _owner = null;
+            _pan = Math.Clamp(value, -1f, 1f);
+            Raylib.SetMusicPan(Handle, _pan);
         }
     }
+
+    private float _pitch;
+    public float Pitch
+    {
+        get => _pitch;
+        set
+        {
+            _pitch = value;
+            Raylib.SetMusicPitch(Handle, value);
+            TotalTime = Raylib.GetMusicTimeLength(Handle);
+        }
+    }
+    
+    public bool Valid => _initalized && !_isDisposed;
+    
+    private SmoothValue _volume;
+    private float _currentVolume;
+    private bool _isPaused;
+
+    public MusicHandle()
+    {
+        _initalized = false;
+        _isDisposed = true;
+        //
+    }
+    
+    public MusicHandle(Music handle, float fadeSpeed, float startFrom = 0f)
+    {
+        Handle = handle;
+        _volume = new SmoothValue(fadeSpeed);
+        TotalTime = Raylib.GetMusicTimeLength(Handle);
+        CurrentTime = startFrom;
+        _initalized = true;
+        Pitch = 1f;
+        Pan = 1f;
+    }
+
+    public void SetVolumeDirect(float volume)
+    {
+        _volume.RealValue = volume;
+        _volume.SnapToReal();
+    }
+
+    public void Update(float deltaTime)
+    {
+        if (!Raylib.IsMusicValid(Handle) || _isDisposed)
+            return;
+        
+        Raylib.UpdateMusicStream(Handle);
+        
+        _volume.Update(deltaTime);
+        _volume.RealValue = Math.Clamp(Volume, 0f, 1f);
+
+        if (!_currentVolume.EqualsSafe(_volume.DisplayValue))
+        {
+            _currentVolume = _volume.DisplayValue;
+            Raylib.SetMusicVolume(Handle, _currentVolume);
+        }
+        
+        switch (State)
+        {
+            case MusicState.Play:
+                if (!Raylib.IsMusicStreamPlaying(Handle))
+                {
+                    Raylib.PlayMusicStream(Handle);
+                    Raylib.SetMusicVolume(Handle, _currentVolume);
+                }
+
+                _isPaused = false;
+                break;
+            case MusicState.Resume:
+                if (!Raylib.IsMusicStreamPlaying(Handle))
+                {
+                    if (_isPaused)
+                        Raylib.ResumeMusicStream(Handle);
+                    else
+                        Raylib.PlayMusicStream(Handle);
+                    
+                    Raylib.SetMusicVolume(Handle, _currentVolume);
+                }
+
+                _isPaused = false;
+                break;
+            case MusicState.Paused:
+                _isPaused = true;
+                if (Raylib.IsMusicStreamPlaying(Handle))
+                    Raylib.PauseMusicStream(Handle);
+                break;
+            case MusicState.Stop:
+                
+                if (Raylib.IsMusicStreamPlaying(Handle))
+                    Raylib.StopMusicStream(Handle);
+                
+                _isPaused = false;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    public void Dispose()
+    {
+        _isDisposed = true;
+        if (Raylib.IsMusicValid(Handle))
+            Raylib.StopMusicStream(Handle);
+    }
+}
+
+public enum MusicState
+{
+    Play,
+    Resume,
+    Paused,
+    Stop
 }
