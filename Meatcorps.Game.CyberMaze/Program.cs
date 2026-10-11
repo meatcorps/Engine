@@ -100,8 +100,6 @@ using var _ = RayLibModule.Setup()
     .SetExitKey()
     .SetupProcessingBloom(0.6f, 0.2f, 0.8f, 2f)
     .SetProcessing(new CrtNewPixiePostProcessor())
-    //.SetupProcessingPaletteRed()
-    //.SetProcessing(new HeatwaveBasePostProcessing())
     .SetResource(new OneTexture("Assets/CRTSidePanels.png", texture2D =>
         GlobalObjectManager.ObjectManager.Get<CrtNewPixiePostProcessor>()!.SetFrameTexture(texture2D)
     ))

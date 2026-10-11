@@ -83,8 +83,7 @@ public class SceneTask : IGameLoopTask
             activeScene.Draw();
             _host.RenderService.Render();
         }
-
-
+        
         if (type == GameLoopType.PostRender) 
             Raylib.EndDrawing();
     }

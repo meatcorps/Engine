@@ -11,7 +11,7 @@ public class TimeService : ITimeService
     private double _lastTime = Raylib.GetTime();
 
     public int MaxCatchUpCycles { get; set; } = 4;
-    public float TargetFps { get; set; } = 60f;
+    public float FixedUpdateRate { get; set; } = 60f;
 
     public float DeltaMultiplier { get; set; } = 1f;
     public float DeltaTime { get; private set; }
@@ -30,9 +30,9 @@ public class TimeService : ITimeService
         // Clamp giant hitches (window drag, breakpoints)
         if (frameDeltaTime > 0.25f) frameDeltaTime = 0.25f;
 
-        DeltaTime = frameDeltaTime; // for interpolation/visuals
-        FixedDeltaTime = 1f / TargetFps; // allow runtime change if needed
-        _accumulator += frameDeltaTime;
+        DeltaTime = frameDeltaTime * DeltaMultiplier; // for interpolation/visuals
+        FixedDeltaTime = 1f / FixedUpdateRate; // allow runtime change if needed
+        _accumulator += frameDeltaTime * DeltaMultiplier;;
 
         StepsThisFrame = 0;
         HitCatchUpCapThisFrame = false;
@@ -41,7 +41,7 @@ public class TimeService : ITimeService
     }
 
     // Returns true while there is another fixed step to simulate this frame.
-    public bool TryDequeueStep(out float deltaTime)
+    public bool TryDequeueStep(out float fixedDeltaTime)
     {
         if (StepsThisFrame >= MaxCatchUpCycles && _accumulator >= FixedDeltaTime)
         {
@@ -55,11 +55,11 @@ public class TimeService : ITimeService
         {
             _accumulator -= FixedDeltaTime;
             StepsThisFrame++;
-            deltaTime = FixedDeltaTime * DeltaMultiplier;
+            fixedDeltaTime = FixedDeltaTime;
             return true;
         }
 
-        deltaTime = 0f;
+        fixedDeltaTime = 0f;
         return false;
     }
 

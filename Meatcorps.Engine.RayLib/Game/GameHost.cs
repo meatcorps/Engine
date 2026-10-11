@@ -25,17 +25,17 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
     private List<IGameLoopTask> _gameLoopTasksBackward = new();
     private List<IGameLoopTask> _gameLoopTasksForward = new();
     private bool _isBorderless;
-    private int _targetFps;
+    private int _fixedUpdateRate;
     public FrameTimer RenderLoopTime { get; private set; } = null!;
     public FrameTimer UpdateLoopTime { get; private set; } = null!;
 
-    public GameHost(int width, int height, string title, int targetFps = 60, ICamera? camera = null)
+    public GameHost(int width, int height, string title, int fixedUpdateRate = 60, ICamera? camera = null)
     {
         Width = width;
         Height = height;
         _title = title;
-        _targetFps = targetFps;
-        _timeService.TargetFps = targetFps;
+        _fixedUpdateRate = fixedUpdateRate;
+        _timeService.FixedUpdateRate = fixedUpdateRate;
         GlobalObjectManager.ObjectManager.Register<ITimeService>(_timeService);
         GlobalObjectManager.ObjectManager.Register(this);
 
@@ -80,12 +80,9 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
     public void SetFps(int? fps)
     {
         if (fps is not null)
-        {
-            _targetFps = fps.Value;
-            _timeService.TargetFps = fps.Value;
-        }
-
-        Raylib.SetTargetFPS(_targetFps);
+            _fixedUpdateRate = fps.Value;
+        
+        Raylib.SetTargetFPS(_fixedUpdateRate);
     }
 
 
@@ -173,7 +170,7 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
 
         Raylib.InitWindow(Width, Height, _title);
         Raylib.SetExitKey(_exitKey);
-        Raylib.SetTargetFPS(_targetFps);
+        Raylib.SetTargetFPS(_fixedUpdateRate);
 
         if (_config.GetOrDefault("Graphics", "Borderless", false, false))
             SetBorderlessWindow();
@@ -191,18 +188,19 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
             _timeService.UpdateFrameTimes();
             while (_timeService.TryDequeueStep(out var fixedDeltaTime))
             {
-                using (UpdateLoopTime.Scope())
-                {
-                    RunGameLoopTask(GameLoopType.PreUpdate, true, fixedDeltaTime);
-                    RunGameLoopTask(GameLoopType.Update, true, fixedDeltaTime);
-                    RunGameLoopTask(GameLoopType.LateUpdate, false, fixedDeltaTime);
-                }
-
+                RunGameLoopTask(GameLoopType.FixedUpdate, true, fixedDeltaTime);
                 totalSteps++;
             }
-
+            
             _timeService.FinalizeFrame();
-
+            
+            using (UpdateLoopTime.Scope())
+            {
+                RunGameLoopTask(GameLoopType.PreUpdate, true, _timeService.DeltaTime);
+                RunGameLoopTask(GameLoopType.Update, true, _timeService.DeltaTime);
+                RunGameLoopTask(GameLoopType.LateUpdate, false, _timeService.DeltaTime);
+            }
+            
             RunGameLoopTask(GameLoopType.AfterUpdate, true);
             RunGameLoopTask(GameLoopType.PreRender, true);
 

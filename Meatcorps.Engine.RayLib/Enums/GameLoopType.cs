@@ -8,6 +8,7 @@ public enum GameLoopType
     PreUpdate,
     Update,
     LateUpdate,
+    FixedUpdate,
     AfterUpdate,
     PreRender,
     Render,

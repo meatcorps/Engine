@@ -76,6 +76,9 @@ public abstract class BaseRenderTarget : IRenderTargetStrategyRenderer
     
     public void Setup(int sceneLayers, int gameObjectLayers)
     {
+        _sceneLayers = sceneLayers;
+        _gameObjectLayers = gameObjectLayers;
+        
         for (var i = 0; i < sceneLayers; i++)
         {
             _gameObjects.Add(new List<List<IRenderer>>());
