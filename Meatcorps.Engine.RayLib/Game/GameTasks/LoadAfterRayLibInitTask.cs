@@ -41,16 +41,16 @@ public class LoadAfterRayLibInitTask : IGameLoopTask
 
             var taskDone = false;
 
-            var tasks = new ConcurrentBag<Task>();
+            var tasks = new ConcurrentBag<(string, Task)>();
 
             foreach (var instance in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
             {
-                tasks.Add(instance.Load());
+                tasks.Add((instance.GetType().Name, instance.Load()));
             }
 
             _ = System.Threading.Tasks.Task.Run(async () =>
             {
-                await System.Threading.Tasks.Task.WhenAll(tasks);
+                await System.Threading.Tasks.Task.WhenAll(tasks.Select(x => x.Item2));
 
                 foreach (var task in GlobalObjectManager.ObjectManager.GetList<IGameLoopTask>()!)
                     if (task is not LoadAfterRayLibInitTask)
@@ -64,12 +64,27 @@ public class LoadAfterRayLibInitTask : IGameLoopTask
                 total += loadTask.TotalResources;
 
             Raylib.SetTargetFPS(0);
+            var previousDone = 0;
             while (!taskDone && !Raylib.WindowShouldClose())
             {
                 var done = 0;
                 foreach (var loadTask in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
                     done += loadTask.ResourcesLoaded;
 
+                if (done != previousDone)
+                {
+                    Console.WriteLine($"Loading {done}/{total} TODO:");
+                    foreach (var loadTask in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
+                    {
+                        if (loadTask.TotalResources != loadTask.ResourcesLoaded)
+                            Console.WriteLine(
+                                $"  {loadTask.GetType().Name}: {loadTask.ResourcesLoaded}/{loadTask.TotalResources}");
+                    }
+
+                    previousDone = done;
+                }
+                    
+                    
                 var normal = (float)done / total;
                 GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.RunTasks();
                 Raylib.BeginDrawing();

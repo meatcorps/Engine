@@ -22,7 +22,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.Arcade", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.Arcade.RayLib", "Meatcorps.Engine.Arcade.RayLib\Meatcorps.Engine.Arcade.RayLib.csproj", "{370C4705-818D-4AB6-8DCC-70E7F910D7F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.ArcadeTemplate", "Meatcorps.Game.ArcadeTemplate\Meatcorps.Game.ArcadeTemplate.csproj", "{7427783B-57AA-4B57-9259-6DC59222AB86}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.ArcadeTemplate", "Templates\Meatcorps.Game.ArcadeTemplate\Meatcorps.Game.ArcadeTemplate.csproj", "{7427783B-57AA-4B57-9259-6DC59222AB86}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{BE6028C9-0015-457F-BCD2-DA31024F614D}"
 EndProject
