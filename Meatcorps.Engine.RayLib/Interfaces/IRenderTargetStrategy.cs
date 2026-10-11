@@ -1,4 +1,5 @@
 using Meatcorps.Engine.Core.Data;
+using Meatcorps.Engine.RayLib.Renderer;
 using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Interfaces;
@@ -21,6 +22,12 @@ public interface IRenderTargetStrategyRenderer: IRenderTargetStrategy
     
     RectF GetScreenRect();
     void BeginRender(Color clearColor);
+    
+    void Setup(int sceneLayers, int gameObjectLayers);
+
+    void RegisterRenderer(IRenderer renderer);
+    
+    void Render();
 
     void EndRender(RenderTexture2D? targetTexture = null);
 }

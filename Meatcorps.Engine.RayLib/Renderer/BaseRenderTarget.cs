@@ -14,12 +14,18 @@ public abstract class BaseRenderTarget : IRenderTargetStrategyRenderer
     public bool UsePercentage { get; set; }
 
     public abstract void BeginRender(Color clearColor);
+
     public abstract void EndRender(RenderTexture2D? targetTexture = null);
 
     public abstract int RenderWidth { get; }
     public abstract int RenderHeight { get; }
 
     public PointInt? ScreenSizeOverride { get; set; }
+    
+    private readonly List<List<List<IRenderer>>> _gameObjects = new();
+    
+    private int _sceneLayers = 0;
+    private int _gameObjectLayers = 0;
 
     protected PointInt GetScreenSize()
     {
@@ -66,5 +72,40 @@ public abstract class BaseRenderTarget : IRenderTargetStrategyRenderer
     {
         PostProcessors.Add(postProcessor);
         return this;
+    }
+    
+    public void Setup(int sceneLayers, int gameObjectLayers)
+    {
+        for (var i = 0; i < sceneLayers; i++)
+        {
+            _gameObjects.Add(new List<List<IRenderer>>());
+
+            for (var j = 0; j < gameObjectLayers; j++)
+                _gameObjects[i].Add(new List<IRenderer>());
+        }
+    }
+
+    public void RegisterRenderer(IRenderer renderer)
+    {
+        if (renderer.SceneLayer >= _sceneLayers)
+            throw new Exception(
+                $"Scene layer out of bounds, scene layer: {renderer.SceneLayer} max: {_sceneLayers}");
+        
+        if (renderer.Layer >= _gameObjectLayers)
+            throw new Exception(
+                $"Game object layer out of bounds, scene layer: {renderer.Layer} max: {_gameObjectLayers}");
+        
+        _gameObjects[renderer.SceneLayer][renderer.Layer].Add(renderer);
+    }
+
+    public void Render()
+    {
+        foreach (var layer in _gameObjects)
+        foreach (var gameObjects in layer)
+        {
+            foreach (var gameObj in gameObjects)
+                gameObj.Draw();
+            gameObjects.Clear();
+        }
     }
 }

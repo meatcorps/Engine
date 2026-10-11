@@ -17,7 +17,6 @@ public class RenderService
 {
     private readonly int _gameObjectLayers;
 
-    private readonly Dictionary<IRenderTargetStrategyRenderer, List<List<List<IRenderer>>>> _gameObjects = new();
     private readonly IRenderTargetStrategy _presentationRenderTargetStrategy;
     private readonly List<IRenderTargetStrategyRenderer> _renderTargetStrategies;
     private readonly int _sceneLayers;
@@ -69,21 +68,9 @@ public class RenderService
 
         _renderTargetStrategies.Clear();
         _renderTargetStrategies.AddRange(renderTargetStrategies);
-        //_renderTargetStrategies.AddRange(renderTargetStrategies.Where(x => x != _lastRenderTargetStrategy));
-        //_renderTargetStrategies.Add(_lastRenderTargetStrategy);
-        _gameObjects.Clear();
 
         foreach (var renderTargetStrategy in _renderTargetStrategies)
-        {
-            _gameObjects[renderTargetStrategy] = new List<List<List<IRenderer>>>();
-            for (var i = 0; i < _sceneLayers; i++)
-            {
-                _gameObjects[renderTargetStrategy].Add(new List<List<IRenderer>>());
-
-                for (var j = 0; j < _gameObjectLayers; j++)
-                    _gameObjects[renderTargetStrategy][i].Add(new List<IRenderer>());
-            }
-        }
+            renderTargetStrategy.Setup(_sceneLayers, _gameObjectLayers);
     }
 
     /// <summary>
@@ -96,24 +83,10 @@ public class RenderService
     /// </exception>
     public void RegisterRender(IRenderer gameObject)
     {
-        if (gameObject.SceneLayer >= _sceneLayers)
-            throw new Exception(
-                $"Scene layer out of bounds, scene layer: {gameObject.SceneLayer} max: {_sceneLayers}");
-        if (gameObject.Layer >= _gameObjectLayers)
-            throw new Exception(
-                $"Game object layer out of bounds, scene layer: {gameObject.Layer} max: {_gameObjectLayers}");
-
         if (gameObject.RenderTarget == null)
             gameObject.RenderTarget = _renderTargetStrategies.First();
 
-        if (!_gameObjects.ContainsKey((IRenderTargetStrategyRenderer)gameObject.RenderTarget))
-        {
-            Console.WriteLine(
-                $"Render target is not registered. Render target: {gameObject.RenderTarget}, GameObject: {gameObject.GetType().FullName}");
-            return;
-        }
-
-        _gameObjects[(IRenderTargetStrategyRenderer)gameObject.RenderTarget][gameObject.SceneLayer][gameObject.Layer].Add(gameObject);
+        ((IRenderTargetStrategyRenderer)gameObject.RenderTarget).RegisterRenderer(gameObject);
     }
 
     /// <summary>
@@ -187,13 +160,7 @@ public class RenderService
             
             renderTargetStrategy.BeginRender(new Color(0, 0, 0, 0));
 
-            foreach (var layer in _gameObjects[renderTargetStrategy])
-            foreach (var gameObjects in layer)
-            {
-                foreach (var gameObj in gameObjects)
-                    gameObj.Draw();
-                gameObjects.Clear();
-            }
+            renderTargetStrategy.Render();
 
             using (Profiler.Instance.StartProfile(GetType(), renderTargetStrategy.Name, renderTargetStrategy.GetType())) {
                 renderTargetStrategy.EndRender(_presentationRenderDone ? null : _renderTexture);
