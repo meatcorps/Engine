@@ -4,7 +4,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <PackageId>Meatcorps.Engine.RayLib.R3d_2</PackageId>
+        <PackageId>Meatcorps.Engine.RayLib.R3d</PackageId>
         <Authors>Dennis Steffen</Authors>
         <Company>Meatcorps</Company>
         <Product>Meatcorps Engine RayLib R3d</Product>
