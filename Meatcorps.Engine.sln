@@ -94,7 +94,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.GameStarter"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Game.BareBoneStarter", "Templates\Meatcorps.Game.BareBoneStarter\Meatcorps.Game.BareBoneStarter.csproj", "{51D306E7-DCD3-4763-AF06-4066002EDFA9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.RayLib.R3d", "Meatcorps.Engine.RayLib.R3d\Meatcorps.Engine.RayLib.R3d.csproj", "{DC02E7B1-C44C-4B18-9A8D-8BCD8974CD85}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.RayLib.R3d_2", "Meatcorps.Engine.RayLib.R3d_2\Meatcorps.Engine.RayLib.R3d_2.csproj", "{DC02E7B1-C44C-4B18-9A8D-8BCD8974CD85}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meatcorps.Engine.RayLib.R3d.Examples", "Meatcorps.Engine.RayLib.R3d.Examples\Meatcorps.Engine.RayLib.R3d.Examples.csproj", "{1E42A77F-B7B9-4201-A24C-A86D69FC36F1}"
 EndProject

@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Meatcorps.Engine.RayLib.R3d\Meatcorps.Engine.RayLib.R3d.csproj" />
+      <ProjectReference Include="..\Meatcorps.Engine.RayLib.R3d_2\Meatcorps.Engine.RayLib.R3d_2.csproj" />
     </ItemGroup>
 
     <ItemGroup>
