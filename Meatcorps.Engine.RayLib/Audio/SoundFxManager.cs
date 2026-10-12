@@ -16,6 +16,8 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, IC
     private readonly List<OneSoundManager> _soundManagers = new();
     private readonly Dictionary<TSfx, List<Sound>> _soundPools = new();
     private bool _isDisposed;
+    
+    private object _lock = new();
 
     public SoundFxManager(int poolSizePerSfx = 4, string name = "SoundEffects")
     {
@@ -88,29 +90,41 @@ public sealed class SoundFxManager<TSfx> : IBackgroundService, IMasterVolume, IC
 
     public async Task Load(TSfx key, string filePath, Action? afterLoad = null)
     {
-        _soundLocations.Add(key, filePath);
+        lock (_lock)
+        {
+            _soundLocations.Add(key, filePath);
+        }
         if (!_soundPools.ContainsKey(key))
         {
             var pool = new List<Sound>(_poolSizePerSfx);
+            var firstSound = default(Sound);
             for (var i = 0; i < _poolSizePerSfx; i++)
             {
                 Sound s = default;
 
                 if (i == 0)
-                    s = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(_soundLocations[key]);
+                {
+                    s = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadSound(filePath);
+                    firstSound = s;
+                }
                 else
                     await GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.AddTaskToMainThread(() =>
-                        s = Raylib.LoadSoundAlias(pool[0]));
+                        s = Raylib.LoadSoundAlias(firstSound));
 
                 if (!Raylib.IsSoundValid(s))
                     throw new Exception($"Failed to load sound {filePath}");
-
-                pool.Add(s);
+                
+                lock (_lock)
+                {
+                    pool.Add(s);
+                }
             }
 
             afterLoad?.Invoke();
-
-            _soundPools[key] = pool;
+            lock (_lock)
+            {
+                _soundPools[key] = pool;
+            }
         }
     }
 

@@ -9,7 +9,7 @@ using Meatcorps.Engine.RayLib.Input;
 using Meatcorps.Engine.SDL.Controller;
 using Raylib_cs;
 
-namespace Meatcorps.Engine.Raylib.Examples.Resources;
+namespace Meatcorps.Engine.RayLib.Examples.Resources;
 
 public static class GameFallbackInput
 {

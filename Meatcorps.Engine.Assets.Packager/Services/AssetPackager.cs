@@ -31,13 +31,13 @@ public class AssetPackager
     {
         var assetFileName = Path.Combine(_outputPath, _name);
 
-        const string ASSETS_TEMP = "Assets.temp";
+        var assetsTemp = Path.GetTempFileName();
 
         var files = Directory.GetFiles(Path.Combine(_basePath, _target), "*.*", SearchOption.AllDirectories);
 
-        if (File.Exists(ASSETS_TEMP))
-            File.Delete(ASSETS_TEMP);
-        var fileTempWriter = File.Create(ASSETS_TEMP);
+        if (File.Exists(assetsTemp))
+            File.Delete(assetsTemp);
+        var fileTempWriter = File.Create(assetsTemp);
 
         var map = new AssetMapData();
         var currentPosition = 0;
@@ -84,11 +84,11 @@ public class AssetPackager
         var fileWriter = File.Create(assetFileName);
         fileWriter.Write(lengthString.ToArray());
         fileWriter.Write(mapData);
-        fileWriter.Write(File.ReadAllBytes(ASSETS_TEMP));
+        fileWriter.Write(File.ReadAllBytes(assetsTemp));
         fileWriter.Close();
 
         _log.LogMessage(MessageImportance.High, "File created: " + assetFileName);
-        File.Delete(ASSETS_TEMP);
+        File.Delete(assetsTemp);
 
         _log.LogMessage(MessageImportance.High, "Verifying: " + assetFileName);
         var assetPackager = new AssetPackageManager(assetFileName, _encryptDecrypt);

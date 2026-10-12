@@ -48,6 +48,8 @@ public class RenderService
         
         SetRenderTargets(objectManager.GetList<IRenderTargetStrategyRenderer>()!);
     }
+    
+    public IRenderTargetStrategy PrimaryRenderTargetStrategy { get; private set; }
 
     /// <summary>
     /// Gets or sets the background color used when clearing the render texture and final output.
@@ -71,6 +73,8 @@ public class RenderService
 
         foreach (var renderTargetStrategy in _renderTargetStrategies)
             renderTargetStrategy.Setup(_sceneLayers, _gameObjectLayers);
+
+        PrimaryRenderTargetStrategy = _renderTargetStrategies.First();
     }
     
     /// <summary>

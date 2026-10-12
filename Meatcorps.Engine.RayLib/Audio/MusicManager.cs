@@ -41,6 +41,8 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
     private float _volume = 1f;
 
     private bool _isDisposed;
+    
+    private object _lock = new();
 
     public MusicManager()
     {
@@ -115,7 +117,10 @@ public sealed class MusicManager<TTrack> : IBackgroundService, IMasterVolume, IC
         if (!_tracks.ContainsKey(key))
         {
             var m = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadMusic(filePath);
-            _tracks[key] = m;
+            lock (_lock)
+            {
+                _tracks[key] = m;
+            }
         }
     }
 

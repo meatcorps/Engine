@@ -39,7 +39,7 @@ public class ObjectManager : IDisposable
     public T RegisterOnce<T>(T instance, string tag = "default") where T : class
     {
         if (_registry.ContainsKey((typeof(T), tag)))
-            return Get<T>()!;
+            return Get<T>(tag)!;
         Register(instance, tag);
         return instance;
     }

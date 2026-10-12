@@ -19,7 +19,7 @@ public class SceneTask : IGameLoopTask
     }
 
     public int Priority { get; }
-    public bool Enabled { get; set; } = false;
+    public bool Enabled { get; set; } = true;
     public bool IsInitialized { get; private set; }
 
     public void Initialize(GameHost host)

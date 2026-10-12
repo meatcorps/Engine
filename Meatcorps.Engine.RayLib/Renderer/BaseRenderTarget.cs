@@ -74,7 +74,7 @@ public abstract class BaseRenderTarget : IRenderTargetStrategyRenderer
         return this;
     }
     
-    public void Setup(int sceneLayers, int gameObjectLayers)
+    public virtual void Setup(int sceneLayers, int gameObjectLayers)
     {
         _sceneLayers = sceneLayers;
         _gameObjectLayers = gameObjectLayers;
@@ -88,7 +88,7 @@ public abstract class BaseRenderTarget : IRenderTargetStrategyRenderer
         }
     }
 
-    public void RegisterRenderer(IRenderer renderer)
+    public virtual void RegisterRenderer(IRenderer renderer)
     {
         if (renderer.SceneLayer >= _sceneLayers)
             throw new Exception(
@@ -101,7 +101,7 @@ public abstract class BaseRenderTarget : IRenderTargetStrategyRenderer
         _gameObjects[renderer.SceneLayer][renderer.Layer].Add(renderer);
     }
 
-    public void Render()
+    public virtual void Render()
     {
         foreach (var layer in _gameObjects)
         foreach (var gameObjects in layer)

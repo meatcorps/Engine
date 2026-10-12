@@ -212,6 +212,12 @@ public class RayLibModule
         return this;
     }
 
+    public RayLibModule RegisterCustomBuildAction(Action<RayLibModule> action)
+    {
+        action(this);
+        return this;
+    }
+
     public GameHost Run()
     {
         var host = GlobalObjectManager.ObjectManager.Get<GameHost>()!;

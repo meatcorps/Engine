@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Meatcorps.Engine.Core.Interfaces.Config;
 using Meatcorps.Engine.Core.Interfaces.Services;
 using Meatcorps.Engine.Core.ObjectManager;
@@ -18,29 +19,42 @@ public class MusicResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T : 
         _masterVolume = config.GetOrDefault("Audio", "MusicVolume", 1f);
     }
 
-    public int TotalResources => _music.Count;
-    public int ResourcesLoaded { get; private set; }
+    public int TotalResources { get; private set; }
+    public int ResourcesLoaded => _taskDone.Count;
 
+    private ConcurrentBag<bool> _taskDone = new();
+    
     public async Task Load()
     {
         var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         var nonExisting = new List<string>();
         var manager = new MusicManager<T>();
+        _taskDone.Clear();
+        
+        var tasks = new List<Task>();
+        
         foreach (var (k, v) in _music)
         {
             if (resource.Exists(v.path))
             {
-                await manager.Load(k, v.path);
-                manager.SetMasterVolume(v.volume);
+                tasks.Add(Task.Run(async () =>
+                {
+                    await manager.Load(k, v.path);
+                    _taskDone.Add(true);
+                })); 
             }
             else
             {
-                await manager.Load(k, Path.Combine("Assets", "PlaceHolders", "music.mp3"));
                 nonExisting.Add($"{k} -> {v.path} does not map to a file");
+                tasks.Add(Task.Run(async () =>
+                {
+                    await manager.Load(k, Path.Combine("Assets", "PlaceHolders", "music.mp3"));
+                    _taskDone.Add(true);
+                })); 
             }
-            
-            ResourcesLoaded++;
         }
+        
+        await Task.WhenAll(tasks);
 
         foreach (var e in Enum.GetValues<T>())
             if (!_music.ContainsKey(e)) 
@@ -62,6 +76,7 @@ public class MusicResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T : 
     public MusicResource<T> AddMusic(T k, string path, float volume = 1f)
     {
         _music[k] = (path, volume);
+        TotalResources = _music.Count;
         return this;
     }
 
@@ -75,7 +90,10 @@ public class MusicResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T : 
     {
         foreach (var e in Enum.GetValues<T>())
             if (!_music.ContainsKey(e))
+            {
                 _music.Add(e, (path, 0f));
+                TotalResources = _music.Count;
+            }
 
         return this;
     }

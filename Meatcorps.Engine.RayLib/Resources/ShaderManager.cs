@@ -27,12 +27,16 @@ public sealed class ShaderManager<T> : IResourceLoadOnInit, IDisposable where T 
     public int TotalResources => _shaderPaths.Count;
     public int ResourcesLoaded => _shaders.Count;
 
+    private object _addLock = new object();
+    
     public async Task Load()
     {
         var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         if (_isLoaded)
             return;
         _isLoaded = true;
+        
+        var tasks = new List<Task>();
         foreach (var shader in _shaderPaths)
         {
             if (shader.Item1 is not null)
@@ -42,13 +46,21 @@ public sealed class ShaderManager<T> : IResourceLoadOnInit, IDisposable where T 
             if (!resource.Exists(shader.Item2))
                 throw new FileNotFoundException($"Shader file FX {shader.Item2} not found");
 
-            var shaderToAdd = await resource.LoadShader(shader.Item1, shader.Item2);
+            tasks.Add(Task.Run(async () =>
+            {
+                var shaderToAdd = await resource.LoadShader(shader.Item1, shader.Item2);
 
-            if (!Raylib.IsShaderValid(shaderToAdd) && shaderToAdd.Id == 0)
-                throw new Exception($"Failed to load shader {shader.Item3} VS:{shader.Item1} FX:{shader.Item2}");
+                lock (_addLock)
+                {
+                    if (!Raylib.IsShaderValid(shaderToAdd))
+                        throw new Exception($"Failed to load shader {shader.Item3} VS:{shader.Item1} FX:{shader.Item2}");
 
-            _shaders.Add(shader.Item3, shaderToAdd);
+                    _shaders.Add(shader.Item3, shaderToAdd);
+                }
+            }));
         }
+        
+        await Task.WhenAll(tasks);
     }
 
     public ShaderManager<T> AddShader(string shaderPathFs, T shader)

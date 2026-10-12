@@ -27,7 +27,7 @@ public class SoundFxResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T 
             _masterVolume = masterVolume;
     }
 
-    public int TotalResources => _sound.Count;
+    public int TotalResources { get; private set; }
     public int ResourcesLoaded => _done.Count;
 
     public async Task Load()
@@ -35,16 +35,19 @@ public class SoundFxResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T 
         var resource = GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!;
         var nonExisting = new List<string>();
         var manager = new SoundFxManager<T>(_poolSize, _name);
-
+        var tasks = new List<Task>();
+        
         foreach (var sound in _sound)
             if (resource.Exists(sound.Value))
-                await manager.Load(sound.Key, sound.Value, () => _done.Add(sound.Value));
+                tasks.Add(Task.Run(() => manager.Load(sound.Key, sound.Value, () => _done.Add(sound.Value))));
             else
             {
-                await manager.Load(sound.Key, Path.Combine("Assets", "PlaceHolders", "sound.wav"), () => _done.Add(sound.Value));
+                tasks.Add(Task.Run(() => manager.Load(sound.Key, Path.Combine("Assets", "PlaceHolders", "sound.wav"), () => _done.Add(sound.Value))));
                 nonExisting.Add($"{sound.Key} -> {sound.Value} does not map to a file.");
             }
 
+        await Task.WhenAll(tasks);
+        
         foreach (var e in Enum.GetValues<T>())
             if (!_sound.ContainsKey(e))
                 nonExisting.Add($"{e} is not mapped!");
@@ -66,6 +69,7 @@ public class SoundFxResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T 
     public SoundFxResource<T> AddSound(T sound, string path)
     {
         _sound[sound] = path;
+        TotalResources = _sound.Count;
         return this;
     }
 
@@ -85,7 +89,10 @@ public class SoundFxResource<T> : IResourceLoadOnInit, IAudioInitNeeded where T 
     {
         foreach (var e in Enum.GetValues<T>())
             if (!_sound.ContainsKey(e))
+            {
                 _sound.Add(e, path);
+                TotalResources = _sound.Count;
+            }
 
         return this;
     }

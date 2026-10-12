@@ -14,7 +14,7 @@ public class LoadAfterRayLibInitTask : IGameLoopTask
 
     private bool _isLoadingInitialized;
 
-    public LoadAfterRayLibInitTask(int priority = 1)
+    public LoadAfterRayLibInitTask(int priority = 2)
     {
         Priority = priority;
     }
@@ -45,10 +45,10 @@ public class LoadAfterRayLibInitTask : IGameLoopTask
 
             foreach (var instance in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
             {
-                tasks.Add((instance.GetType().Name, instance.Load()));
+                tasks.Add((instance.GetType().Name, System.Threading.Tasks.Task.Run(instance.Load)));
             }
 
-            _ = System.Threading.Tasks.Task.Run(async () =>
+            var allTasks = System.Threading.Tasks.Task.Run(async () =>
             {
                 await System.Threading.Tasks.Task.WhenAll(tasks.Select(x => x.Item2));
 
@@ -65,9 +65,10 @@ public class LoadAfterRayLibInitTask : IGameLoopTask
 
             Raylib.SetTargetFPS(0);
             var previousDone = 0;
-            while (!taskDone && !Raylib.WindowShouldClose())
+            var done = 0;
+            while (!allTasks.IsCompleted && !Raylib.WindowShouldClose())
             {
-                var done = 0;
+                done = 0;
                 foreach (var loadTask in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
                     done += loadTask.ResourcesLoaded;
 
@@ -99,7 +100,29 @@ public class LoadAfterRayLibInitTask : IGameLoopTask
                 Raylib.EndDrawing();
             }
 
+            if (allTasks.IsFaulted)
+            {
+                foreach (var task in tasks)
+                {
+                    if (!task.Item2.IsFaulted)
+                        continue;
+
+                    Console.WriteLine($"Resource failed: {task.Item2}");
+                    Console.WriteLine(task.Item2.Exception);
+                }
+
+                allTasks.GetAwaiter().GetResult();
+                throw new AggregateException("One or more tasks failed", allTasks.Exception.InnerExceptions);
+            }
+
             _host.SetFps(null);
+            
+            done = 0;
+            foreach (var loadTask in GlobalObjectManager.ObjectManager.GetList<IResourceLoadOnInit>()!)
+                done += loadTask.ResourcesLoaded;
+            
+            
+            Console.WriteLine($"Loading done... RESULT: {done}/{total}");
         }
     }
 }

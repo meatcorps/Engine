@@ -12,7 +12,7 @@ public class AssetPackageManager
     private readonly IEncryptDecryptSink _sink;
     private AssetMapData _map = null!;
     private const int FIRST_CHUCK_SIZE = 256;
-    
+
     public AssetPackageManager(string path, IEncryptDecryptSink sink)
     {
         _path = path;
@@ -34,10 +34,10 @@ public class AssetPackageManager
                 lengthByteData.RemoveAt(0);
             return lengthByteData.ToArray();
         });
-        
-        if (!int.TryParse(Encoding.UTF8.GetString(data), out var jsonMapSize)) 
+
+        if (!int.TryParse(Encoding.UTF8.GetString(data), out var jsonMapSize))
             return;
-        
+
         var jsonMap = LoadText(FIRST_CHUCK_SIZE, jsonMapSize);
         var map = JsonConvert.DeserializeObject<AssetMapData>(jsonMap);
         if (map == null)
@@ -48,7 +48,7 @@ public class AssetPackageManager
             item.Position += FIRST_CHUCK_SIZE;
             item.Position += jsonMapSize;
         }
-        
+
         _map = map;
     }
 
@@ -74,7 +74,7 @@ public class AssetPackageManager
             {
                 if (OperatingSystem.IsWindows())
                     return x.Path;
-                
+
                 return x.Path.Replace('\\', '/');
             });
     }
@@ -84,27 +84,36 @@ public class AssetPackageManager
         var stopwatch = new Stopwatch();
         stopwatch.Start();
         path = FixPath(path);
-        var item = _map.Items.FirstOrDefault(x => x.Path == path); 
+        var item = _map.Items.FirstOrDefault(x => x.Path == path);
         if (item is null)
         {
             data = Array.Empty<byte>();
             return false;
         }
-        
+
         data = LoadBytes((int)item.Position, (int)item.Length, (int)item.PlainLength);
         stopwatch.Stop();
         Console.WriteLine("Loaded " + path + " in " + stopwatch.ElapsedMilliseconds + " ms");
         return true;
     }
-    
-    private byte[] LoadBytes(int startPosition, int length, int plainLength = 0, Func<byte[], byte[]>? middleStuff = null)
+
+    private byte[] LoadBytes(
+        int startPosition,
+        int length,
+        int plainLength = 0,
+        Func<byte[], byte[]>? middleStuff = null)
     {
-        using var data = File.Open(_path, FileMode.Open);
+        using var data = File.Open(
+            _path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read);
+
         data.Seek(startPosition, SeekOrigin.Begin);
+
         var buffer = new byte[length];
-        _ = data.Read(buffer, 0, length);
-        data.Close();
-        
+        data.ReadExactly(buffer);
+
         if (middleStuff != null)
             buffer = middleStuff(buffer);
 
@@ -114,7 +123,7 @@ public class AssetPackageManager
             _sink.Decrypt(buffer, returnBuffer);
             return returnBuffer;
         }
-        
+
         return _sink.Decrypt(buffer);
     }
 

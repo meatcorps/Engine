@@ -13,5 +13,6 @@ public enum GameLoopType
     PreRender,
     Render,
     PostRender,
+    PreClosingWindow,
     AfterClosingWindow
 }

@@ -42,23 +42,35 @@ public sealed class TextManager<T> : IResourceLoadOnInit, IDisposable, IDefaultF
     public int TotalResources => _fontPaths.Count;
     public int ResourcesLoaded => _fonts.Count;
 
+    private object _addLock = new object();
+    
     public async Task Load()
     {
         if (_isLoaded)
             return;
         _isLoaded = true;
+        var tasks = new List<Task>();
+        
         foreach (var fontToBeLoaded in _fontPaths)
         {
-            var font = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadFontEx(fontToBeLoaded.Item1,
-                fontToBeLoaded.Item3, fontToBeLoaded.codePoints, fontToBeLoaded.codePoints?.Length ?? 0);
-            
-            await GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.AddTaskToMainThread(() =>
+            tasks.Add(Task.Run(async () =>
             {
-                Raylib.SetTextureFilter(font.Texture, fontToBeLoaded.Item4);
-            });
+                var font = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadFontEx(fontToBeLoaded.Item1,
+                    fontToBeLoaded.Item3, fontToBeLoaded.codePoints, fontToBeLoaded.codePoints?.Length ?? 0);
             
-            _fonts.Add(fontToBeLoaded.Item2, font);
+                await GlobalObjectManager.ObjectManager.Get<ResourceManager>()!.AddTaskToMainThread(() =>
+                {
+                    Raylib.SetTextureFilter(font.Texture, fontToBeLoaded.Item4);
+                });
+            
+                lock (_addLock)
+                {
+                    _fonts.Add(fontToBeLoaded.Item2, font);
+                }
+            }));
         }
+        
+        await Task.WhenAll(tasks);
     }
 
     public TextManager<T> AddFont(string fontPath, T type, int size = 32, TextureFilter filter = TextureFilter.Point,

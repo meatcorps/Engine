@@ -215,6 +215,10 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
                     $"Steps: {totalSteps}, Update time {UpdateLoopTime}, Render time {RenderLoopTime}, FPS {Raylib.GetFPS()}");
         }
 
+        GlobalObjectManager.ObjectManager.Get<BaseScene>()?.Dispose();
+        GlobalObjectManager.ObjectManager.Remove<BaseScene>();
+        
+        RunGameLoopTask(GameLoopType.PreClosingWindow, true);
         Raylib.CloseWindow();
         RunGameLoopTask(GameLoopType.AfterClosingWindow, true);
     }
