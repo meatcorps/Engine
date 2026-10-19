@@ -1,0 +1,165 @@
+Meatcorps.VideoStreaming
+THIRD-PARTY SOFTWARE NOTICES
+========================================
+
+This file identifies third-party software used by, linked with, or optionally
+used alongside Meatcorps.VideoStreaming. It is separate from the project's
+own MIT LICENSE file.
+
+IMPORTANT
+---------
+The notices below describe the project's current source dependencies, not a
+complete inventory of any particular binary distribution. Third-party software
+remains subject to its own license. This file does not replace the full license
+texts or other obligations that apply when redistributing dependencies.
+
+The precise licenses, required notices and source-distribution obligations
+must be checked against the versions and build configurations actually shipped.
+
+
+1. GStreamer and GStreamer RTSP Server
+-------------------------------------
+Project: GStreamer
+Website: https://gstreamer.freedesktop.org/
+Licensing: Generally GNU Lesser General Public License, version 2.1 or later
+           (LGPL-2.1-or-later); individual plugins and their external
+           dependencies may have different licensing implications.
+
+Used by: All platforms.
+Purpose: RTSP serving, MP4 muxing, H.264/H.265 stream handling, audio encoding,
+         RTP packetization, and video/audio pipeline management.
+
+Current build modules include:
+  - gstreamer-1.0
+  - gstreamer-app-1.0
+  - gstreamer-rtsp-server-1.0
+  - On Linux and Windows: gstreamer-gl-1.0 and gstreamer-video-1.0
+
+GStreamer licensing details:
+https://gstreamer.freedesktop.org/documentation/frequently-asked-questions/licensing.html
+
+If distributing GStreamer binaries, include the applicable license texts and
+notices and meet the relevant LGPL requirements, including those concerning
+source availability and replacing/relinking the LGPL-covered libraries.
+Check the licenses and third-party dependencies of any bundled encoder plugins
+(e.g. AAC, NVIDIA, AMD, Intel or software codecs) separately.
+
+
+2. GLib / GObject
+----------------
+Project: GLib
+Website: https://gitlab.gnome.org/GNOME/glib
+Licensing: Primarily LGPL-2.1-or-later (verify the distributed version).
+
+Used by: Native shared code and GStreamer integration.
+Purpose: Memory management, threads, locks, objects and event loops.
+
+If you redistribute GLib binaries, preserve the applicable licenses, notices
+and LGPL compliance requirements.
+
+
+3. FFmpeg libraries (Linux VA-API backend)
+-----------------------------------------
+Project: FFmpeg
+Website: https://ffmpeg.org/
+Licensing: Normally LGPL-2.1-or-later, but builds enabled with GPL components
+           are subject to GPL terms. Other optional components may introduce
+           additional restrictions. Check the exact FFmpeg build.
+
+Used by: Experimental Linux AMD/Intel VA-API backend only.
+Libraries: libavcodec and libavutil.
+Purpose: Allocate GPU hardware frames and submit them to the VA-API hardware
+         encoder; compressed video packets are then passed to GStreamer.
+
+Official license/compliance information:
+https://ffmpeg.org/legal.html
+
+When redistributing FFmpeg binaries, audit the build configuration and linked
+components, retain the applicable notices and license text, and satisfy the
+license's source availability and relinking requirements. In particular,
+avoid assuming that a system's FFmpeg build is LGPL-only.
+
+
+4. VA-API (libva) and Linux GPU interoperability
+-----------------------------------------------
+Project: libva / Video Acceleration API
+Website: https://github.com/intel/libva
+Licensing: Permissive MIT-style licenses; review the notices in the exact
+           libva source/binaries you distribute.
+
+Used by: Experimental Linux VA-API backend.
+Purpose: Hardware video surfaces and DMA-BUF surface sharing.
+
+Other Linux native interfaces/libraries include EGL, OpenGL and libdrm:
+  - libdrm: https://gitlab.freedesktop.org/mesa/drm
+  - EGL/OpenGL: https://www.khronos.org/
+
+These interfaces are provided by separate platform and driver implementations;
+there is not one blanket license covering every Mesa, GPU-driver, EGL or OpenGL
+binary. Review the particular packages if redistributing them.
+
+
+5. Operating-system and GPU-vendor APIs
+--------------------------------------
+macOS: Apple VideoToolbox, CoreVideo, CoreMedia, IOSurface, OpenGL and
+       CoreFoundation frameworks.
+Windows: Microsoft Windows / OpenGL interfaces and GPU-driver APIs.
+Linux: OpenGL/EGL/GLX and hardware video driver interfaces.
+
+These are platform APIs and vendor/runtime dependencies; they are not
+licensed to recipients under the Meatcorps.VideoStreaming MIT license.
+Follow the applicable platform SDK, operating-system and driver terms.
+Where these libraries are provided by the user's operating system rather than
+bundled with the application, distribution obligations can differ.
+
+
+6. raylib and raylib-cs (optional example/application integration)
+-----------------------------------------------------------------
+Projects:
+  raylib:    https://www.raylib.com/
+  raylib-cs: https://github.com/raylib-cs/raylib-cs
+Licensing: zlib/libpng-style licenses.
+
+Meatcorps.VideoStreaming's native C API does not depend on raylib or raylib-cs.
+These packages are used by the example and optional C# audio/rendering
+integration. Follow their notices when redistributing those components.
+
+
+7. OBS Studio (implementation reference only)
+---------------------------------------------
+Project: OBS Studio
+Website: https://obsproject.com/
+Source: https://github.com/obsproject/obs-studio
+Licensing: GPL-2.0-or-later (check individual files where relevant).
+
+OBS Studio's publicly described VA-API / DMA-BUF / OpenGL approach informed
+the design of the experimental Linux interoperability backend. OBS is NOT a
+linked or bundled dependency of this project. This acknowledgment does not
+relicense OBS code and does not grant permission to include copied or closely
+adapted GPL-covered OBS source under MIT.
+
+Before distributing under MIT, verify that the implementation is independently
+written and does not incorporate GPL-covered OBS code requiring different
+licensing treatment.
+
+
+8. Video/audio codec and patent considerations
+----------------------------------------------
+H.264/AVC, H.265/HEVC and AAC are codec standards that may implicate patent or
+other licensing requirements depending on jurisdiction, distribution method,
+usage and implementation. Open-source licenses, including MIT and LGPL, do not
+by themselves establish patent rights for these codecs.
+
+
+REDISTRIBUTION CHECKLIST
+------------------------
+[ ] Keep the project's MIT LICENSE separate from this notice.
+[ ] Record exact third-party versions and selected hardware/software plugins.
+[ ] Review the actual licenses of bundled libraries, drivers and plugins.
+[ ] Include the complete required third-party license texts and notices.
+[ ] Satisfy LGPL source/relinking obligations for bundled LGPL libraries.
+[ ] Audit FFmpeg build options before redistribution (especially GPL/nonfree).
+[ ] Confirm no GPL-covered OBS implementation was copied into MIT code.
+[ ] Consider codec patents and commercial distribution requirements as needed.
+
+This file is informational and is not legal advice.
