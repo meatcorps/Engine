@@ -14,6 +14,7 @@ using Meatcorps.Engine.RayLib.R3d.Examples.Scenes;
 using Meatcorps.Engine.RayLib.R3d.Modules;
 using Meatcorps.Engine.RayLib.R3d.Resources;
 using Meatcorps.Engine.RayLib.Resources;
+using R3D_cs;
 
 LoggingModule.Load();
 CoreModule.Load();
