@@ -2,7 +2,7 @@ using Raylib_cs;
 
 namespace Meatcorps.Engine.RayLib.Stream;
 
-public sealed class RaylibMixedAudioCapture : IDisposable
+public sealed class MixedAudioCapture : IDisposable
 {
     private const int ChunkFrames = 4096;
     private const int SlotCount = 64;
@@ -39,7 +39,7 @@ public sealed class RaylibMixedAudioCapture : IDisposable
 
     public Exception? WorkerError => _workerError;
 
-    public RaylibMixedAudioCapture(VideoStream stream, int sampleRate = 48000)
+    public MixedAudioCapture(VideoStream stream, int sampleRate = 48000)
     {
         _stream = stream;
         _sampleRate = sampleRate;
@@ -67,6 +67,8 @@ public sealed class RaylibMixedAudioCapture : IDisposable
             return;
 
         // A single callback timestamp, shared with video.
+        if (!_stream.IsStarted)
+            return;
         ulong timestamp = _stream.TimeNanoseconds();
 
         if (!Monitor.TryEnter(_gate))

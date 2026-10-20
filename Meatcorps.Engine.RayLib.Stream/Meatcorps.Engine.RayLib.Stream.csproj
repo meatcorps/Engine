@@ -27,11 +27,37 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Raylib-cs" Version="8.1.0" />
+        <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
+        <PackageReference Include="Meatcorps.Engine.RayLib" Version="[0.1.0,)" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="NativeBinding\" />
     </ItemGroup>
+
+    <ItemGroup>
+        <None Include="obj/native/runtimes/**/*"
+              Pack="true"
+              PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)"
+              Visible="false" />
+    </ItemGroup>
+
+    <Target Name="VerifyNativeStreamBinaries"
+            BeforeTargets="GenerateNuspec"
+            Condition="'$(GITHUB_ACTIONS)' == 'true'">
+
+        <Error
+                Condition="!Exists('obj/native/runtimes/win-x64/native/meatcorps_stream.dll')"
+                Text="Missing Windows native streaming library." />
+
+        <Error
+                Condition="!Exists('obj/native/runtimes/osx-arm64/native/libmeatcorps_stream.dylib')"
+                Text="Missing macOS native streaming library." />
+
+        <Error
+                Condition="!Exists('obj/native/runtimes/linux-x64/native/libmeatcorps_stream.so')"
+                Text="Missing Linux native streaming library." />
+
+    </Target>
 
 </Project>

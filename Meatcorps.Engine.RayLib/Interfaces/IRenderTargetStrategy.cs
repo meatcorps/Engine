@@ -14,6 +14,8 @@ public interface IRenderTargetStrategy
     
     int RenderWidth { get; }
     int RenderHeight { get; }
+
+    Texture2D Result { get; }
 }
 
 public interface IRenderTargetStrategyRenderer: IRenderTargetStrategy

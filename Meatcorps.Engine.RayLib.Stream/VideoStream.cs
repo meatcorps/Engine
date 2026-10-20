@@ -66,6 +66,8 @@ public sealed class VideoStream : IDisposable
 
     private nint _handle;
     private bool _started;
+    
+    public bool IsStarted => _started;
 
     public VideoStream(VideoStreamOptions options)
     {

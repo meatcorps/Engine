@@ -55,3 +55,10 @@ if(UNIX AND NOT APPLE)
         PkgConfig::VA_GPU
         ${CMAKE_DL_LIBS})
 endif()
+
+if(WIN32)
+    set_target_properties(meatcorps_stream PROPERTIES
+            PREFIX ""
+            OUTPUT_NAME "meatcorps_stream"
+    )
+endif()

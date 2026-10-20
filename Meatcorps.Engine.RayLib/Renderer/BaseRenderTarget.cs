@@ -13,6 +13,8 @@ public abstract class BaseRenderTarget : IRenderTargetStrategyRenderer
     public RectF Bounds { get; set; }
     public bool UsePercentage { get; set; }
 
+    public Texture2D Result { get; protected set; }
+
     public abstract void BeginRender(Color clearColor);
 
     public abstract void EndRender(RenderTexture2D? targetTexture = null);
