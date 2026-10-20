@@ -38,9 +38,14 @@ public abstract class BasePostProcessor : IPostProcessor, IDisposable
 
         _isLoaded = true;
 
-        _shader = await GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadShader(null, _fxFilename);
+        _shader = await DoLoad(); 
         ResourcesLoaded++;
         await OnLoad();
+    }
+    
+    protected virtual Task<Shader> DoLoad()
+    {
+        return GlobalObjectManager.ObjectManager.Get<IRaylibResource>()!.LoadShader(null, _fxFilename);
     }
 
     protected virtual Task OnLoad()
