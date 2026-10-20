@@ -320,7 +320,7 @@ static gboolean setup_encoder(Backend *b, MCStream *s, const char *name, gboolea
     if (gpu) {
         GstContext *app = gst_context_new("gst.gl.app_context", TRUE);
         GstStructure *structure = gst_context_writable_structure(app);
-        gst_structure_set(structure, "context", GST_GL_TYPE_CONTEXT,
+        gst_structure_set(structure, "context", GST_TYPE_GL_CONTEXT,
                           b->gl_context, NULL);
         gst_element_set_context(b->pipeline, app);
         gst_context_unref(app);
