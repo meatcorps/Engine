@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PackageId>Meatcorps.Engine.RayLib.Stream</PackageId>
+        <Authors>Dennis Steffen</Authors>
+        <Company>Meatcorps</Company>
+        <Product>Meatcorps Engine RayLib capture / stream module</Product>
+        <Description>
+            Meatcorps.Engine is a lightweight, code-first game framework built on top of Raylib. This is a audio / video stream addon. Directly from a texture
+        </Description>
+        <RepositoryUrl>https://github.com/meatcorps/Engine</RepositoryUrl>
+        <PackageProjectUrl>https://www.meatcorps.nl/engine/</PackageProjectUrl>
+        <PackageTags>game-engine;stream;engine-core;gamedev;cross-platform;raylib;camera;audio;music;particles;postprocessing;textures;sprites;ui;gui</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IsPackable>true</IsPackable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <RootNamespace>Meatcorps.Engine.RayLib.Stream</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+        <None Include="README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Meatcorps.Engine.RayLib\Meatcorps.Engine.RayLib.csproj" />
+        <PackageReference Include="Meatcorps.Engine.RayLib" Version="[0.1.0,)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="NativeBinding\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="obj/native/runtimes/**/*"
+              Pack="true"
+              PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)"
+              Visible="false" />
+    </ItemGroup>
+
+    <Target Name="VerifyNativeStreamBinaries"
+            BeforeTargets="GenerateNuspec"
+            Condition="'$(GITHUB_ACTIONS)' == 'true'">
+
+        <Error
+                Condition="!Exists('obj/native/runtimes/win-x64/native/meatcorps_stream.dll')"
+                Text="Missing Windows native streaming library." />
+
+        <Error
+                Condition="!Exists('obj/native/runtimes/osx-arm64/native/libmeatcorps_stream.dylib')"
+                Text="Missing macOS native streaming library." />
+
+        <Error
+                Condition="!Exists('obj/native/runtimes/linux-x64/native/libmeatcorps_stream.so')"
+                Text="Missing Linux native streaming library." />
+
+    </Target>
+
+</Project>

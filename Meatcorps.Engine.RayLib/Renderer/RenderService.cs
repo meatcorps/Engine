@@ -21,6 +21,8 @@ public class RenderService
     private readonly List<IBeforeDraw> _beforeDraws = new();
     private readonly int _sceneLayers;
 
+    public Texture2D FinalResult => _presentationRenderTargetStrategy.Result;
+
     private RenderTexture2D? _renderTexture;
     
     /// <summary>

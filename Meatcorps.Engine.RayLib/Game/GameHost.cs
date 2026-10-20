@@ -146,11 +146,10 @@ public sealed class GameHost : IDisposable, IConfigChangeTracker
 
     public void LoadGameLoopTasks()
     {
-        _gameLoopTasksForward = GlobalObjectManager.ObjectManager.GetList<IGameLoopTask>() ?? new List<IGameLoopTask>();
-        _gameLoopTasksBackward =
-            GlobalObjectManager.ObjectManager.GetList<IGameLoopTask>() ?? new List<IGameLoopTask>();
-        _gameLoopTasksForward.Sort((a, b) => b.Priority.CompareTo(a.Priority));
-        _gameLoopTasksBackward.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+        _gameLoopTasksForward = GlobalObjectManager.ObjectManager.GetList<IGameLoopTask>()?.ToList() ?? new List<IGameLoopTask>();
+        _gameLoopTasksBackward = GlobalObjectManager.ObjectManager.GetList<IGameLoopTask>()?.ToList() ?? new List<IGameLoopTask>();
+        _gameLoopTasksForward.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+        _gameLoopTasksBackward.Sort((a, b) => b.Priority.CompareTo(a.Priority));
 
         foreach (var task in _gameLoopTasksForward)
             if (!task.IsInitialized)

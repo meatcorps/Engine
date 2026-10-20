@@ -219,7 +219,12 @@ public sealed class R3dRenderTarget : BaseRenderTarget, IDisposable
         Raylib.EndBlendMode();
 
         if (targetTexture is not null)
+        {
             Raylib.EndTextureMode();
+            Result = targetTexture.Value.Texture;
+        }
+        else
+            Result = _renderTextureFinal.Value.Texture;
 
         _postProcessingRenderer.End(PostProcessors);
     }

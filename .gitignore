@@ -437,3 +437,37 @@ dist/
 *.tmp
 *.log
 .DS_Store
+
+# ============================================================
+# CMake / Native C & C++ builds
+# ============================================================
+
+# CMake build directories (Rider / CLion / manual builds)
+cmake-build-*/
+cmake-build/
+build-debug/
+build-release/
+build-relwithdebinfo/
+build-minsizerel/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+
+# Ninja build system
+build.ninja
+.ninja_deps
+.ninja_log
+
+# CMake packaging
+CPackConfig.cmake
+CPackSourceConfig.cmake
+_CPack_Packages/
+
+# Developer-specific CMake presets
+CMakeUserPresets.json

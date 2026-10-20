@@ -97,10 +97,15 @@ public class BasicScreenRenderTarget : BaseRenderTarget, IDisposable
             {
                 Raylib.EndBlendMode();
                 Raylib.EndTextureMode();
+                Result = targetTexture.Value.Texture;
             }
+            else
+                Result = currentRenderer.Texture;
         }
 
         if (_useRenderTexture)
+        {
             _postProcessingRenderer.End(PostProcessors);
+        }
     }
 }

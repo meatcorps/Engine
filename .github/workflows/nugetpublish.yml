@@ -1,11 +1,134 @@
+
 name: Publish NuGet
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
+  native:
+    name: Build ${{ matrix.rid }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            rid: win-x64
+          - os: macos-15
+            rid: osx-arm64
+          - os: ubuntu-24.04
+            rid: linux-x64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Linux development dependencies
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build pkg-config \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
+            libgstrtspserver-1.0-dev \
+            libavcodec-dev libavutil-dev \
+            libva-dev libegl-dev libgl-dev \
+            libdrm-dev libx11-dev
+
+      # Apple Silicon (macos-15 is an ARM64 runner)
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake ninja pkgconf gstreamer
+
+      # Windows UCRT64 / MinGW
+      - name: Setup Windows native toolchain
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-gstreamer
+            mingw-w64-ucrt-x86_64-gst-plugins-base
+            mingw-w64-ucrt-x86_64-gst-rtsp-server
+
+      - name: Build native (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          native="Meatcorps.Engine.RayLib.Stream/NativeBinding"
+
+          cmake -S "$native" \
+                -B "$native/build-ci" \
+                -G Ninja \
+                -DCMAKE_BUILD_TYPE=Release
+
+          cmake --build "$native/build-ci" \
+                --parallel
+
+          if [[ "${{ matrix.rid }}" == "osx-arm64" ]]; then
+            filename="libmeatcorps_stream.dylib"
+          else
+            filename="libmeatcorps_stream.so"
+          fi
+
+          destination="Meatcorps.Engine.RayLib.Stream/obj/native/runtimes/${{ matrix.rid }}/native"
+
+          mkdir -p "$destination"
+
+          cp "$native/build-ci/$filename" "$destination/"
+
+      - name: Build native (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+
+          native="Meatcorps.Engine.RayLib.Stream/NativeBinding"
+
+          cmake -S "$native" \
+                -B "$native/build-ci" \
+                -G Ninja \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_C_COMPILER=gcc
+
+          cmake --build "$native/build-ci" \
+                --parallel
+
+          destination="Meatcorps.Engine.RayLib.Stream/obj/native/runtimes/win-x64/native"
+
+          mkdir -p "$destination"
+
+          cp "$native/build-ci/meatcorps_stream.dll" \
+             "$destination/"
+
+      - name: Upload native library
+        uses: actions/upload-artifact@v4
+        with:
+          name: stream-native-${{ matrix.rid }}
+          path: Meatcorps.Engine.RayLib.Stream/obj/native/runtimes/
+          if-no-files-found: error
+          retention-days: 7
+
   publish:
+    name: Pack and publish NuGet
+    needs: native
     runs-on: ubuntu-latest
 
     steps:
@@ -17,15 +140,57 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Restore
         run: dotnet restore
 
+      - name: Download native libraries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: stream-native-*
+          path: Meatcorps.Engine.RayLib.Stream/obj/native/runtimes/
+          merge-multiple: true
+
       - name: Pack
-        run: dotnet pack -c Release -o ./artifacts /p:ContinuousIntegrationBuild=true
+        run: |
+          dotnet pack -c Release \
+            --no-restore \
+            -o ./artifacts \
+            /p:ContinuousIntegrationBuild=true
+
+      - name: Verify native NuGet contents
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          package=$(find artifacts -maxdepth 1 \
+            -name 'Meatcorps.Engine.RayLib.Stream.*.nupkg' \
+            -print -quit)
+
+          test -n "$package"
+
+          unzip -l "$package"
+
+          for path in \
+            "runtimes/win-x64/native/meatcorps_stream.dll" \
+            "runtimes/osx-arm64/native/libmeatcorps_stream.dylib" \
+            "runtimes/linux-x64/native/libmeatcorps_stream.so"
+          do
+            unzip -Z1 "$package" | grep -Fx "$path"
+          done
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts/*.nupkg
+          if-no-files-found: error
 
       - name: Push to NuGet
+        if: github.ref == 'refs/heads/main'
         run: |
           dotnet nuget push "./artifacts/*.nupkg" \
             --api-key "${{ secrets.NUGET_API_KEY }}" \
